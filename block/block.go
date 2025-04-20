@@ -57,12 +57,12 @@ func init() {
 		var neteaseBlocks []map[string]any
 		gzipReader, err := gzip.NewReader(bytes.NewBuffer(neteaseBlockRuntimeID))
 		if err != nil {
-			panic("init: Failed to unzip netease_block_states.nbt (Stage 1)")
+			panic(`init: Failed to unzip "netease_block_states.nbt" (Stage 1)`)
 		}
 
 		unzipedBytes, err := io.ReadAll(gzipReader)
 		if err != nil {
-			panic("init: Failed to unzip netease_block_states.nbt (Stage 2)")
+			panic(`init: Failed to unzip "netease_block_states.nbt" (Stage 2)`)
 		}
 
 		err = nbt.NewDecoderWithEncoding(bytes.NewBuffer(unzipedBytes), nbt.BigEndian).Decode(&neteaseBlocks)
