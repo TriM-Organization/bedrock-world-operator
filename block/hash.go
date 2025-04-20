@@ -34,7 +34,7 @@ func MarshalInternalData(key string, value any) []byte {
 func Fnv1a_32(data []byte) uint32 {
 	hash := FNV1_32_INIT
 	for _, datum := range data {
-		hash ^= uint32(datum & 0xff)
+		hash ^= uint32(datum)
 		hash *= FNV1_PRIME_32
 	}
 	return hash
