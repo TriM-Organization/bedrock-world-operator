@@ -11,7 +11,10 @@ import (
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
-const UseNeteaseBlockStates = true
+const (
+	UseNeteaseBlockStates    = true
+	UseNetworkBlockRuntimeID = true
+)
 
 var (
 	//go:embed standard_block_states.nbt
@@ -98,13 +101,13 @@ func init() {
 }
 
 // registerBlockState registers a new blockState to the states slice.
-// The function panics if UseNeteaseBlockStates is false and the blockState
+// The function panics if UseNetworkBlockRuntimeID is false and the blockState
 // was already registered.
 func registerBlockState(s define.BlockState) {
 	var rid uint32
 	hash := ComputeBlockHash(s)
 
-	if !UseNeteaseBlockStates {
+	if !UseNetworkBlockRuntimeID {
 		if _, ok := stateRuntimeIDs[hash]; ok {
 			panic(fmt.Sprintf("cannot register the same state twice (%+v)", s))
 		}
@@ -114,7 +117,7 @@ func registerBlockState(s define.BlockState) {
 		blockProperties[s.Name] = s.Properties
 	}
 
-	if UseNeteaseBlockStates {
+	if UseNetworkBlockRuntimeID {
 		rid = hash
 	} else {
 		rid = uint32(len(stateRuntimeIDs))
