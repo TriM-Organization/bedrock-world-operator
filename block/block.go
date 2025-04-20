@@ -23,30 +23,35 @@ var (
 	neteaseBlockRuntimeID []byte
 )
 
+// blockEntry holds a block with its runtime id.
+type blockEntry struct {
+	block define.BlockState
+	rid   uint32
+}
+
 var (
+	// blockProperties ..
 	blockProperties = map[string]map[string]any{}
-	// stateRuntimeIDs holds a map for looking up the runtime ID of a block by the network runtime id it produces.
-	stateRuntimeIDs = map[uint32]uint32{}
-	// stateRuntimeMapping holds a map for looking up a block by the network runtime id it produces.
-	stateRuntimeMapping = map[uint32]define.BlockState{}
+	// blockStateMapping holds a map for looking up a block entry of a block by the network runtime id it produces.
+	blockStateMapping = map[uint32]blockEntry{}
 )
 
 func init() {
 	RuntimeIDToState = func(runtimeID uint32) (name string, properties map[string]any, found bool) {
-		s, found := stateRuntimeMapping[runtimeID]
+		s, found := blockStateMapping[runtimeID]
 		if found {
-			return s.Name, s.Properties, true
+			return s.block.Name, s.block.Properties, true
 		}
 		return "", nil, false
 	}
 	StateToRuntimeID = func(name string, properties map[string]any) (runtimeID uint32, found bool) {
 		networkRuntimeID := ComputeBlockHash(name, properties)
-		if rid, ok := stateRuntimeIDs[networkRuntimeID]; ok {
-			return rid, true
+		if s, ok := blockStateMapping[networkRuntimeID]; ok {
+			return s.rid, true
 		}
 		networkRuntimeID = ComputeBlockHash(name, blockProperties[name])
-		rid, ok := stateRuntimeIDs[networkRuntimeID]
-		return rid, ok
+		s, ok := blockStateMapping[networkRuntimeID]
+		return s.rid, ok
 	}
 
 	if UseNeteaseBlockStates {
@@ -101,7 +106,7 @@ func registerBlockState(s define.BlockState) {
 	hash := ComputeBlockHash(s.Name, s.Properties)
 
 	if !UseNetworkBlockRuntimeID {
-		if _, ok := stateRuntimeIDs[hash]; ok {
+		if _, ok := blockStateMapping[hash]; ok {
 			panic(fmt.Sprintf("cannot register the same state twice (%+v)", s))
 		}
 	}
@@ -113,13 +118,15 @@ func registerBlockState(s define.BlockState) {
 	if UseNetworkBlockRuntimeID {
 		rid = hash
 	} else {
-		rid = uint32(len(stateRuntimeIDs))
+		rid = uint32(len(blockStateMapping))
 	}
 
 	if s.Name == "minecraft:air" {
 		AirRuntimeID = rid
 	}
 
-	stateRuntimeIDs[hash] = rid
-	stateRuntimeMapping[hash] = s
+	blockStateMapping[hash] = blockEntry{
+		block: s,
+		rid:   rid,
+	}
 }
