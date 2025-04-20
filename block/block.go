@@ -2,20 +2,29 @@ package block
 
 import (
 	"bytes"
+	"compress/gzip"
 	_ "embed"
 	"fmt"
-	"sort"
+	"io"
 	"strings"
 	"unsafe"
+
+	"slices"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
-var (
-	//go:embed block_states.nbt
-	blockStateData []byte
+const UseNeteaseBlockStates = true
 
+var (
+	//go:embed standard_block_states.nbt
+	standardblockStateData []byte
+	//go:embed netease_block_states.nbt
+	neteaseBlockRuntimeID []byte
+)
+
+var (
 	blockProperties = map[string]map[string]any{}
 	// blocks holds a list of all registered Blocks indexed by their runtime ID. Blocks that were not explicitly
 	// registered are of the type unknownBlock.
@@ -25,7 +34,38 @@ var (
 )
 
 func init() {
-	dec := nbt.NewDecoder(bytes.NewBuffer(blockStateData))
+	if UseNeteaseBlockStates {
+		var neteaseBlocks []map[string]any
+		gzipReader, err := gzip.NewReader(bytes.NewBuffer(neteaseBlockRuntimeID))
+		if err != nil {
+			panic("init: Failed to unzip netease_block_states.nbt (Stage 1)")
+		}
+
+		unzipedBytes, err := io.ReadAll(gzipReader)
+		if err != nil {
+			panic("init: Failed to unzip netease_block_states.nbt (Stage 2)")
+		}
+
+		err = nbt.NewDecoderWithEncoding(bytes.NewBuffer(unzipedBytes), nbt.BigEndian).Decode(&neteaseBlocks)
+		if err != nil {
+			panic("init: Failed to decode netease blocks from NBT")
+		}
+
+		// Register all block states present in the block_states.nbt file. These are all possible options registered
+		// blocks may encode to.
+		for _, value := range neteaseBlocks {
+			s := define.BlockState{
+				Name:       value["name"].(string),
+				Properties: value["states"].(map[string]any),
+				Version:    value["version"].(int32),
+			}
+			registerNeteaseBlock(s)
+		}
+
+		return
+	}
+
+	dec := nbt.NewDecoder(bytes.NewBuffer(standardblockStateData))
 
 	// Register all block states present in the block_states.nbt file. These are all possible options registered
 	// blocks may encode to.
@@ -72,6 +112,27 @@ func registerBlockState(s define.BlockState) {
 	stateRuntimeIDs[h] = rid
 }
 
+// registerNeteaseBlock registers a new netease block to the states slice.
+// If a block is registered, then nothing happened.
+func registerNeteaseBlock(s define.BlockState) {
+	h := define.StateHash{Name: s.Name, Properties: hashProperties(s.Properties)}
+	if _, ok := stateRuntimeIDs[h]; ok {
+		return
+	}
+
+	if _, ok := blockProperties[s.Name]; !ok {
+		blockProperties[s.Name] = s.Properties
+	}
+	rid := ComputeBlockHash(s)
+	blocks = append(blocks, s)
+
+	if s.Name == "minecraft:air" {
+		AirRuntimeID = rid
+	}
+
+	stateRuntimeIDs[h] = rid
+}
+
 // hashProperties produces a hash for the block properties held by the blockState.
 func hashProperties(properties map[string]any) string {
 	if properties == nil {
@@ -81,9 +142,7 @@ func hashProperties(properties map[string]any) string {
 	for k := range properties {
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
+	slices.Sort(keys)
 
 	var b strings.Builder
 	for _, k := range keys {
