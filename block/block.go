@@ -6,10 +6,6 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
-	"strings"
-	"unsafe"
-
-	"slices"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
@@ -26,14 +22,37 @@ var (
 
 var (
 	blockProperties = map[string]map[string]any{}
-	// blocks holds a list of all registered Blocks indexed by their runtime ID. Blocks that were not explicitly
-	// registered are of the type unknownBlock.
-	blocks []define.BlockState
-	// stateRuntimeIDs holds a map for looking up the runtime ID of a block by the define.StateHash it produces.
-	stateRuntimeIDs = map[define.StateHash]uint32{}
+	// stateRuntimeIDs holds a map for looking up the runtime ID of a block by the network runtime id it produces.
+	stateRuntimeIDs = map[uint32]uint32{}
+	// stateRuntimeMapping holds a map for looking up a block by the network runtime id it produces.
+	stateRuntimeMapping = map[uint32]define.BlockState{}
 )
 
 func init() {
+	RuntimeIDToState = func(runtimeID uint32) (name string, properties map[string]any, found bool) {
+		s, found := stateRuntimeMapping[runtimeID]
+		if found {
+			return s.Name, s.Properties, true
+		}
+		return "", nil, false
+	}
+	StateToRuntimeID = func(name string, properties map[string]any) (runtimeID uint32, found bool) {
+		s := define.BlockState{
+			Name:       name,
+			Properties: properties,
+		}
+
+		networkRuntimeID := ComputeBlockHash(s)
+		if rid, ok := stateRuntimeIDs[networkRuntimeID]; ok {
+			return rid, true
+		}
+
+		s.Properties = blockProperties[name]
+		networkRuntimeID = ComputeBlockHash(s)
+		rid, ok := stateRuntimeIDs[networkRuntimeID]
+		return rid, ok
+	}
+
 	if UseNeteaseBlockStates {
 		var neteaseBlocks []map[string]any
 		gzipReader, err := gzip.NewReader(bytes.NewBuffer(neteaseBlockRuntimeID))
@@ -59,7 +78,7 @@ func init() {
 				Properties: value["states"].(map[string]any),
 				Version:    value["version"].(int32),
 			}
-			registerNeteaseBlock(s)
+			registerBlockState(s)
 		}
 
 		return
@@ -76,96 +95,35 @@ func init() {
 		}
 		registerBlockState(s)
 	}
-
-	RuntimeIDToState = func(runtimeID uint32) (name string, properties map[string]any, found bool) {
-		if runtimeID >= uint32(len(blocks)) {
-			return "", nil, false
-		}
-		return blocks[runtimeID].Name, blocks[runtimeID].Properties, true
-	}
-	StateToRuntimeID = func(name string, properties map[string]any) (runtimeID uint32, found bool) {
-		if rid, ok := stateRuntimeIDs[define.StateHash{Name: name, Properties: hashProperties(properties)}]; ok {
-			return rid, true
-		}
-		rid, ok := stateRuntimeIDs[define.StateHash{Name: name, Properties: hashProperties(blockProperties[name])}]
-		return rid, ok
-	}
 }
 
-// registerBlockState registers a new blockState to the states slice. The function panics if the properties the
-// blockState hold are invalid or if the blockState was already registered.
+// registerBlockState registers a new blockState to the states slice.
+// The function panics if UseNeteaseBlockStates is false and the blockState
+// was already registered.
 func registerBlockState(s define.BlockState) {
-	h := define.StateHash{Name: s.Name, Properties: hashProperties(s.Properties)}
-	if _, ok := stateRuntimeIDs[h]; ok {
-		panic(fmt.Sprintf("cannot register the same state twice (%+v)", s))
-	}
-	if _, ok := blockProperties[s.Name]; !ok {
-		blockProperties[s.Name] = s.Properties
-	}
-	rid := uint32(len(blocks))
-	blocks = append(blocks, s)
+	var rid uint32
+	hash := ComputeBlockHash(s)
 
-	if s.Name == "minecraft:air" {
-		AirRuntimeID = rid
-	}
-
-	stateRuntimeIDs[h] = rid
-}
-
-// registerNeteaseBlock registers a new netease block to the states slice.
-// If a block is registered, then nothing happened.
-func registerNeteaseBlock(s define.BlockState) {
-	h := define.StateHash{Name: s.Name, Properties: hashProperties(s.Properties)}
-	if _, ok := stateRuntimeIDs[h]; ok {
-		return
-	}
-
-	if _, ok := blockProperties[s.Name]; !ok {
-		blockProperties[s.Name] = s.Properties
-	}
-	rid := ComputeBlockHash(s)
-	blocks = append(blocks, s)
-
-	if s.Name == "minecraft:air" {
-		AirRuntimeID = rid
-	}
-
-	stateRuntimeIDs[h] = rid
-}
-
-// hashProperties produces a hash for the block properties held by the blockState.
-func hashProperties(properties map[string]any) string {
-	if properties == nil {
-		return ""
-	}
-	keys := make([]string, 0, len(properties))
-	for k := range properties {
-		keys = append(keys, k)
-	}
-	slices.Sort(keys)
-
-	var b strings.Builder
-	for _, k := range keys {
-		switch v := properties[k].(type) {
-		case bool:
-			if v {
-				b.WriteByte(1)
-			} else {
-				b.WriteByte(0)
-			}
-		case uint8:
-			b.WriteByte(v)
-		case int32:
-			a := *(*[4]byte)(unsafe.Pointer(&v))
-			b.Write(a[:])
-		case string:
-			b.WriteString(v)
-		default:
-			// If block encoding is broken, we want to find out as soon as possible. This saves a lot of time
-			// debugging in-game.
-			panic(fmt.Sprintf("invalid block property type %T for property %v", v, k))
+	if !UseNeteaseBlockStates {
+		if _, ok := stateRuntimeIDs[hash]; ok {
+			panic(fmt.Sprintf("cannot register the same state twice (%+v)", s))
 		}
 	}
 
-	return b.String()
+	if _, ok := blockProperties[s.Name]; !ok {
+		blockProperties[s.Name] = s.Properties
+	}
+
+	if UseNeteaseBlockStates {
+		rid = hash
+	} else {
+		rid = uint32(len(stateRuntimeIDs))
+	}
+
+	if s.Name == "minecraft:air" {
+		AirRuntimeID = rid
+	}
+
+	stateRuntimeIDs[hash] = rid
+	stateRuntimeMapping[hash] = s
 }

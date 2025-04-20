@@ -8,4 +8,5 @@ import (
 
 func main() {
 	fmt.Println(block.AirRuntimeID)
+	fmt.Println(block.StateToRuntimeID("minecraft:air", nil))
 }
