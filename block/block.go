@@ -32,7 +32,7 @@ type blockEntry struct {
 var (
 	// blockProperties ..
 	blockProperties = map[string]map[string]any{}
-	// blockStateMapping holds a map for looking up a block entry of a block by the network runtime id it produces.
+	// blockStateMapping holds a map for looking up a block entry by the network runtime id it produces.
 	blockStateMapping = map[uint32]blockEntry{}
 )
 
