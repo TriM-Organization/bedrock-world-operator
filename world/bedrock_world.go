@@ -28,6 +28,11 @@ func Open(dir string) (*BedrockWorld, error) {
 	return conf.Open(dir)
 }
 
+// LevelDat return the level dat of this world.
+func (db *BedrockWorld) LevelDat() *leveldat.Data {
+	return db.ldat
+}
+
 // Close closes the provider, saving any file that might need to be saved, such as the level.dat.
 func (db *BedrockWorld) Close() error {
 	db.ldat.LastPlayed = time.Now().Unix()
