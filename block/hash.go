@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"slices"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
@@ -41,18 +40,18 @@ func Fnv1a_32(data []byte) uint32 {
 	return hash
 }
 
-// ComputeBlockHash compute the hash of given block s.
+// ComputeBlockHash compute the hash of block whose name is blockName, and states is blockStates.
 // This implement is edited from https://gist.github.com/Alemiz112/504d0f79feac7ef57eda174b668dd345.
-func ComputeBlockHash(s define.BlockState) uint32 {
+func ComputeBlockHash(blockName string, blockStates map[string]any) uint32 {
 	b := bytes.NewBuffer(nil)
 
-	if s.Name == "minecraft:unknown" {
+	if blockName == "minecraft:unknown" {
 		unknownBlockHash := -2
 		return uint32(unknownBlockHash)
 	}
 
-	keys := make([]string, 0, len(s.Properties))
-	for k := range s.Properties {
+	keys := make([]string, 0, len(blockStates))
+	for k := range blockStates {
 		keys = append(keys, k)
 	}
 	slices.Sort(keys)
@@ -62,16 +61,16 @@ func ComputeBlockHash(s define.BlockState) uint32 {
 		b.Write([]byte{10, 0, 0})
 
 		// "name": s.Name
-		b.Write(MarshalInternalData("name", s.Name))
+		b.Write(MarshalInternalData("name", blockName))
 
-		// "states": s.Properties
+		// "states": blockStates
 		b.Write([]byte{10, 6, 0})
 		b.WriteString("states")
-		// each element in s.Properties
+		// each element in blockStates
 		for _, k := range keys {
-			b.Write(MarshalInternalData(k, s.Properties[k]))
+			b.Write(MarshalInternalData(k, blockStates[k]))
 		}
-		// TAG_End of s.Properties
+		// TAG_End of blockStates
 		b.WriteByte(0)
 
 		// TAG_End of whole map

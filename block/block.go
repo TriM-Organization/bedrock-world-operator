@@ -40,18 +40,11 @@ func init() {
 		return "", nil, false
 	}
 	StateToRuntimeID = func(name string, properties map[string]any) (runtimeID uint32, found bool) {
-		s := define.BlockState{
-			Name:       name,
-			Properties: properties,
-		}
-
-		networkRuntimeID := ComputeBlockHash(s)
+		networkRuntimeID := ComputeBlockHash(name, properties)
 		if rid, ok := stateRuntimeIDs[networkRuntimeID]; ok {
 			return rid, true
 		}
-
-		s.Properties = blockProperties[name]
-		networkRuntimeID = ComputeBlockHash(s)
+		networkRuntimeID = ComputeBlockHash(name, blockProperties[name])
 		rid, ok := stateRuntimeIDs[networkRuntimeID]
 		return rid, ok
 	}
@@ -105,7 +98,7 @@ func init() {
 // was already registered.
 func registerBlockState(s define.BlockState) {
 	var rid uint32
-	hash := ComputeBlockHash(s)
+	hash := ComputeBlockHash(s.Name, s.Properties)
 
 	if !UseNetworkBlockRuntimeID {
 		if _, ok := stateRuntimeIDs[hash]; ok {
