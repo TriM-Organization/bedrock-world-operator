@@ -3,12 +3,16 @@ package world
 import (
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world/leveldat"
 )
 
 // StandardBedrockWorld is the function that
 // bedrock world implements, but only for standard
 // minecraft.
 type StandardBedrockWorld interface {
+	LevelDat() *leveldat.Data
+	UpdateLevelDat() error
+
 	LoadBiomes(dm define.Dimension, position define.ChunkPos) ([]byte, error)
 	SaveBiomes(dm define.Dimension, position define.ChunkPos, payload []byte) error
 
@@ -44,7 +48,10 @@ type CustomBedrockWorld interface {
 	SaveSubChunkBlobHash(dm define.Dimension, position define.SubChunkPos, hash uint64) error
 }
 
+// World is a interface that implements
+// standard bedrock and some custom features.
 type World interface {
 	StandardBedrockWorld
-	BedrockWorld
+	CustomBedrockWorld
+	Close() error
 }

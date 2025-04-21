@@ -33,10 +33,8 @@ func (db *BedrockWorld) LevelDat() *leveldat.Data {
 	return db.ldat
 }
 
-// Close closes the provider, saving any file that might need to be saved, such as the level.dat.
-func (db *BedrockWorld) Close() error {
-	db.ldat.LastPlayed = time.Now().Unix()
-
+// UpdateLevelDat update level dat immediately.
+func (db *BedrockWorld) UpdateLevelDat() error {
 	var ldat leveldat.LevelDat
 	if err := ldat.Marshal(*db.ldat); err != nil {
 		return fmt.Errorf("close: %w", err)
@@ -46,6 +44,15 @@ func (db *BedrockWorld) Close() error {
 	}
 	if err := os.WriteFile(filepath.Join(db.dir, "levelname.txt"), []byte(db.ldat.LevelName), 0644); err != nil {
 		return fmt.Errorf("close: write levelname.txt: %w", err)
+	}
+	return nil
+}
+
+// Close closes the provider, saving any file that might need to be saved, such as the level.dat.
+func (db *BedrockWorld) Close() error {
+	db.ldat.LastPlayed = time.Now().Unix()
+	if err := db.UpdateLevelDat(); err != nil {
+		return err
 	}
 	return db.ldb.Close()
 }
