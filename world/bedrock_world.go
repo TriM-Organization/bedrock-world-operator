@@ -7,14 +7,13 @@ import (
 	"time"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world/leveldat"
-	"github.com/df-mc/goleveldb/leveldb"
 )
 
 // BedrockWorld implements a world provider for the Minecraft world format, which
 // is based on a leveldb database.
 type BedrockWorld struct {
+	LevelDB
 	conf Config
-	ldb  *leveldb.DB
 	dir  string
 	ldat *leveldat.Data
 }
@@ -48,11 +47,11 @@ func (db *BedrockWorld) UpdateLevelDat() error {
 	return nil
 }
 
-// Close closes the provider, saving any file that might need to be saved, such as the level.dat.
-func (db *BedrockWorld) Close() error {
+// CloseWorld closes the provider, saving any file that might need to be saved, such as the level.dat.
+func (db *BedrockWorld) CloseWorld() error {
 	db.ldat.LastPlayed = time.Now().Unix()
 	if err := db.UpdateLevelDat(); err != nil {
 		return err
 	}
-	return db.ldb.Close()
+	return db.Close()
 }

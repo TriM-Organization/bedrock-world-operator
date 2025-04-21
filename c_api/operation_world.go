@@ -28,16 +28,16 @@ func ReleaseBedrockWorld(id C.int) {
 	openedWorld.ReleaseObject(int(id))
 }
 
-//export World_Close
-func World_Close(id C.int) *C.char {
+//export World_CloseWorld
+func World_CloseWorld(id C.int) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
-		return C.CString("World_Close: World not found")
+		return C.CString("World_CloseWorld: World not found")
 	}
 
-	err := (*w).Close()
+	err := (*w).CloseWorld()
 	if err != nil {
-		return C.CString(fmt.Sprintf("World_Close: %v", err))
+		return C.CString(fmt.Sprintf("World_CloseWorld: %v", err))
 	}
 
 	return C.CString("")
@@ -282,6 +282,21 @@ func LoadNBT(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
 	return asCbytes(result)
 }
 
+//export SaveNBTPayloadOnly
+func SaveNBTPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) *C.char {
+	w := openedWorld.LoadObject(int(id))
+	if w == nil {
+		return C.CString("SaveNBTPayloadOnly: World not found")
+	}
+
+	err := (*w).SaveNBTPayloadOnly(define.Dimension(dm), define.ChunkPos{int32(posx), int32(posz)}, asGoBytes(payload))
+	if err != nil {
+		return C.CString(fmt.Sprintf("SaveNBTPayloadOnly: %v", err))
+	}
+
+	return C.CString("")
+}
+
 //export SaveNBT
 func SaveNBT(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) (err *C.char) {
 	defer func() {
@@ -302,12 +317,12 @@ func SaveNBT(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) (err *
 		var decodeAns map[string]any
 
 		l := binary.LittleEndian.Uint32(goPayload)
-		singleNBT := goPayload[4 : 4+l]
-
-		_ = nbt.NewDecoderWithEncoding(bytes.NewBuffer(singleNBT), nbt.LittleEndian).Decode(&decodeAns)
+		_ = nbt.NewDecoderWithEncoding(bytes.NewBuffer(goPayload[4:4+l]), nbt.LittleEndian).Decode(&decodeAns)
 		if len(decodeAns) > 0 {
 			nbts = append(nbts, decodeAns)
 		}
+
+		goPayload = goPayload[4+l:]
 	}
 
 	goErr := (*w).SaveNBT(define.Dimension(dm), define.ChunkPos{int32(posx), int32(posz)}, nbts)
@@ -345,18 +360,18 @@ func SaveDeltaUpdate(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char
 }
 
 //export LoadTimeStamp
-func LoadTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.int {
+func LoadTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
 	}
-	return C.int(
+	return C.longlong(
 		(*w).LoadTimeStamp(define.Dimension(dm), define.ChunkPos{int32(posx), int32(posz)}),
 	)
 }
 
 //export SaveTimeStamp
-func SaveTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.int) *C.char {
+func SaveTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveTimeStamp: World not found")
@@ -371,18 +386,18 @@ func SaveTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.int) 
 }
 
 //export LoadDeltaUpdateTimeStamp
-func LoadDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.int {
+func LoadDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
 	}
-	return C.int(
+	return C.longlong(
 		(*w).LoadDeltaUpdateTimeStamp(define.Dimension(dm), define.ChunkPos{int32(posx), int32(posz)}),
 	)
 }
 
 //export SaveDeltaUpdateTimeStamp
-func SaveDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.int) *C.char {
+func SaveDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveDeltaUpdateTimeStamp: World not found")
@@ -450,13 +465,13 @@ func SaveFullSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int, payloa
 }
 
 //export LoadSubChunkBlobHash
-func LoadSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
+func LoadSubChunkBlobHash(id C.int, dm C.int, posx C.int, posy C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
 	}
 
-	hash, found := (*w).LoadSubChunkBlobHash(define.Dimension(dm), define.SubChunkPos{int32(posx), int32(posz)})
+	hash, found := (*w).LoadSubChunkBlobHash(define.Dimension(dm), define.SubChunkPos{int32(posx), int32(posy), int32(posz)})
 	if !found {
 		return -1
 	}
@@ -465,13 +480,13 @@ func LoadSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int) C.longlong
 }
 
 //export SaveSubChunkBlobHash
-func SaveSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int, hash C.longlong) *C.char {
+func SaveSubChunkBlobHash(id C.int, dm C.int, posx C.int, posy C.int, posz C.int, hash C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveSubChunkBlobHash: World not found")
 	}
 
-	err := (*w).SaveSubChunkBlobHash(define.Dimension(dm), define.SubChunkPos{int32(posx), int32(posz)}, uint64(hash))
+	err := (*w).SaveSubChunkBlobHash(define.Dimension(dm), define.SubChunkPos{int32(posx), int32(posy), int32(posz)}, uint64(hash))
 	if err != nil {
 		return C.CString(fmt.Sprintf("SaveSubChunkBlobHash: %v", err))
 	}

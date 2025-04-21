@@ -59,6 +59,6 @@ func (conf Config) Open(dir string) (*BedrockWorld, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open db: leveldb: %w", err)
 	}
-	db.ldb = ldb
+	db.LevelDB = &database{ldb: ldb}
 	return db, nil
 }

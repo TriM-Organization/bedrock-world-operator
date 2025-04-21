@@ -12,7 +12,7 @@ var TimeStampNotFound = time.Unix(0, 0).Unix()
 
 func (b *BedrockWorld) loadTimeStampByKey(dm define.Dimension, position define.ChunkPos, key ...byte) (timeStamp int64) {
 	keyBytes := world_define.Sum(dm, position, key...)
-	data, err := b.ldb.Get(keyBytes, nil)
+	data, err := b.Get(keyBytes)
 	if err != nil || len(data) == 0 {
 		return TimeStampNotFound
 	}
@@ -30,11 +30,11 @@ func (b *BedrockWorld) LoadTimeStamp(dm define.Dimension, position define.ChunkP
 func (b *BedrockWorld) saveTimeStampByKey(dm define.Dimension, position define.ChunkPos, timeStamp int64, key ...byte) error {
 	keyBytes := world_define.Sum(dm, position, key...)
 	if timeStamp == 0 {
-		return b.ldb.Delete(keyBytes, nil)
+		return b.Delete(keyBytes)
 	}
 	timeStampBytes := make([]byte, 8)
 	binary.LittleEndian.PutUint64(timeStampBytes, uint64(timeStamp))
-	return b.ldb.Put(keyBytes, timeStampBytes, nil)
+	return b.Put(keyBytes, timeStampBytes)
 }
 
 func (b *BedrockWorld) SaveTimeStamp(dm define.Dimension, position define.ChunkPos, timeStamp int64) error {

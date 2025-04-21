@@ -1,5 +1,4 @@
 import ctypes, struct
-import time
 
 LIB = ctypes.cdll.LoadLibrary("python/out.dll")
 

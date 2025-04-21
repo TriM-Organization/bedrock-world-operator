@@ -6,12 +6,23 @@ import (
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world/leveldat"
 )
 
+// LevelDB represent to a level database
+// that implements some basic funtions.
+type LevelDB interface {
+	Close() error
+	Delete(key []byte) error
+	Get(key []byte) (value []byte, err error)
+	Has(key []byte) (has bool, err error)
+	Put(key []byte, value []byte) error
+}
+
 // StandardBedrockWorld is the function that
 // bedrock world implements, but only for standard
 // minecraft.
 type StandardBedrockWorld interface {
 	LevelDat() *leveldat.Data
 	UpdateLevelDat() error
+	CloseWorld() error
 
 	LoadBiomes(dm define.Dimension, position define.ChunkPos) ([]byte, error)
 	SaveBiomes(dm define.Dimension, position define.ChunkPos, payload []byte) error
@@ -52,7 +63,7 @@ type CustomBedrockWorld interface {
 // standard bedrock world and some custom
 // features.
 type World interface {
+	LevelDB
 	StandardBedrockWorld
 	CustomBedrockWorld
-	Close() error
 }

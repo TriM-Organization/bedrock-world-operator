@@ -8,7 +8,7 @@ import (
 )
 
 func (b *BedrockWorld) LoadBiomes(dm define.Dimension, position define.ChunkPos) ([]byte, error) {
-	biomes, err := b.ldb.Get(world_define.Sum(dm, position, world_define.Key3DData), nil)
+	biomes, err := b.Get(world_define.Sum(dm, position, world_define.Key3DData))
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (b *BedrockWorld) LoadBiomes(dm define.Dimension, position define.ChunkPos)
 func (b *BedrockWorld) SaveBiomes(dm define.Dimension, position define.ChunkPos, payload []byte) error {
 	key := world_define.Sum(dm, position, world_define.Key3DData)
 	if len(payload) == 0 {
-		return b.ldb.Delete(key, nil)
+		return b.Delete(key)
 	}
-	return b.ldb.Put(key, append(make([]byte, 512), payload...), nil)
+	return b.Put(key, append(make([]byte, 512), payload...))
 }

@@ -13,7 +13,7 @@ import (
 // LoadNBTPayloadOnly loads payload of all block entities from the chunk position passed.
 func (b *BedrockWorld) LoadNBTPayloadOnly(dm define.Dimension, position define.ChunkPos) []byte {
 	key := world_define.Sum(dm, position, world_define.KeyBlockEntities)
-	data, err := b.ldb.Get(key, nil)
+	data, err := b.Get(key)
 	if err != nil {
 		return nil
 	}
@@ -56,9 +56,9 @@ func (b *BedrockWorld) LoadNBT(dm define.Dimension, position define.ChunkPos) ([
 func (b *BedrockWorld) SaveNBTPayloadOnly(dm define.Dimension, position define.ChunkPos, data []byte) error {
 	key := world_define.Sum(dm, position, world_define.KeyBlockEntities)
 	if len(data) == 0 {
-		return b.ldb.Delete(key, nil)
+		return b.Delete(key)
 	}
-	return b.ldb.Put(key, data, nil)
+	return b.Put(key, data)
 }
 
 // SaveNBT saves all block NBT data to the chunk position passed.

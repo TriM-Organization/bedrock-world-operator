@@ -12,7 +12,7 @@ func (b *BedrockWorld) LoadFullSubChunkBlobHash(dm define.Dimension, position de
 	result = make([]define.HashWithPosY, 0)
 
 	key := world_define.Sum(dm, position, []byte(world_define.KeyBlobHash)...)
-	data, err := b.ldb.Get(key, nil)
+	data, err := b.Get(key)
 	if err != nil || len(data) == 0 {
 		return nil
 	}
@@ -34,7 +34,7 @@ func (b *BedrockWorld) LoadFullSubChunkBlobHash(dm define.Dimension, position de
 // sub chunk that in position and in dm dimension.
 func (b *BedrockWorld) LoadSubChunkBlobHash(dm define.Dimension, position define.SubChunkPos) (hash uint64, found bool) {
 	key := world_define.Sum(dm, define.ChunkPos{position[0], position[2]}, []byte(world_define.KeyBlobHash)...)
-	data, err := b.ldb.Get(key, nil)
+	data, err := b.Get(key)
 	if err != nil || len(data) == 0 {
 		return 0, false
 	}
@@ -73,9 +73,9 @@ func (b *BedrockWorld) SaveFullSubChunkBlobHash(dm define.Dimension, position de
 	}
 
 	if len(data) == 0 {
-		return b.ldb.Delete(key, nil)
+		return b.Delete(key)
 	} else {
-		return b.ldb.Put(key, data, nil)
+		return b.Put(key, data)
 	}
 }
 
@@ -90,7 +90,7 @@ func (b *BedrockWorld) SaveSubChunkBlobHash(dm define.Dimension, position define
 	binary.LittleEndian.PutUint64(hashByte, hash)
 
 	key := world_define.Sum(dm, define.ChunkPos{position[0], position[2]}, []byte(world_define.KeyBlobHash)...)
-	data, err := b.ldb.Get(key, nil)
+	data, err := b.Get(key)
 
 	if err == nil && len(data) != 0 {
 		// SubChunkPos.Y(), Blob hash
@@ -113,8 +113,8 @@ func (b *BedrockWorld) SaveSubChunkBlobHash(dm define.Dimension, position define
 	}
 
 	if len(modified) == 0 {
-		return b.ldb.Delete(key, nil)
+		return b.Delete(key)
 	} else {
-		return b.ldb.Put(key, modified, nil)
+		return b.Put(key, modified)
 	}
 }
