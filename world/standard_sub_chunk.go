@@ -23,7 +23,7 @@ func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChun
 		return nil
 	}
 
-	subChunk, _, err := chunk.DecodeSubChunk(bytes.NewBuffer(subChunkData), dm.Range(), chunk.NetworkEncoding)
+	subChunk, _, err := chunk.DecodeSubChunk(bytes.NewBuffer(subChunkData), dm.Range(), chunk.DiskEncoding)
 	if err != nil {
 		return nil
 	}
