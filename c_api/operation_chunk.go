@@ -61,6 +61,7 @@ func Chunk_Equals(id C.int, anotherChunkID C.int) C.int {
 	return asCbool((*c1).Equals(*c2))
 }
 
+//export Chunk_HighestFilledSubChunk
 func Chunk_HighestFilledSubChunk(id C.int) C.int {
 	c := savedChunk.LoadObject(int(id))
 	if c == nil {
