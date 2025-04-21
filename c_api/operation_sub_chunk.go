@@ -9,7 +9,7 @@ import (
 var savedSubChunk = NewSimpleManager[*chunk.SubChunk]()
 
 //export NewSubChunk
-func NewSubChunk(rangeStart C.int, rangeEnd C.int) C.int {
+func NewSubChunk() C.int {
 	subChunk := chunk.NewSubChunk(block.AirRuntimeID)
 	return C.int(savedSubChunk.AddObject(subChunk))
 }
@@ -48,10 +48,11 @@ func SubChunk_Equals(id C.int, anotherSubChunkId C.int) C.int {
 }
 
 //export SubChunk_SetBlock
-func SubChunk_SetBlock(id C.int, x C.int, y C.int, z C.int, layer C.int, block C.int) {
+func SubChunk_SetBlock(id C.int, x C.int, y C.int, z C.int, layer C.int, block C.int) *C.char {
 	subChunk := savedSubChunk.LoadObject(int(id))
 	if subChunk == nil {
-		return
+		return C.CString("SubChunk_SetBlock: Sub chunk not found")
 	}
 	(*subChunk).SetBlock(byte(x), byte(y), byte(z), uint8(layer), uint32(block))
+	return C.CString("")
 }

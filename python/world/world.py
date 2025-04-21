@@ -1,5 +1,4 @@
-import nbtlib
-from python.internal.symbol_export_world import (
+from ..internal.symbol_export_world import (
     load_biomes,
     load_chunk_payload_only,
     release_bedrock_world,
@@ -8,14 +7,14 @@ from python.internal.symbol_export_world import (
     world_get_level_dat,
     world_modify_level_dat,
 )
-from python.internal.symbol_export_world_underlying import (
+from ..internal.symbol_export_world_underlying import (
     db_delete,
     db_get,
     db_has,
     db_put,
 )
-from python.world.define import ChunkPos, Dimension
-from python.world.level_dat import LevelDat
+from ..world.define import ChunkPos, Dimension
+from ..world.level_dat import LevelDat
 
 
 class WorldBase:

@@ -50,7 +50,7 @@ func (chunk *Chunk) Equals(c *Chunk) bool {
 	return true
 }
 
-// Range returns the cube.Range of the Chunk as passed to New.
+// Range returns the define.Range of the Chunk as passed to NewChunk.
 func (chunk *Chunk) Range() define.Range {
 	return chunk.r
 }
