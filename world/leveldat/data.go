@@ -4,6 +4,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 )
 
@@ -182,7 +183,13 @@ func (d *Data) FillDefault() {
 	d.GameType = 1
 	d.Generator = 2
 	d.HasBeenLoadedInCreative = true
-	d.InventoryVersion = protocol.CurrentVersion
+
+	if block.UseNeteaseBlockStates {
+		d.InventoryVersion = "1.20.50"
+	} else {
+		d.InventoryVersion = protocol.CurrentVersion
+	}
+
 	d.LANBroadcast = true
 	d.LANBroadcastIntent = true
 	d.LastOpenedWithVersion = minimumCompatibleClientVersion
@@ -198,7 +205,13 @@ func (d *Data) FillDefault() {
 	d.MultiPlayerGameIntent = true
 	d.NaturalRegeneration = true
 	d.NetherScale = 8
-	d.NetworkVersion = protocol.CurrentProtocol
+
+	if block.UseNeteaseBlockStates {
+		d.NetworkVersion = 630
+	} else {
+		d.NetworkVersion = protocol.CurrentProtocol
+	}
+
 	d.PVP = true
 	d.Platform = 2
 	d.PlatformBroadcastIntent = 3
@@ -212,7 +225,6 @@ func (d *Data) FillDefault() {
 	d.ShowDeathMessages = true
 	d.ShowTags = true
 	d.SpawnMobs = true
-	d.SpawnRadius = 5
 	d.SpawnRadius = 5
 	d.SpawnY = math.MaxInt16
 	d.StorageVersion = 9

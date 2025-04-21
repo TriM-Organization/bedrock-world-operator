@@ -1,5 +1,7 @@
 package define
 
+import "fmt"
+
 const (
 	DimensionIDOverworld = iota
 	DimensionIDNether
@@ -46,6 +48,6 @@ func (d Dimension) String() string {
 	case DimensionIDEnd:
 		return "End"
 	default:
-		return "Overworld"
+		return fmt.Sprintf("Custom (id=%d)", int(d))
 	}
 }
