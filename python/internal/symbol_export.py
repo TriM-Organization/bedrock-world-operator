@@ -6,14 +6,6 @@ from .types import as_c_bytes, as_python_bytes, as_c_string, as_python_string
 from ..utils import marshalNBT, unmarshalNBT
 
 
-LIB.FreeMemory.argtypes = [CPtr]
-LIB.FreeMemory.restype = None
-
-
-def free_memory(address: CPtr) -> None:
-    LIB.FreeMemory(address)
-
-
 LIB.NewChunk.argtypes = [CInt, CInt]
 LIB.ReleaseChunk.argtypes = [CInt]
 LIB.Chunk_Biome.argtypes = [CInt, CInt, CInt, CInt]
@@ -174,6 +166,7 @@ LIB.LoadChunkPayloadOnly.argtypes = [CInt, CInt, CInt, CInt]
 LIB.LoadChunk.argtypes = [CInt, CInt, CInt, CInt]
 LIB.SaveChunkPayloadOnly.argtypes = [CInt, CInt, CInt, CInt, CSlice]
 LIB.SaveChunk.argtypes = [CInt, CInt, CInt, CInt, CInt]
+LIB.LoadSubChunk.argtypes = [CInt, CInt, CInt, CInt, CInt]
 
 LIB.NewBedrockWorld.restype = CInt
 LIB.ReleaseBedrockWorld.restype = None
@@ -186,6 +179,7 @@ LIB.LoadChunkPayloadOnly.restype = CSlice
 LIB.LoadChunk.restype = CInt
 LIB.SaveChunkPayloadOnly.restype = CString
 LIB.SaveChunk.restype = CString
+LIB.LoadSubChunk.restype = CInt
 
 
 def new_bedrock_world(dir: str) -> int:
@@ -267,3 +261,13 @@ def save_chunk(id: int, dm: int, x: int, z: int, chunk_id: int) -> str:
     return as_python_string(
         LIB.SaveChunk(CInt(id), CInt(dm), CInt(x), CInt(z), CInt(chunk_id))
     )
+
+
+def load_sub_chunk(
+    id: int,
+    dim: int,
+    x: int,
+    y: int,
+    z: int,
+) -> int:
+    return int(LIB.LoadSubChunk(CInt(id), CInt(dim), CInt(x), CInt(y), CInt(z)))

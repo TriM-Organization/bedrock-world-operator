@@ -1,28 +1,39 @@
 import ctypes, struct
+import time
 
 LIB = ctypes.cdll.LoadLibrary("python/out.dll")
 
 CPtr = ctypes.c_void_p
 CSlice = CPtr
-CString = ctypes.c_char_p
+CString = CPtr
 CInt = ctypes.c_int
 CLongLong = ctypes.c_longlong
 
 
-def as_c_bytes(b: bytes) -> ctypes.c_char_p:
-    return ctypes.c_char_p(struct.pack("<I", len(b)) + b)
+LIB.FreeMemory.argtypes = [CPtr]
+LIB.FreeMemory.restype = None
+
+
+def free_memory(address: CPtr) -> None:
+    LIB.FreeMemory(address)
+
+
+def as_c_bytes(b: bytes) -> CSlice:
+    return ctypes.cast(ctypes.c_char_p(struct.pack("<I", len(b)) + b), CSlice)
 
 
 def as_python_bytes(slice: CSlice) -> bytes:
     l = struct.unpack("<I", ctypes.string_at(slice, 4))[0]
-    return ctypes.string_at(slice, 4 + l)[4:]
+    result = ctypes.string_at(slice, 4 + l)[4:]
+    free_memory(slice)
+    return result
 
 
 def as_c_string(string: str) -> CString:
-    return CString(bytes(string, encoding="utf-8"))
+    return ctypes.cast(ctypes.c_char_p(bytes(string, encoding="utf-8")), CString)
 
 
-def as_python_string(c_string: bytes) -> str:
-    if c_string is None:
-        return ""
-    return c_string.decode(encoding="utf-8")
+def as_python_string(c_string: CString) -> str:
+    result = ctypes.c_char_p(c_string).value.decode(encoding="utf-8")  # type: ignore
+    free_memory(c_string)
+    return result
