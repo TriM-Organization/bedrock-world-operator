@@ -7,7 +7,6 @@ import (
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 	world_define "github.com/YingLunTown-DreamLand/bedrock-world-operator/world/define"
-	"github.com/df-mc/goleveldb/leveldb"
 )
 
 // LoadChunkPayloadOnly loads a chunk at the position passed from the leveldb database.
@@ -18,15 +17,19 @@ func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define
 	subchunksBytes = make([][]byte, (dm.Height()>>4)+1)
 	// This key is where the version of a chunk resides. The chunk version has changed many times, without any
 	// actual substantial changes, so we don't check this.
-	_, err = b.Get(world_define.Sum(dm, position, world_define.KeyVersion))
-	if err == leveldb.ErrNotFound {
+
+	data, err := b.Get(world_define.Sum(dm, position, world_define.KeyVersion))
+
+	if data == nil && err == nil {
 		// The new key was not found, so we try the old key.
-		if _, err = b.Get(world_define.Sum(dm, position, world_define.KeyVersionOld)); err != nil {
+		data, err = b.Get(world_define.Sum(dm, position, world_define.KeyVersionOld))
+		if data == nil && err == nil {
 			return nil, false, nil
 		}
 	} else if err != nil {
 		return nil, true, fmt.Errorf("error reading version: %w", err)
 	}
+
 	for i := range subchunksBytes {
 		subchunksBytes[i], err = b.Get(
 			world_define.Sum(
@@ -34,7 +37,7 @@ func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define
 				world_define.KeySubChunkData, uint8(i+(dm.Range()[0]>>4)),
 			),
 		)
-		if err == leveldb.ErrNotFound {
+		if subchunksBytes[i] == nil && err == nil {
 			// No sub chunk present at this Y level. We skip this one and move to the next, which might still
 			// be present.
 			continue
@@ -42,6 +45,7 @@ func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define
 			return nil, true, fmt.Errorf("error reading sub chunk data %v: %w", i, err)
 		}
 	}
+
 	return subchunksBytes, true, err
 }
 
