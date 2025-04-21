@@ -41,8 +41,8 @@ def state_to_runtime_id(
     writer = BytesIO()
     marshalNBT.MarshalPythonNBTObjectToWriter(writer, block_states, "")
 
-    payload = LIB.StateToRuntimeID(
-        as_c_string(block_name), as_c_bytes(writer.getvalue())
+    payload = as_python_bytes(
+        LIB.StateToRuntimeID(as_c_string(block_name), as_c_bytes(writer.getvalue()))
     )
     reader = BytesIO(payload)
 

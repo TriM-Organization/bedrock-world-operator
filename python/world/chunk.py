@@ -11,11 +11,11 @@ from ..internal.symbol_export_chunk import (
     chunk_sub_chunk,
     chunk_sub_index,
     chunk_sub_y,
+    new_chunk as nc,
     release_chunk,
 )
 from ..world.define import Range
 from ..world.sub_chunk import SubChunk
-from ..internal.symbol_export_chunk import new_chunk as nc
 
 
 class ChunkBase:
@@ -27,7 +27,7 @@ class ChunkBase:
         self._chunk_id = -1
 
     def __del__(self):
-        if self._chunk_id >= 0:
+        if self._chunk_id >= 0 and not release_chunk is None:
             release_chunk(self._chunk_id)
 
 

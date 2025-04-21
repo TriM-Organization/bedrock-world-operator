@@ -270,7 +270,11 @@ def save_full_sub_chunk_blob_hash(
         writer.write(i[0].to_bytes())
         writer.write(struct.pack("<Q", i[1]))
 
-    return as_python_string(LIB.SaveFullSubChunkBlobHash(CInt(id)))
+    return as_python_string(
+        LIB.SaveFullSubChunkBlobHash(
+            CInt(id), CInt(dm), CInt(x), CInt(z), as_c_bytes(writer.getvalue())
+        )
+    )
 
 
 def load_sub_chunk_blob_hash(id: int, dm: int, x: int, y: int, z: int) -> int:

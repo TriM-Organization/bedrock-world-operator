@@ -1,11 +1,11 @@
 from ..internal.symbol_export_sub_chunk import (
+    new_sub_chunk as nsc,
     release_sub_chunk,
     sub_chunk_block,
     sub_chunk_empty,
     sub_chunk_equals,
     sub_chunk_set_block,
 )
-from ..internal.symbol_export_sub_chunk import new_sub_chunk as nsc
 
 
 class SubChunkBase:
@@ -17,7 +17,7 @@ class SubChunkBase:
         self._sub_chunk_id = -1
 
     def __del__(self):
-        if self._sub_chunk_id >= 0:
+        if self._sub_chunk_id >= 0 and not release_sub_chunk is None:
             release_sub_chunk(self._sub_chunk_id)
 
 

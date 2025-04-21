@@ -29,7 +29,7 @@ func (s *SimpleManager[T]) AddObject(t T) int {
 
 func (s *SimpleManager[T]) LoadObject(id int) *T {
 	s.mu.RLock()
-	defer s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.mapping[id]
 }
 

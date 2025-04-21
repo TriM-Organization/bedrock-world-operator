@@ -1,4 +1,5 @@
 from attr import dataclass
+import nbtlib
 
 
 DIMENSION_OVERWORLD = 0
@@ -113,6 +114,14 @@ class Dimension:
                 return "End"
             case _:
                 return f"Custom (id={self.dm})"
+
+
+@dataclass
+class BlockStates:
+    """BlockState holds a combination of a name and properties."""
+
+    Name: str = ""
+    States: nbtlib.tag.Compound = nbtlib.tag.Compound()
 
 
 @dataclass

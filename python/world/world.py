@@ -13,6 +13,7 @@ from ..internal.symbol_export_world import (
     load_sub_chunk,
     load_sub_chunk_blob_hash,
     load_time_stamp,
+    new_bedrock_world as nbw,
     release_bedrock_world,
     save_biomes,
     save_chunk,
@@ -48,7 +49,7 @@ class WorldBase:
         self._world_id = -1
 
     def __del__(self):
-        if self._world_id >= 0:
+        if self._world_id >= 0 and not release_bedrock_world is None:
             release_bedrock_world(self._world_id)
 
     def close_world(self):
@@ -585,3 +586,25 @@ class World(WorldBase):
         )
         if len(err) > 0:
             raise Exception(err)
+
+
+def new_world(dir: str) -> tuple[World | None, bool]:
+    """
+    new_world creates a new provider reading and writing from/to files under the path
+    passed using default options. If a world is present at the path, new_world will
+    parse its data and initialise the world with it.
+
+    Args:
+        dir (str): The minecraft bedrock leveldb path (folder path)
+
+    Returns:
+        tuple[World | None, bool]: If database can't be initialise or the level dat is cannot be
+                                   parsed, then return (None, False).
+                                   Otherwise, return the bedrock world and True.
+    """
+    world_id = nbw(dir)
+    if world_id == -1:
+        return (None, False)
+    w = World()
+    w._world_id = world_id
+    return (w, True)
