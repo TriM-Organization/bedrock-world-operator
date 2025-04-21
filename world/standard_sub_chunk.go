@@ -9,7 +9,7 @@ import (
 	world_define "github.com/YingLunTown-DreamLand/bedrock-world-operator/world/define"
 )
 
-// LoadSubChunk loads the payload of a sub chunk at the position from the leveldb database.
+// LoadSubChunk loads a sub chunk at the position from the leveldb database.
 func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChunkPos) *chunk.SubChunk {
 	chunkPos := define.ChunkPos{position[0], position[2]}
 
@@ -31,7 +31,7 @@ func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChun
 	return subChunk
 }
 
-// SaveSubChunk saves a sub chunk  at the position passed to the leveldb database.
+// SaveSubChunk saves a sub chunk at the position passed to the leveldb database.
 // Its version is written as the version in the chunkVersion constant.
 func (b *BedrockWorld) SaveSubChunk(dm define.Dimension, position define.SubChunkPos, c *chunk.SubChunk) error {
 	chunkPos := define.ChunkPos{position[0], position[2]}

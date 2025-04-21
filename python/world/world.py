@@ -1,8 +1,30 @@
+import nbtlib
+from ..world.chunk import Chunk
+from ..world.sub_chunk import SubChunk
 from ..internal.symbol_export_world import (
     load_biomes,
+    load_chunk,
     load_chunk_payload_only,
+    load_delta_update,
+    load_delta_update_time_stamp,
+    load_full_sub_chunk_blob_hash,
+    load_nbt,
+    load_nbt_payload_only,
+    load_sub_chunk,
+    load_sub_chunk_blob_hash,
+    load_time_stamp,
     release_bedrock_world,
     save_biomes,
+    save_chunk,
+    save_chunk_payload_only,
+    save_delta_update,
+    save_delta_update_time_stamp,
+    save_full_sub_chunk_blob_hash,
+    save_nbt,
+    save_nbt_payload_only,
+    save_sub_chunk,
+    save_sub_chunk_blob_hash,
+    save_time_stamp,
     world_close_world,
     world_get_level_dat,
     world_modify_level_dat,
@@ -13,7 +35,7 @@ from ..internal.symbol_export_world_underlying import (
     db_has,
     db_put,
 )
-from ..world.define import ChunkPos, Dimension
+from ..world.define import ChunkPos, Dimension, HashWithPosY, SubChunkPos
 from ..world.level_dat import LevelDat
 
 
@@ -172,3 +194,394 @@ class World(WorldBase):
                          If meet error or not exist, then return empty list.
         """
         return load_chunk_payload_only(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+
+    def load_chunk(
+        self, dm: Dimension, chunk_pos: ChunkPos
+    ) -> tuple[Chunk | None, bool]:
+        """load_chunk loads a chunk at the position passed from the leveldb database.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+
+        Returns:
+            tuple[Chunk | None, bool]: If current world or the chunk is not exist, then return (None, False).
+                                       Otherwise, return the target chunk and True.
+        """
+        chunk_id = load_chunk(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+        if chunk_id == -1:
+            return (None, False)
+        c = Chunk()
+        c._chunk_id = chunk_id
+        return (c, True)
+
+    def save_chunk_payload_only(
+        self, dm: Dimension, chunk_pos: ChunkPos, payload: list[bytes]
+    ):
+        """
+        save_chunk_payload_only saves a serialized chunk at the position passed to the leveldb database.
+        Note that we also write the version of this chunk.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+            payload (list[bytes]): The payload of each sub chunk.
+
+        Raises:
+            Exception: When failed to save payload chunk.
+        """
+        err = save_chunk_payload_only(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z, payload
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def save_chunk(self, dm: Dimension, chunk_pos: ChunkPos, chunk: Chunk):
+        """
+        save_chunk saves a chunk at the position passed to the leveldb database.
+        Note that we also write the version of this chunk.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+            chunk (Chunk): The chunk we want to save to the game saves.
+
+        Raises:
+            Exception: When failed to save chunk.
+        """
+        err = save_chunk(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z, chunk._chunk_id
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def load_sub_chunk(
+        self, dm: Dimension, sub_chunk_pos: SubChunkPos
+    ) -> tuple[SubChunk | None, bool]:
+        """load_sub_chunk loads a sub chunk at the position from the leveldb database.
+
+        Args:
+            dm (Dimension): The dimension of this sub chunk.
+            sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
+
+        Returns:
+            tuple[SubChunk | None, bool]: If current world or the sub chunk is not exist, then return (None, False).
+                                          Otherwise, return the target sub chunk and True.
+        """
+        sub_chunk_id = load_sub_chunk(
+            self._world_id, dm.dm, sub_chunk_pos.x, sub_chunk_pos.y, sub_chunk_pos.z
+        )
+        if sub_chunk_id == -1:
+            return (None, False)
+        s = SubChunk()
+        s._sub_chunk_id = sub_chunk_id
+        return (s, True)
+
+    def save_sub_chunk(
+        self, dm: Dimension, sub_chunk_pos: SubChunkPos, sub_chunk: SubChunk
+    ):
+        """
+        save_sub_chunk saves a sub chunk at the position passed to the leveldb database.
+        Note that we also write the version of the whole chunk where this sub chunk is in.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
+            sub_chunk (SubChunk): The sub chunk we want to save to the game saves.
+
+        Raises:
+            Exception: When failed to save sub chunk.
+        """
+        err = save_sub_chunk(
+            self._world_id,
+            dm.dm,
+            sub_chunk_pos.x,
+            sub_chunk_pos.y,
+            sub_chunk_pos.z,
+            sub_chunk._sub_chunk_id,
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def load_nbt_payload_only(self, dm: Dimension, chunk_pos: ChunkPos) -> bytes:
+        """
+        load_nbt_payload_only loads payload of all block entities from the chunk position passed.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+
+        Returns:
+            bytes: The raw NBT payload of all block entities in this chunk.
+                   If meet error or not exist, then return empty bytes.
+        """
+        return load_nbt_payload_only(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+
+    def load_nbt(self, dm: Dimension, chunk_pos: ChunkPos) -> list[nbtlib.tag.Compound]:
+        """load_nbt loads all block entities from the chunk position passed.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+
+        Returns:
+            list[nbtlib.tag.Compound]: The decoded block entities NBT of this chunk.
+                                       If meet error or not exist, then return empty list.
+        """
+        return load_nbt(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+
+    def save_nbt_payload_only(self, dm: Dimension, chunk_pos: ChunkPos, payload: bytes):
+        """save_nbt_payload_only saves a serialized NBT data to the chunk position passed.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+            payload (bytes): The raw payload of all block entities NBT in this chunk
+
+        Raises:
+            Exception: When failed to save payload NBT
+        """
+        err = save_nbt_payload_only(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z, payload
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def save_nbt(
+        self, dm: Dimension, chunk_pos: ChunkPos, nbts: list[nbtlib.tag.Compound]
+    ):
+        """save_nbt saves all block NBT data to the chunk position passed.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+            nbts (list[nbtlib.tag.Compound]): A list holds all block entities NBT data of this chunk.
+
+        Raises:
+            Exception: When failed to save NBT
+        """
+        err = save_nbt(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z, nbts)
+        if len(err) > 0:
+            raise Exception(err)
+
+    def load_delta_update(
+        self,
+        dm: Dimension,
+        chunk_pos: ChunkPos,
+    ) -> bytes:
+        """
+        load_delta_update load a custom purpose payload which related a chunk from leveldb database.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+
+        Returns:
+            bytes: The delta update payload of this chunk.
+                   If meet error or not exist, then return empty bytes.
+        """
+        return load_delta_update(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+
+    def save_delta_update(self, dm: Dimension, chunk_pos: ChunkPos, payload: bytes):
+        """
+        save_delta_update save a custom purpose payload which related a chunk to leveldb database.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+            payload (bytes): The delta update payload want to set for this chunk.
+
+        Raises:
+            Exception: When failed to save delta update payload.
+        """
+        err = save_delta_update(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z, payload
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def load_time_stamp(self, dm: Dimension, chunk_pos: ChunkPos) -> int:
+        """
+        load_time_stamp load the last update unix time of a chunk whose in chunk_pos and dm.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+
+        Returns:
+            int: The last update unix time of this chunk.
+                 Return -1 for current world is not exist,
+                 Return 0 for the time stamp is not exist.
+        """
+        return load_time_stamp(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+
+    def save_time_stamp(self, dm: Dimension, chunk_pos: ChunkPos, time_stamp: int):
+        """
+        save_time_stamp save the last update unix time of a chunk whose in chunk_pos and dm.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+            time_stamp (int): The last update unix time that want to set for this chunk.
+
+        Raises:
+            Exception: When failed to save time stamp.
+        """
+        err = save_time_stamp(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z, time_stamp
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def load_delta_time_stamp(self, dm: Dimension, chunk_pos: ChunkPos) -> int:
+        """
+        load_delta_time_stamp load the last update unix time of a delta update
+        which related to a chunk in chunk_pos and dm.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of the chunk.
+            chunk_pos (ChunkPos): The chunk pos of the chunk.
+
+        Returns:
+            int: The last update unix time of the delta update.
+                 Return -1 for current world is not exist,
+                 Return 0 for the time stamp is not exist.
+        """
+        return load_delta_update_time_stamp(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z
+        )
+
+    def save_delta_time_stamp(
+        self, dm: Dimension, chunk_pos: ChunkPos, time_stamp: int
+    ):
+        """
+        save_time_stamp save the last update unix time of a delta update which related to chunk in chunk_pos and dm.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of the chunk.
+            chunk_pos (ChunkPos): The chunk pos of the chunk.
+            time_stamp (int): The last update unix time that want to set for the delta update.
+
+        Raises:
+            Exception: When failed to save time stamp.
+        """
+        err = save_delta_update_time_stamp(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z, time_stamp
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def load_full_sub_chunk_blob_hash(
+        self,
+        dm: Dimension,
+        chunk_pos: ChunkPos,
+    ) -> list[HashWithPosY]:
+        """
+        load_full_sub_chunk_blob_hash loads the blob hash of a chunk.
+        Actually speaking, this is hash for multiple sub chunks
+        (each sub chunks who have payload will have a hash value), not just a completely chunk.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+
+        Returns:
+            list[HashWithPosY]: The hashes of this chunk.
+                                If not exist or meet error, then return empty list.
+        """
+        hashes = load_full_sub_chunk_blob_hash(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z
+        )
+        result = []
+        for i in hashes:
+            result.append(HashWithPosY(i[1], i[0]))
+        return result
+
+    def save_full_sub_chunk_blob_hash(
+        self, dm: Dimension, chunk_pos: ChunkPos, new_hash: list[HashWithPosY]
+    ):
+        """
+        save_full_sub_chunk_blob_hash update the blob hash of a chunk.
+        It's necessary to say that this is not a hash of a completely chunk,
+        but are multiple hash for each sub chunk who have payload in this chunk.
+        Note that:
+            - If len(new_hash) is 0, then the blob hash
+              data of this chunk will be delete.
+            - Zero hash is allowed.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this chunk.
+            chunk_pos (ChunkPos): The chunk pos of this chunk.
+            hashes (list[HashWithPosY]): The hashes want to save to this chunk.
+
+        Raises:
+            Exception: When failed to save blob hash of this chunk.
+        """
+        err = save_full_sub_chunk_blob_hash(
+            self._world_id,
+            dm.dm,
+            chunk_pos.x,
+            chunk_pos.z,
+            [(i.PosY, i.Hash) for i in new_hash],
+        )
+        if len(err) > 0:
+            raise Exception(err)
+
+    def load_sub_chunk_blob_hash(
+        self,
+        dm: Dimension,
+        sub_chunk_pos: SubChunkPos,
+    ) -> int:
+        """
+        load_sub_chunk_blob_hash loads the blob hash of a sub chunk that in sub_chunk_pos and in dm dimension.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this sub chunk.
+            sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
+
+        Returns:
+            int: The blob hash value of target sub chunk.
+                 If meet error or not exist, then return -1.
+                 Return 0 for a sub chunk that full of air.
+        """
+        return load_sub_chunk_blob_hash(
+            self._world_id, dm.dm, sub_chunk_pos.x, sub_chunk_pos.y, sub_chunk_pos.z
+        )
+
+    def save_sub_chunk_blob_hash(
+        self,
+        dm: Dimension,
+        sub_chunk_pos: SubChunkPos,
+        hash: int,
+    ):
+        """
+        save_sub_chunk_blob_hash save the hash for sub chunk which in sub_chunk_pos and in dm dimension.
+        Note that zero hash is allowed.
+        This is not used by standard Minecraft, and just for some own purpose.
+
+        Args:
+            dm (Dimension): The dimension of this sub chunk.
+            sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
+
+        Raises:
+            Exception: When failed to save blob hash of this sub chunk.
+        """
+        err = save_sub_chunk_blob_hash(
+            self._world_id,
+            dm.dm,
+            sub_chunk_pos.x,
+            sub_chunk_pos.y,
+            sub_chunk_pos.z,
+            hash,
+        )
+        if len(err) > 0:
+            raise Exception(err)

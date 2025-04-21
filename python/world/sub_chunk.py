@@ -5,7 +5,6 @@ from ..internal.symbol_export_sub_chunk import (
     sub_chunk_equals,
     sub_chunk_set_block,
 )
-from ..world.define import Range
 from ..internal.symbol_export_sub_chunk import new_sub_chunk as nsc
 
 

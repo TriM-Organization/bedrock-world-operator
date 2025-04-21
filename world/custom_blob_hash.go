@@ -52,11 +52,9 @@ func (b *BedrockWorld) LoadSubChunkBlobHash(dm define.Dimension, position define
 }
 
 // SaveFullSubChunkBlobHash update the blob hash of a chunk.
-// Note that for all element in newHash,
-// element.PosY must bigger than -1.
 //
 // Note that:
-//   - If len(newHash) is 0, then the blob hash.
+//   - If len(newHash) is 0, then the blob hash
 //     data of this chunk will be delete.
 //   - Zero hash is allowed.
 func (b *BedrockWorld) SaveFullSubChunkBlobHash(dm define.Dimension, position define.ChunkPos, newHash []define.HashWithPosY) error {

@@ -2,19 +2,16 @@ package world
 
 import (
 	"encoding/binary"
-	"time"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 	world_define "github.com/YingLunTown-DreamLand/bedrock-world-operator/world/define"
 )
 
-var TimeStampNotFound = time.Unix(0, 0).Unix()
-
 func (b *BedrockWorld) loadTimeStampByKey(dm define.Dimension, position define.ChunkPos, key ...byte) (timeStamp int64) {
 	keyBytes := world_define.Sum(dm, position, key...)
 	data, err := b.Get(keyBytes)
 	if err != nil || len(data) == 0 {
-		return TimeStampNotFound
+		return 0
 	}
 	return int64(binary.LittleEndian.Uint64(data))
 }
