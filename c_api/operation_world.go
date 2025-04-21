@@ -8,6 +8,7 @@ import (
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world"
+	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world/leveldat"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
@@ -28,7 +29,7 @@ func ReleaseBedrockWorld(id C.int) {
 }
 
 //export World_Close
-func World_Close(id C.int, readOnly C.int) *C.char {
+func World_Close(id C.int) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("World_Close: World not found")
@@ -50,6 +51,10 @@ func World_GetLevelDat(id C.int) *C.char {
 	}
 
 	dat := (*w).LevelDat()
+	if dat == nil {
+		return asCbytes(nil)
+	}
+
 	buf := bytes.NewBuffer(nil)
 	nbt.NewEncoderWithEncoding(buf, nbt.LittleEndian).Encode(dat)
 
@@ -58,12 +63,20 @@ func World_GetLevelDat(id C.int) *C.char {
 
 //export World_ModifyLevelDat
 func World_ModifyLevelDat(id C.int, payload *C.char) *C.char {
+	var dat leveldat.Data
+
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("World_ModifyLevelDat: World not found")
 	}
 
-	err := (*w).UpdateLevelDat()
+	err := nbt.NewDecoderWithEncoding(bytes.NewBuffer(asGoBytes(payload)), nbt.LittleEndian).Decode(&dat)
+	if err != nil {
+		return C.CString(fmt.Sprintf("World_ModifyLevelDat: %v", err))
+	}
+
+	*(*w).LevelDat() = dat
+	err = (*w).UpdateLevelDat()
 	if err != nil {
 		return C.CString(fmt.Sprintf("World_ModifyLevelDat: %v", err))
 	}

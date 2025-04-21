@@ -1,5 +1,7 @@
-import ctypes
-import struct
+from io import BytesIO
+from ..utils import marshalNBT, unmarshalNBT
+import ctypes, struct, nbtlib
+
 
 LIB = ctypes.cdll.LoadLibrary("python/out.dll")
 
@@ -181,6 +183,112 @@ def sub_chunk_equals(id: int, another_sub_chunk_id: int) -> int:
 def sub_chunk_set_block(
     id: int, x: int, y: int, z: int, layer: int, block_runtime_id: int
 ) -> None:
-    return LIB.SubChunk_SetBlock(
+    LIB.SubChunk_SetBlock(
         CInt(id), CInt(x), CInt(y), CInt(z), CInt(layer), CInt(block_runtime_id)
+    )
+
+
+LIB.NewBedrockWorld.argtypes = [CString]
+LIB.ReleaseBedrockWorld.argtypes = [CInt]
+LIB.World_Close.argtypes = [CInt]
+LIB.World_GetLevelDat.argtypes = [CInt]
+LIB.World_ModifyLevelDat.argtypes = [CInt, CSlice]
+LIB.LoadBiomes.argtypes = [CInt, CInt, CInt, CInt]
+LIB.SaveBiomes.argtypes = [CInt, CInt, CInt, CInt, CSlice]
+LIB.LoadChunkPayloadOnly.argtypes = [CInt, CInt, CInt, CInt]
+LIB.LoadChunk.argtypes = [CInt, CInt, CInt, CInt]
+LIB.SaveChunkPayloadOnly.argtypes = [CInt, CInt, CInt, CInt, CSlice]
+LIB.SaveChunk.argtypes = [CInt, CInt, CInt, CInt, CInt]
+
+LIB.NewBedrockWorld.restype = CInt
+LIB.ReleaseBedrockWorld.restype = None
+LIB.World_Close.restype = CString
+LIB.World_GetLevelDat.restype = CSlice
+LIB.World_ModifyLevelDat.restype = CString
+LIB.LoadBiomes.restype = CSlice
+LIB.SaveBiomes.restype = CString
+LIB.LoadChunkPayloadOnly.restype = CSlice
+LIB.LoadChunk.restype = CInt
+LIB.SaveChunkPayloadOnly.restype = CString
+LIB.SaveChunk.restype = CString
+
+
+def new_bedrock_world(dir: str) -> int:
+    return int(LIB.NewBedrockWorld(as_c_string(dir)))
+
+
+def release_bedrock_world(id: int) -> None:
+    LIB.ReleaseBedrockWorld(CInt(id))
+
+
+def world_close(id: int) -> str:
+    return as_python_string(LIB.World_Close(CInt(id)))
+
+
+def world_get_level_dat(id: int) -> tuple[nbtlib.tag.Compound | None, bool]:
+    payload = as_python_bytes(LIB.World_GetLevelDat(CInt(id)))
+    if len(payload) == 0:
+        return (None, False)
+
+    level_dat_data, _ = unmarshalNBT.UnMarshalBufferToPythonNBTObject(BytesIO(payload))
+    return (level_dat_data, True)  # type: ignore
+
+
+def world_modify_level_dat(id: int, level_dat: nbtlib.tag.Compound) -> str:
+    writer = BytesIO()
+    marshalNBT.MarshalPythonNBTObjectToWriter(writer, level_dat, "")
+    return as_python_string(
+        LIB.World_ModifyLevelDat(CInt(id), as_c_bytes(writer.getvalue()))
+    )
+
+
+def load_biomes(id: int, dm: int, x: int, z: int) -> bytes:
+    return as_python_bytes(LIB.LoadBiomes(CInt(id), CInt(dm), CInt(x), CInt(z)))
+
+
+def save_biomes(id: int, dm: int, x: int, z: int, payload: bytes) -> str:
+    return as_python_string(
+        LIB.SaveBiomes(CInt(id), CInt(dm), CInt(x), CInt(z), as_c_bytes(payload))
+    )
+
+
+def load_chunk_payload_only(id: int, dm: int, x: int, z: int) -> list[bytes]:
+    payload = as_python_bytes(
+        LIB.LoadChunkPayloadOnly(CInt(id), CInt(dm), CInt(x), CInt(z))
+    )
+    result = []
+
+    ptr = 0
+    while ptr < len(payload):
+        l: int = struct.unpack("<I", payload[ptr : ptr + 4])[0]
+        result.append(payload[ptr + 4 : ptr + 4 + l])
+        ptr = ptr + 4 + l
+
+    return result
+
+
+def load_chunk(id: int, dm: int, x: int, z: int) -> int:
+    return int(LIB.LoadChunk(CInt(id), CInt(dm), CInt(x), CInt(z)))
+
+
+def save_chunk_payload_only(
+    id: int, dm: int, x: int, z: int, payload: list[bytes]
+) -> str:
+    writer = BytesIO()
+
+    for i in payload:
+        l = struct.pack("<I", len(i))
+        writer.write(l)
+        writer.write(i)
+
+    return as_python_string(
+        LIB.SaveChunkPayloadOnly(
+            CInt(id), CInt(dm), CInt(x), CInt(z), as_c_bytes(writer.getvalue())
+        )
+    )
+
+
+def save_chunk(id: int, dm: int, x: int, z: int, chunk_id: int) -> str:
+    return as_python_string(
+        LIB.SaveChunk(CInt(id), CInt(dm), CInt(x), CInt(z), CInt(chunk_id))
     )
