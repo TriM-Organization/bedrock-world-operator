@@ -49,7 +49,8 @@ type CustomBedrockWorld interface {
 }
 
 // World is a interface that implements
-// standard bedrock and some custom features.
+// standard bedrock world and some custom
+// features.
 type World interface {
 	StandardBedrockWorld
 	CustomBedrockWorld
