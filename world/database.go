@@ -21,8 +21,14 @@ func (db *database) Has(key []byte) (has bool, err error) {
 // The returned slice is its own copy, it is safe to modify the contents
 // of the returned slice.
 // It is safe to modify the contents of the argument after Get returns.
+//
+// Note that if the key is not exist, then return nil value and nil error.
 func (db *database) Get(key []byte) (value []byte, err error) {
-	return db.ldb.Get(key, nil)
+	value, err = db.ldb.Get(key, nil)
+	if err == leveldb.ErrNotFound {
+		return nil, nil
+	}
+	return
 }
 
 // Put sets the value for the given key. It overwrites any previous value

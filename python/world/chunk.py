@@ -122,7 +122,7 @@ class Chunk(ChunkBase):
                                 Otherwise, return the range and True.
         """
         start_range, end_range, ok = chunk_range(self._chunk_id)
-        if ok:
+        if not ok:
             return (Range(0, 0), False)
         return (Range(start_range, end_range), True)
 

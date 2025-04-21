@@ -18,13 +18,13 @@ type Dimension int32
 func (d Dimension) Range() Range {
 	switch int32(d) {
 	case DimensionIDOverworld:
-		return Range{-64, 139}
+		return Range{-64, 319}
 	case DimensionIDNether:
 		return Range{0, 127}
 	case DimensionIDEnd:
 		return Range{0, 255}
 	default:
-		return Range{-64, 139}
+		return Range{-64, 319}
 	}
 }
 

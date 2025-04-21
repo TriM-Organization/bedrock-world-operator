@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
@@ -41,11 +42,17 @@ func init() {
 		}
 		return "", nil, false
 	}
+
 	StateToRuntimeID = func(name string, properties map[string]any) (runtimeID uint32, found bool) {
+		if !strings.Contains(name, "minecraft:") {
+			name = "minecraft:" + name
+		}
+
 		networkRuntimeID := ComputeBlockHash(name, properties)
 		if s, ok := blockStateMapping[networkRuntimeID]; ok {
 			return s.rid, true
 		}
+
 		networkRuntimeID = ComputeBlockHash(name, blockProperties[name])
 		s, ok := blockStateMapping[networkRuntimeID]
 		return s.rid, ok

@@ -12,6 +12,9 @@ func (b *BedrockWorld) LoadBiomes(dm define.Dimension, position define.ChunkPos)
 	if err != nil {
 		return nil, err
 	}
+	if len(biomes) == 0 {
+		return nil, nil
+	}
 	// The first 512 bytes is a heightmap (16*16 int16s), the biomes follow. We
 	// calculate a heightmap on startup so the heightmap can be discarded.
 	if n := len(biomes); n <= 512 {
