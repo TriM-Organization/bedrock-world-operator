@@ -317,11 +317,11 @@ class LevelDat:
                 "keepinventory": nbtlib.tag.Byte(self.keep_inventory),
                 "lastOpenedWithVersion": nbtlib.tag.List(
                     [
-                        int(self.last_opened_with_version[0]),
-                        int(self.last_opened_with_version[1]),
-                        int(self.last_opened_with_version[2]),
-                        int(self.last_opened_with_version[3]),
-                        int(self.last_opened_with_version[4]),
+                        nbtlib.tag.Int(self.last_opened_with_version[0]),
+                        nbtlib.tag.Int(self.last_opened_with_version[1]),
+                        nbtlib.tag.Int(self.last_opened_with_version[2]),
+                        nbtlib.tag.Int(self.last_opened_with_version[3]),
+                        nbtlib.tag.Int(self.last_opened_with_version[4]),
                     ]
                 ),
                 "lightningLevel": nbtlib.tag.Float(self.lightning_level),
