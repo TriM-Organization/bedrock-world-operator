@@ -2,8 +2,12 @@ package main
 
 import "C"
 import (
+	"bytes"
 	"encoding/binary"
 	"unsafe"
+
+	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
+	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
 )
 
 func asCbool(b bool) C.int {
@@ -27,4 +31,36 @@ func asCbytes(b []byte) *C.char {
 func asGoBytes(p *C.char) []byte {
 	l := binary.LittleEndian.Uint32(C.GoBytes(unsafe.Pointer(p), 4))
 	return C.GoBytes(unsafe.Pointer(p), C.int(4+l))[4:]
+}
+
+func fromSubChunkPayload(rangeStart C.int, rangeEnd C.int, payload *C.char, e chunk.Encoding) (complexReturn *C.char) {
+	s, ind, err := chunk.DecodeSubChunk(
+		bytes.NewBuffer(asGoBytes(payload)),
+		define.Range{int(rangeStart), int(rangeEnd)},
+		e,
+	)
+	if err != nil {
+		// failed
+		return asCbytes([]byte{0})
+	}
+
+	idBytes := make([]byte, 4)
+	binary.LittleEndian.PutUint32(idBytes, uint32(savedSubChunk.AddObject(s)))
+
+	// ok
+	result := []byte{1, byte(ind)}
+	result = append(result, idBytes...)
+
+	return asCbytes(result)
+}
+
+func subChunkPayload(subChunkId C.int, rangeStart C.int, rangeEnd C.int, ind C.int, e chunk.Encoding) *C.char {
+	r := define.Range{int(rangeStart), int(rangeEnd)}
+
+	s := savedSubChunk.LoadObject(int(subChunkId))
+	if s == nil {
+		return asCbytes(nil)
+	}
+
+	return asCbytes(chunk.EncodeSubChunk(*s, r, int(ind), e))
 }
