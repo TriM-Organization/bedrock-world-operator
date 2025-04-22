@@ -1,7 +1,5 @@
+from .load_dynamic_library import LIB
 import ctypes, struct
-
-
-LIB = ctypes.cdll.LoadLibrary("python/out.dll")
 
 CPtr = ctypes.c_void_p
 CSlice = CPtr

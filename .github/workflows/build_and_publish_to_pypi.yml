@@ -1,0 +1,74 @@
+name: Build and publish to pypi
+
+
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "version"
+  workflow_dispatch: {}
+
+
+
+jobs:
+  Builder:
+    runs-on: macos-latest
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set Up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.24'
+
+    - name: Install Dependencies
+      run: |
+        brew install mingw-w64
+        brew install messense/macos-cross-toolchains/x86_64-unknown-linux-gnu
+        brew install messense/macos-cross-toolchains/aarch64-unknown-linux-gnu
+        brew install make
+
+    - name: Build and Move Files
+      run: |
+        cd c_api
+        make all
+        rm -rf dynamic_libs/*.h
+        rm -rf ../python/package/dynamic_libs
+        mv dynamic_libs ../python/package
+
+    - name: Submit Changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        default_author: github_actions
+        message: 'Build C depends and submit'
+  
+  
+  
+  Publisher:
+    runs-on: ubuntu-latest
+    needs: Builder
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set Up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+
+    - name: Build Package
+      run: python -m build --sdist --wheel --outdir dist/
+
+    - name: Publish Packages
+      uses: pypa/gh-action-pypi-publish@release/v1.12
+      with:
+        password: ${{ secrets.PIPY_API_TOKEN }}

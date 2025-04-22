@@ -178,7 +178,10 @@ class Chunk(ChunkBase):
         return result
 
     def sub_chunk(self, y: int) -> tuple[SubChunk | None, bool]:
-        """sub_chunk finds the correct SubChunk in the Chunk by a Y value.
+        """
+        sub_chunk finds the correct SubChunk in the Chunk by a Y value.
+        Note that it is allowed to edit this sub chunk, and then save
+        this whole chunk immediately without any other operation.
 
         Args:
             y (int): The relative y position of this block.
