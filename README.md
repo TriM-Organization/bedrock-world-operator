@@ -121,15 +121,15 @@ from nbtlib.tag import Compound
 
 
 # 🐍 Pypi Packages
-我们已将此存储库以 `bedrock-world-operator` 的名字上载到 `Pypi` ，您可以通过 `pip install bedrock-world-operator` 快速安装。
+我们已将此存储库以 **bedrock-world-operator** 的名字上载到 **Pypi** ，您可以通过 `pip install bedrock-world-operator` 快速安装。
 
 访问 [📦 bedrock-world-operator on Pypi](https://pypi.org/project/bedrock-world-operator) 以了解有关此库的更多信息。
 
-我们配置了自动化 `CD/CI 工作流` ，因此如果您是本项目的 `协作者` ，您可以通过更改 `version` 文件或通过手动触发的方式启动工作流，它会自动编译本项目并将将其上载到 `Pypi` 中。
+我们配置了自动化 **CD/CI 工作流**，因此如果您是本项目的协作者，您可以通过更改 **version** 文件或通过手动触发的方式启动工作流，它会自动编译本项目并将将其上载到 **Pypi** 中。
 
 
 
 
 
 # 其他
-本项目依照 [`MIT LICENSE`](./LICENSE) 许可证进行许可和授权。
+本项目依照 [MIT LICENSE](./LICENSE) 许可证进行许可和授权。
