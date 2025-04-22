@@ -1,5 +1,5 @@
 from .world.chunk import Chunk, new_chunk
-from .world.sub_chunk import SubChunk, new_sub_chunk
+from .world.sub_chunk import SubChunk, SubChunkWithIndex, new_sub_chunk
 from .world.world import World, new_world
 
 from .world.define import (
@@ -17,5 +17,13 @@ from .world.define import (
     HashWithPosY,
 )
 
-from .world.block_convert import runtime_id_to_state, state_to_runtime_id
+from .world.conversion import (
+    runtime_id_to_state,
+    state_to_runtime_id,
+    sub_chunk_network_payload,
+    from_sub_chunk_network_payload,
+    sub_chunk_disk_payload,
+    from_sub_chunk_disk_payload,
+)
+
 from nbtlib.tag import Compound

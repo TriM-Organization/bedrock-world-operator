@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
+	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
@@ -69,4 +70,24 @@ func StateToRuntimeID(name *C.char, states *C.char) (complexReturn *C.char) {
 	result = append(result, runtimeIDBytes...)
 
 	return asCbytes(result)
+}
+
+//export SubChunkNetworkPayload
+func SubChunkNetworkPayload(subChunkId C.int, rangeStart C.int, rangeEnd C.int, ind C.int) *C.char {
+	return subChunkPayload(subChunkId, rangeStart, rangeEnd, ind, chunk.NetworkEncoding)
+}
+
+//export FromSubChunkNetworkPayload
+func FromSubChunkNetworkPayload(rangeStart C.int, rangeEnd C.int, payload *C.char) (complexReturn *C.char) {
+	return fromSubChunkPayload(rangeStart, rangeEnd, payload, chunk.NetworkEncoding)
+}
+
+//export SubChunkDiskPayload
+func SubChunkDiskPayload(subChunkId C.int, rangeStart C.int, rangeEnd C.int, ind C.int) *C.char {
+	return subChunkPayload(subChunkId, rangeStart, rangeEnd, ind, chunk.DiskEncoding)
+}
+
+//export FromSubChunkDiskPayload
+func FromSubChunkDiskPayload(rangeStart C.int, rangeEnd C.int, payload *C.char) (complexReturn *C.char) {
+	return fromSubChunkPayload(rangeStart, rangeEnd, payload, chunk.DiskEncoding)
 }

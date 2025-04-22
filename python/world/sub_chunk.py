@@ -1,3 +1,4 @@
+from attr import dataclass
 from ..internal.symbol_export_sub_chunk import (
     new_sub_chunk as nsc,
     release_sub_chunk,
@@ -94,6 +95,26 @@ class SubChunk(SubChunkBase):
         err = sub_chunk_set_block(self._sub_chunk_id, x, y, z, layer, block_runtime_id)
         if len(err) > 0:
             raise Exception(err)
+
+
+@dataclass
+class SubChunkWithIndex:
+    """SubChunkWithIndex represents a sub chunk and its index in a whole chunk where this sub chunk is in.
+
+    Args:
+        sub_chunk (SubChunk): The sub chunk.
+        index (int): The index of this sub chunk, must bigger than -1.
+                     For example, for a block in (x, -63, z), than its
+                     sub chunk Y pos will be -63>>4 (-4).
+                     However, this is not the index of this sub chunk,
+                     we need do other compute to get the index:
+                     index = (-63>>4) - (r.start_range>>4)
+                           = (-63>>4) - (-64>>4)
+                           = 0
+    """
+
+    index: int = 0
+    sub_chunk: SubChunk = SubChunk()
 
 
 def new_sub_chunk() -> SubChunk:
