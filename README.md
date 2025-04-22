@@ -99,6 +99,7 @@
 from .world.chunk import Chunk, new_chunk
 from .world.sub_chunk import SubChunk, SubChunkWithIndex, new_sub_chunk
 from .world.world import World, new_world
+from .world.level_dat import LevelDat, Abilities
 
 from .world.define import (
     DIMENSION_OVERWORLD,
