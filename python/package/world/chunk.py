@@ -46,8 +46,8 @@ class Chunk(ChunkBase):
 
         Args:
             x (int): The relative x position of this column. Must in a range of 0-15.
-            y (int): The relative y position of this column.
-                     Must in a range of -4~19 (Overworld), 0-7 (Nether) and 0-15 (End).
+            y (int): The y position of this column.
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this column. Must in a range of 0-15.
 
         Returns:
@@ -61,8 +61,8 @@ class Chunk(ChunkBase):
 
         Args:
             x (int): The relative x position of this block. Must in a range of 0-15.
-            y (int): The relative y position of this block.
-                     Must in a range of -4~19 (Overworld), 0-7 (Nether) and 0-15 (End).
+            y (int): The y position of this block.
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this block. Must in a range of 0-15.
             layer (int): The layer to find this block.
 
@@ -131,8 +131,8 @@ class Chunk(ChunkBase):
 
         Args:
             x (int): The relative x position of this column. Must in a range of 0-15.
-            y (int): The relative y position of this column.
-                     Must in a range of -4~19 (Overworld), 0-7 (Nether) and 0-15 (End).
+            y (int): The y position of this column.
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this column. Must in a range of 0-15.
             biome_id (int): The biome ID want to set.
 
@@ -150,8 +150,8 @@ class Chunk(ChunkBase):
 
         Args:
             x (int): The relative x position of this block. Must in a range of 0-15.
-            y (int): The relative y position of this block.
-                     Must in a range of -4~19 (Overworld), 0-7 (Nether) and 0-15 (End).
+            y (int): The y position of this block.
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this block. Must in a range of 0-15.
             layer (int): The layer that this block in.
             block_runtime_id (int): The result block that this block will be.
@@ -179,19 +179,17 @@ class Chunk(ChunkBase):
 
     def sub_chunk(self, y: int) -> tuple[SubChunk | None, bool]:
         """
-        sub_chunk finds the correct SubChunk in the Chunk by a Y value.
+        sub_chunk finds the correct SubChunk in the Chunk by a y position.
         Note that it is allowed to edit this sub chunk, and then save
         this whole chunk immediately without any other operation.
 
         Args:
-            y (int): The relative y position of this block.
-                     Must in a range of -4~19 (Overworld), 0-7 (Nether) and 0-15 (End).
+            y (int): The y position of this block.
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
 
         Returns:
             tuple[SubChunk | None, bool]: If current chunk is not found, then return (None, False).
                                           Otherwise, return the target sub chunk and True.
-                                          Note that if this sub chunk is not exist,
-                                          the the program will crash (The try statement can't solve).
         """
         sub_chunk_id = chunk_sub_chunk(self._chunk_id, y)
         if sub_chunk_id == -1:
@@ -201,27 +199,27 @@ class Chunk(ChunkBase):
         return (s, True)
 
     def sub_index(self, y: int) -> int:
-        """sub_index returns the sub chunk Y index matching the y value passed.
+        """sub_index returns the sub chunk index matching the y position passed.
 
         Args:
             y (int): The relative y position of this block.
-                     Must in a range of -4~19 (Overworld), 0-7 (Nether) and 0-15 (End).
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
 
         Returns:
-            int: The y index.
+            int: The index of the y position.
                  If current sub chunk is not found, then return -1.
         """
         return chunk_sub_index(self._chunk_id, y)
 
     def sub_y(self, index: int) -> int:
-        """sub_y returns the sub chunk Y value matching the index passed.
+        """sub_y returns the sub chunk y value matching the index passed.
 
         Args:
-            index (int): The given index that used to compute the value of Y.
+            index (int): The given index that used to compute the value of y.
 
         Returns:
-            int: The Y value who could match the given index.
-                 Y is in a range of -4~19 (Overworld), 0-7 (Nether) and 0-15 (End).
+            int: The y position who could match the given index.
+                 y is in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
                  If current sub chunk is not found, then return -1.
         """
         return chunk_sub_y(self._chunk_id, index)
