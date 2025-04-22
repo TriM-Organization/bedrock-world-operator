@@ -164,7 +164,10 @@ class Chunk(ChunkBase):
             raise Exception(err)
 
     def sub(self) -> list[SubChunk]:
-        """sub returns a list of all sub chunks present in the chunk.
+        """
+        sub returns a list of all sub chunks present in the chunk.
+        Note that after edit those sub chunk, you just only need to save this chunk,
+        but not need to save the modified sub chunks.
 
         Returns:
             list[SubChunk]: All sub chunks present in the chunk.
@@ -180,8 +183,8 @@ class Chunk(ChunkBase):
     def sub_chunk(self, y: int) -> tuple[SubChunk | None, bool]:
         """
         sub_chunk finds the correct SubChunk in the Chunk by a y position.
-        Note that it is allowed to edit this sub chunk, and then save
-        this whole chunk immediately without any other operation.
+        Note that after edit this sub chunk, you just only need to save this chunk,
+        but not need to save the modified sub chunks.
 
         Args:
             y (int): The y position of this block.

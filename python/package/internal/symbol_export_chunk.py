@@ -44,7 +44,7 @@ def release_chunk(id: int) -> None:
 
 
 def chunk_biome(id: int, x: int, y: int, z: int) -> int:
-    return int(LIB.Chunk_Biome(CInt(id), CInt(x), CInt(y), CInt(y), CInt(z)))
+    return int(LIB.Chunk_Biome(CInt(id), CInt(x), CInt(y), CInt(z)))
 
 
 def chunk_block(id: int, x: int, y: int, z: int, layer: int) -> int:
