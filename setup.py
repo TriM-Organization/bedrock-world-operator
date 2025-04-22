@@ -18,7 +18,7 @@ setuptools.setup(
     description="An operator based on Go that aims to provide interface for Python that could operating NetEase/Standard Minecraft bedrock game saves.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    repository="https://github.com/TriM-Organization/bedrock-world-operator",
+    url="https://github.com/TriM-Organization/bedrock-world-operator",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
