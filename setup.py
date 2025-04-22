@@ -22,7 +22,7 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Operating System :: Windows(amd64, x86_64), Darwin(amd64, arm64), Linux(aarch64, amd64, arm64)",
     ],
     package_data={
         "bedrockworldoperator": [

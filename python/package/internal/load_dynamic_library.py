@@ -1,6 +1,8 @@
 import os, ctypes, platform
 from pathlib import Path
 
+LIB = None
+
 package_dir = Path(__file__).parent.parent.resolve()
 lib_path = os.path.join(package_dir, "dynamic_libs")
 
