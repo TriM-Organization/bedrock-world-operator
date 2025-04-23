@@ -45,7 +45,7 @@ func Fnv1a_32(data []byte) uint32 {
 func ComputeBlockHash(blockName string, blockStates map[string]any) uint32 {
 	b := bytes.NewBuffer(nil)
 
-	if blockName == "minecraft:unknown" {
+	if blockName == "minecraft:unknown" || blockName == "unknown" {
 		unknownBlockHash := -2
 		return uint32(unknownBlockHash)
 	}
