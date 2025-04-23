@@ -119,6 +119,135 @@ class BlockStates:
     States: nbtlib.tag.Compound = field(default_factory=lambda: nbtlib.tag.Compound())
 
 
+# ptr = ((y >> 4) - (self.start_range >> 4)) << 12
+# offset = x * 256 + (y & 15) * 16 + z
+@dataclass
+class QuickChunkBlocks:
+    """
+    QuickChunkBlocks is a quick blocks getter and setter, which used for a Minecraft chunk.
+    Note that it is only represent one layer in this chunk.
+
+    Args:
+        blocks (list[int], optional): A dense matrix that represent each block in a layer of this chunk.
+                                      Defaults to empty list.
+        start_range (int): The min Y position of this chunk.
+                           For overworld is -64, but nether and end is 0.
+                           Defaults to -64.
+        end_range (int): The max Y position of this chunk.
+                         For overworld is 319, for nether is 127, and for end is 255.
+                         Defaults to 319.
+    """
+
+    blocks: list[int] = field(default_factory=lambda: [])
+    start_range: int = -64
+    end_range: int = 319
+
+    def set_empty(self, air_block_runtime_id: int):
+        """set_empty make this chunk full of air.
+
+        Args:
+            air_block_runtime_id (int): The block runtime id of air block.
+        """
+        self.blocks = [
+            air_block_runtime_id
+            for _ in range(4096 * ((self.end_range - self.start_range + 1) >> 4))
+        ]
+
+    def block(self, x: int, y: int, z: int) -> int:
+        """Block returns the runtime ID of the block at a given x, y and z in this chunk.
+
+        Args:
+            x (int): The relative x position of this block. Must in a range of 0-15.
+            y (int): The y position of this block.
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
+            z (int): The relative z position of this block. Must in a range of 0-15.
+
+        Returns:
+            int: Return the block runtime ID of target block.
+                 It will not check whether the index is overflowing.
+        """
+        return self.blocks[
+            (((y >> 4) - (self.start_range >> 4)) << 12) + x * 256 + (y & 15) * 16 + z
+        ]
+
+    def set_block(self, x: int, y: int, z: int, block_runtime_id: int):
+        """
+        set_block sets the runtime ID of a block at a given x, y and z in this chunk.
+        Note that:
+            - This operation is just on program, and you need to use c.set_blocks(layer, QuickChunkBlocks) to apply
+              changes to the chunk. Then, after you apply changes, use w.save_chunk(...) to apply changes to the game saves.
+            - It will not check whether the index is overflowing.
+
+        Args:
+            x (int): The relative x position of this block. Must in a range of 0-15.
+            y (int): The y position of this block.
+                     Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
+            z (int): The relative z position of this block. Must in a range of 0-15.
+            block_runtime_id (int): The result block that this block will be.
+        """
+        self.blocks[
+            (((y >> 4) - (self.start_range >> 4)) << 12) + x * 256 + (y & 15) * 16 + z
+        ] = block_runtime_id
+
+
+@dataclass
+class QuickSubChunkBlocks:
+    """
+    QuickSubChunkBlocks is a quick blocks getter and setter, which used for a Minecraft sub chunk.
+    Note that it is only represent one layer in this sub chunk.
+
+    Args:
+        blocks (list[int], optional): A dense matrix that represent each block in a layer of this sub chunk.
+                                      Defaults to empty list.
+    """
+
+    blocks: list[int] = field(default_factory=lambda: [])
+
+    def set_empty(self, air_block_runtime_id: int):
+        """set_empty make this sub chunk full of air.
+
+        Args:
+            air_block_runtime_id (int): The block runtime id of air block.
+        """
+        self.blocks = [air_block_runtime_id for _ in range(4096)]
+
+    def block(self, x: int, y: int, z: int) -> int:
+        """
+        block returns the runtime ID of the block located at the given X, Y and Z.
+        X, Y and Z must be in a range of 0-15.
+
+        Args:
+            x (int): The relative x position of target block. Must in a range of 0-15.
+            y (int): The relative y position of target block. Must in a range of 0-15.
+            z (int): The relative z position of target block. Must in a range of 0-15.
+
+        Returns:
+            int: Return the block runtime ID of target block.
+                 It will not check whether the index is overflowing.
+        """
+        return self.blocks[x * 256 + y * 16 + z]
+
+    def set_block(self, x: int, y: int, z: int, block_runtime_id: int):
+        """
+        set_block sets the given block runtime ID at the given X, Y and Z.
+        X, Y and Z must be in a range of 0-15.
+        Note that:
+            - This operation is just on program, and you need to use s.set_blocks(layer, QuickSubChunkBlocks) to apply changes
+              to the sub chunk. Then, after you apply changes,
+                - use w.save_sub_chunk(...) to apply changes to the game saves.
+                - if this sub chunk is from a loaded chunk, then you'd be suggest to use w.save_chunk(...) to apply changes
+                  to the game saves if there are multiple sub chunk changes in the target chunk.
+            - It will not check whether the index is overflowing.
+
+        Args:
+            x (int): The relative x position of target block. Must in a range of 0-15.
+            y (int): The relative y position of target block. Must in a range of 0-15.
+            z (int): The relative z position of target block. Must in a range of 0-15.
+            block_runtime_id (int): The block runtime id of target block will be.
+        """
+        self.blocks[x * 256 + y * 16 + z] = block_runtime_id
+
+
 @dataclass
 class HashWithPosY:
     Hash: int = 0

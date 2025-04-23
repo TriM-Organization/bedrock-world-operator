@@ -1,13 +1,16 @@
+from dataclasses import dataclass, field
 from .constant import RANGE_INVALID, RANGE_OVERWORLD
 from ..internal.symbol_export_chunk import (
     chunk_biome,
     chunk_block,
+    chunk_blocks,
     chunk_compact,
     chunk_equals,
     chunk_highest_filled_sub_chunk,
     chunk_range,
     chunk_set_biome,
     chunk_set_block,
+    chunk_set_blocks,
     chunk_sub,
     chunk_sub_chunk,
     chunk_sub_index,
@@ -15,7 +18,7 @@ from ..internal.symbol_export_chunk import (
     new_chunk as nc,
     release_chunk,
 )
-from ..world.define import Range
+from ..world.define import QuickChunkBlocks, Range
 from ..world.sub_chunk import SubChunk
 
 
@@ -43,12 +46,16 @@ class ChunkBase:
         return self._chunk_id >= 0
 
 
+@dataclass
 class Chunk(ChunkBase):
     """
     Chunk is a segment in the world with a size of 16x16x256 blocks. A chunk contains multiple sub chunks
     and stores other information such as biomes.
     It is not safe to call methods on Chunk simultaneously from multiple goroutines.
     """
+
+    _range: Range = field(default_factory=lambda: Range())
+    _known_range: bool = False
 
     def __init__(self):
         super().__init__()
@@ -84,6 +91,31 @@ class Chunk(ChunkBase):
                  Note that if no sub chunk exists at the given y, the block is assumed to be air.
         """
         return chunk_block(self._chunk_id, x, y, z, layer)
+
+    def blocks(self, layer: int) -> QuickChunkBlocks:
+        """
+        blocks returns all blocks (block runtime ids) whose in the target layer of this chunk.
+        It is highly suggest you use this instead of c.block(...) if you are trying to query so
+        many blocks from this chunk.
+
+        Args:
+            layer (int): The layer of the blocks in this chunk that you want to find.
+
+        Returns:
+            QuickChunkBlocks: All blocks of the target layer in this chunk if current chunk is exist.
+                              If the target layer is not exist, then you get a chunk full of air.
+                              Note that this implement don't do further check (failed to get range of
+                              current chunk or underlying blocks list is empty) due to this is aims to
+                              increase block query/set speed, and you should take responsibility for
+                              any possible error.
+        """
+        if not self._known_range:
+            self._range = self.range()
+        return QuickChunkBlocks(
+            chunk_blocks(self._chunk_id, layer),
+            self._range.start_range,
+            self._range.end_range,
+        )
 
     def compact(self):
         """
@@ -131,10 +163,17 @@ class Chunk(ChunkBase):
             Range: If current chunk is not found, return RANGE_INVALID.
                    Otherwise, return the range and True.
         """
+        if self._known_range:
+            return self._range
+
         start_range, end_range, ok = chunk_range(self._chunk_id)
         if not ok:
             return RANGE_INVALID
-        return Range(start_range, end_range)
+
+        self._known_range = True
+        self._range = Range(start_range, end_range)
+
+        return self._range
 
     def set_biome(self, x: int, y: int, z: int, biome_id: int):
         """set_biome sets the biome ID at a specific column in the chunk.
@@ -156,7 +195,7 @@ class Chunk(ChunkBase):
     def set_block(self, x: int, y: int, z: int, layer: int, block_runtime_id: int):
         """
         set_block sets the runtime ID of a block at a given x, y and z in a chunk at the given layer.
-        If no SubChunk exists at the given y, a new SubChunk is created and the block is set.
+        If no sub chunk exists at the given y, a new sub chunk is created and the block is set.
 
         Args:
             x (int): The relative x position of this block. Must in a range of 0-15.
@@ -170,6 +209,27 @@ class Chunk(ChunkBase):
             Exception: When failed to set block.
         """
         err = chunk_set_block(self._chunk_id, x, y, z, layer, block_runtime_id)
+        if len(err) > 0:
+            raise Exception(err)
+
+    def set_blocks(self, layer: int, blocks: QuickChunkBlocks):
+        """
+        set_blocks sets the whole chunk blocks in layer by given block runtime ids.
+
+        It is highly suggest you use this instead of c.set_block(...) if you are trying to modify
+        so many blocks to this chunk.
+
+        Note that this implement will not check the underlying blocks list is valid
+        or not due to this is aims to increase block query/set speed, and you should
+        take responsibility for any possible error.
+
+        Args:
+            layer (int): The blocks in the target layer of this chunk that you want to overwrite.
+
+        Raises:
+            Exception: When failed to set blocks.
+        """
+        err = chunk_set_blocks(self._chunk_id, layer, blocks.blocks)
         if len(err) > 0:
             raise Exception(err)
 
@@ -192,7 +252,7 @@ class Chunk(ChunkBase):
 
     def sub_chunk(self, y: int) -> SubChunk:
         """
-        sub_chunk finds the correct SubChunk in the Chunk by a y position.
+        sub_chunk finds the correct sub chunk in the Chunk by a y position.
         Note that after edit this sub chunk, you just only need to save this chunk,
         but not need to save the modified sub chunks.
 

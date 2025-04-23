@@ -1,11 +1,14 @@
 from dataclasses import dataclass, field
+from .define import QuickSubChunkBlocks
 from ..internal.symbol_export_sub_chunk import (
     new_sub_chunk as nsc,
     release_sub_chunk,
     sub_chunk_block,
+    sub_chunk_blocks,
     sub_chunk_empty,
     sub_chunk_equals,
     sub_chunk_set_block,
+    sub_chunk_set_blocks,
 )
 
 
@@ -86,6 +89,25 @@ class SubChunk(SubChunkBase):
         """
         return sub_chunk_block(self._sub_chunk_id, x, y, z, layer)
 
+    def blocks(self, layer: int) -> QuickSubChunkBlocks:
+        """
+        blocks all blocks (block runtime ids) whose in layer.
+        It is highly suggest you use this instead of s.block(...) if you are trying to query
+        so many blocks from this sub chunk.
+
+        Args:
+            layer (int): The sub chunk blocks you want to find.
+                         layer refer to the finded blocks will from this layer.
+
+        Returns:
+            QuickSubChunkBlocks: All blocks of the target layer in this sub chunk if current sub chunk is exist.
+                                 If the target layer is not exist, then you get a sub chunk full of air.
+                                 Note that this implement don't do further check (maybe the underlying blocks list is empty)
+                                 due to this is aims to increase block query/set speed, and you should take responsibility for
+                                 any possible error.
+        """
+        return QuickSubChunkBlocks(sub_chunk_blocks(self._sub_chunk_id, layer))
+
     def set_block(self, x: int, y: int, z: int, layer: int, block_runtime_id: int):
         """
         set_block sets the given block runtime ID at the given X, Y and Z.
@@ -102,6 +124,27 @@ class SubChunk(SubChunkBase):
             Exception: When failed to set block.
         """
         err = sub_chunk_set_block(self._sub_chunk_id, x, y, z, layer, block_runtime_id)
+        if len(err) > 0:
+            raise Exception(err)
+
+    def set_blocks(self, layer: int, blocks: QuickSubChunkBlocks):
+        """
+        set_blocks sets the whole chunk blocks in layer by given block runtime ids.
+
+        It is highly suggest you use this instead of s.set_block(...) if you are trying to modify
+        so many blocks to this sub chunk.
+
+        Note that this implement will not check the underlying blocks list is valid
+        or not due to this is aims to increase block query/set speed, and you should
+        take responsibility for any possible error.
+
+        Args:
+            layer (int): The blocks in the target layer of this chunk that you want to overwrite.
+
+        Raises:
+            Exception: When failed to set blocks.
+        """
+        err = sub_chunk_set_blocks(self._sub_chunk_id, layer, blocks.blocks)
         if len(err) > 0:
             raise Exception(err)
 

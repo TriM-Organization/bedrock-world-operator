@@ -58,9 +58,53 @@ func (sub *SubChunk) Block(x, y, z byte, layer uint8) uint32 {
 	return sub.storages[layer].At(x, y, z)
 }
 
+// Blocks returns all blocks (block runtime ids) whose in layer.
+// If layer is not exist, then return blocks with all air.
+// Note that the length of returned slice is 4096 (16*16*16).
+func (sub *SubChunk) Blocks(layer uint8) []uint32 {
+	result := make([]uint32, 16*16*16)
+
+	if uint8(len(sub.storages)) <= layer {
+		for i := range result {
+			result[i] = sub.air
+		}
+		return result
+	}
+
+	currentLayer := sub.Layer(layer)
+
+	i := 0
+	for x := range byte(16) {
+		for y := range byte(16) {
+			for z := range byte(16) {
+				result[i] = currentLayer.At(x, y, z)
+				i++
+			}
+		}
+	}
+
+	return result
+}
+
 // SetBlock sets the given block runtime ID at the given X, Y and Z. X, Y and Z must be in a range of 0-15.
 func (sub *SubChunk) SetBlock(x, y, z byte, layer uint8, block uint32) {
 	sub.Layer(layer).Set(x, y, z, block)
+}
+
+// SetBlock sets the whole sub chunk in layer by given block runtime ids.
+// len(blocks) must equal to 4096 (16*16*16).
+func (sub *SubChunk) SetBlocks(layer uint8, blocks []uint32) {
+	currentLayer := sub.Layer(layer)
+
+	i := 0
+	for x := range byte(16) {
+		for y := range byte(16) {
+			for z := range byte(16) {
+				currentLayer.Set(x, y, z, blocks[i])
+				i++
+			}
+		}
+	}
 }
 
 // Compact cleans the garbage from all block storages that sub chunk contains, so that they may be

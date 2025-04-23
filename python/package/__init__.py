@@ -26,6 +26,8 @@ from .world.define import (
     Range,
     Dimension,
     BlockStates,
+    QuickChunkBlocks,
+    QuickSubChunkBlocks,
     HashWithPosY,
 )
 

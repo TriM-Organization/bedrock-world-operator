@@ -1,19 +1,22 @@
+from io import BytesIO
 import struct
 from .types import LIB
 from .types import CSlice, CString, CInt
-from .types import as_python_bytes, as_python_string
+from .types import as_c_bytes, as_python_bytes, as_python_string
 
 
 LIB.NewChunk.argtypes = [CInt, CInt]
 LIB.ReleaseChunk.argtypes = [CInt]
 LIB.Chunk_Biome.argtypes = [CInt, CInt, CInt, CInt]
 LIB.Chunk_Block.argtypes = [CInt, CInt, CInt, CInt, CInt]
+LIB.Chunk_Blocks.argtypes = [CInt, CInt]
 LIB.Chunk_Compact.argtypes = [CInt]
 LIB.Chunk_Equals.argtypes = [CInt, CInt]
 LIB.Chunk_HighestFilledSubChunk.argtypes = [CInt]
 LIB.Chunk_Range.argtypes = [CInt]
 LIB.Chunk_SetBiome.argtypes = [CInt, CInt, CInt, CInt, CInt]
 LIB.Chunk_SetBlock.argtypes = [CInt, CInt, CInt, CInt, CInt, CInt]
+LIB.Chunk_SetBlocks.argtypes = [CInt, CInt, CSlice]
 LIB.Chunk_Sub.argtypes = [CInt]
 LIB.Chunk_SubChunk.argtypes = [CInt, CInt]
 LIB.Chunk_SubIndex.argtypes = [CInt, CInt]
@@ -23,12 +26,14 @@ LIB.NewChunk.restype = CInt
 LIB.ReleaseChunk.restype = None
 LIB.Chunk_Biome.restype = CInt
 LIB.Chunk_Block.restype = CInt
+LIB.Chunk_Blocks.restype = CSlice
 LIB.Chunk_Compact.restype = CString
 LIB.Chunk_Equals.restype = CInt
 LIB.Chunk_HighestFilledSubChunk.restype = CInt
 LIB.Chunk_Range.restype = CSlice
 LIB.Chunk_SetBiome.restype = CString
 LIB.Chunk_SetBlock.restype = CString
+LIB.Chunk_SetBlocks.restype = CString
 LIB.Chunk_Sub.restype = CSlice
 LIB.Chunk_SubChunk.restype = CInt
 LIB.Chunk_SubIndex.restype = CInt
@@ -49,6 +54,18 @@ def chunk_biome(id: int, x: int, y: int, z: int) -> int:
 
 def chunk_block(id: int, x: int, y: int, z: int, layer: int) -> int:
     return int(LIB.Chunk_Block(CInt(id), CInt(x), CInt(y), CInt(z), CInt(layer)))
+
+
+def chunk_blocks(id: int, layer: int) -> list[int]:
+    raw = as_python_bytes(LIB.Chunk_Blocks(CInt(id), CInt(layer)))
+    result = []
+
+    ptr = 0
+    while ptr < len(raw):
+        result.append(struct.unpack("<I", raw[ptr : ptr + 4])[0])
+        ptr += 4
+
+    return result
 
 
 def chunk_compact(id: int) -> str:
@@ -87,6 +104,15 @@ def chunk_set_block(
         LIB.Chunk_SetBlock(
             CInt(id), CInt(x), CInt(y), CInt(z), CInt(layer), CInt(block_runtime_id)
         )
+    )
+
+
+def chunk_set_blocks(id: int, layer: int, blocks: list[int]) -> str:
+    writer = BytesIO()
+    for i in blocks:
+        writer.write(struct.pack("<I", i))
+    return as_python_string(
+        LIB.Chunk_SetBlocks(CInt(id), CInt(layer), as_c_bytes(writer.getvalue()))
     )
 
 

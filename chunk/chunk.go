@@ -70,6 +70,19 @@ func (chunk *Chunk) Block(x uint8, y int16, z uint8, layer uint8) uint32 {
 	return sub.storages[layer].At(x, uint8(y), z)
 }
 
+// Blocks returns all blocks (block runtime ids) whose in the target layer of this chunk.
+// The length of returned slice is the sub chunk counts of this chunk.
+// For example, for a completely overworld chunk, the length is 24.
+// Note that for each slice in this big slice, the length of it is 4096 (16*16*16).
+func (chunk *Chunk) Blocks(layer uint8) [][]uint32 {
+	n := (chunk.r.Height() >> 4) + 1
+	result := make([][]uint32, n)
+	for i := range n {
+		result[i] = chunk.sub[i].Blocks(layer)
+	}
+	return result
+}
+
 // SetBlock sets the runtime ID of a block at a given x, y and z in a chunk at the given layer. If no
 // SubChunk exists at the given y, a new SubChunk is created and the block is set.
 func (chunk *Chunk) SetBlock(x uint8, y int16, z uint8, layer uint8, block uint32) {
@@ -80,6 +93,21 @@ func (chunk *Chunk) SetBlock(x uint8, y int16, z uint8, layer uint8, block uint3
 		return
 	}
 	sub.Layer(layer).Set(x, uint8(y), z, block)
+}
+
+// SetBlocks sets the whole chunk blocks in layer by given block runtime ids.
+// The length of blocks could less or bigger than the sub chunk counts of this
+// whole chunk.
+//
+// If less, then only the given part will be modified,
+// if bigger, then the bigger part will be not used.
+//
+// The length of each slice in this big slice must be 4096 (16*16*16).
+func (chunk *Chunk) SetBlocks(layer uint8, blocks [][]uint32) {
+	n := (chunk.r.Height() >> 4) + 1
+	for i := range min(n, len(blocks)) {
+		chunk.sub[i].SetBlocks(layer, blocks[i])
+	}
 }
 
 // Biome returns the biome ID at a specific column in the chunk.

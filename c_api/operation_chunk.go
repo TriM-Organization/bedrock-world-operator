@@ -41,6 +41,29 @@ func Chunk_Block(id C.int, x C.int, y C.int, z C.int, layer C.int) (blockRuntime
 	return C.int((*c).Block(uint8(x), int16(y), uint8(z), uint8(layer)))
 }
 
+//export Chunk_Blocks
+func Chunk_Blocks(id C.int, layer C.int) (complexReturn *C.char) {
+	c := savedChunk.LoadObject(int(id))
+	if c == nil {
+		return asCbytes(nil)
+	}
+
+	allBlocks := (*c).Blocks(uint8(layer))
+	result := make([]byte, 4096*len(allBlocks)*4)
+
+	ptr := 0
+	for _, value := range allBlocks {
+		for _, v := range value {
+			runtimeIDBytes := make([]byte, 4)
+			binary.LittleEndian.PutUint32(runtimeIDBytes, v)
+			result[ptr], result[ptr+1], result[ptr+2], result[ptr+3] = runtimeIDBytes[0], runtimeIDBytes[1], runtimeIDBytes[2], runtimeIDBytes[3]
+			ptr += 4
+		}
+	}
+
+	return asCbytes(result)
+}
+
 //export Chunk_Compact
 func Chunk_Compact(id C.int) *C.char {
 	c := savedChunk.LoadObject(int(id))
@@ -102,6 +125,29 @@ func Chunk_SetBlock(id C.int, x C.int, y C.int, z C.int, layer C.int, block C.in
 		return C.CString("Chunk_SetBlock: Chunk not found")
 	}
 	(*c).SetBlock(uint8(x), int16(y), uint8(z), uint8(layer), uint32(block))
+	return C.CString("")
+}
+
+//export Chunk_SetBlocks
+func Chunk_SetBlocks(id C.int, layer C.int, payload *C.char) *C.char {
+	c := savedChunk.LoadObject(int(id))
+	if c == nil {
+		return C.CString("Chunk_SetBlock: Chunk not found")
+	}
+
+	goBytes := asGoBytes(payload)
+	blocks := make([][]uint32, len(goBytes)/4/4096)
+
+	ptr := 0
+	for i := range len(blocks) {
+		blocks[i] = make([]uint32, 4096)
+		for j := range 4096 {
+			blocks[i][j] = binary.LittleEndian.Uint32(goBytes[ptr : ptr+4])
+			ptr += 4
+		}
+	}
+
+	(*c).SetBlocks(uint8(layer), blocks)
 	return C.CString("")
 }
 
