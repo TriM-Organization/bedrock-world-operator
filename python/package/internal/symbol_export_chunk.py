@@ -1,5 +1,4 @@
-from io import BytesIO
-import struct
+import struct, numpy
 from .types import LIB
 from .types import CSlice, CString, CInt
 from .types import as_c_bytes, as_python_bytes, as_python_string
@@ -56,16 +55,10 @@ def chunk_block(id: int, x: int, y: int, z: int, layer: int) -> int:
     return int(LIB.Chunk_Block(CInt(id), CInt(x), CInt(y), CInt(z), CInt(layer)))
 
 
-def chunk_blocks(id: int, layer: int) -> list[int]:
-    raw = as_python_bytes(LIB.Chunk_Blocks(CInt(id), CInt(layer)))
-    result = []
-
-    ptr = 0
-    while ptr < len(raw):
-        result.append(struct.unpack("<I", raw[ptr : ptr + 4])[0])
-        ptr += 4
-
-    return result
+def chunk_blocks(id: int, layer: int) -> numpy.ndarray:
+    return numpy.frombuffer(
+        as_python_bytes(LIB.Chunk_Blocks(CInt(id), CInt(layer))), dtype=numpy.uint32
+    ).copy()
 
 
 def chunk_compact(id: int) -> str:
@@ -107,12 +100,9 @@ def chunk_set_block(
     )
 
 
-def chunk_set_blocks(id: int, layer: int, blocks: list[int]) -> str:
-    writer = BytesIO()
-    for i in blocks:
-        writer.write(struct.pack("<I", i))
+def chunk_set_blocks(id: int, layer: int, blocks: numpy.ndarray) -> str:
     return as_python_string(
-        LIB.Chunk_SetBlocks(CInt(id), CInt(layer), as_c_bytes(writer.getvalue()))
+        LIB.Chunk_SetBlocks(CInt(id), CInt(layer), as_c_bytes(blocks.tobytes()))
     )
 
 

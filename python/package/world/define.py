@@ -1,4 +1,4 @@
-import nbtlib
+import nbtlib, numpy
 from dataclasses import dataclass, field
 
 
@@ -138,7 +138,9 @@ class QuickChunkBlocks:
                          Defaults to 319.
     """
 
-    blocks: list[int] = field(default_factory=lambda: [])
+    blocks: numpy.ndarray = field(
+        default_factory=lambda: numpy.array([], dtype=numpy.uint32)
+    )
     start_range: int = -64
     end_range: int = 319
 
@@ -148,12 +150,13 @@ class QuickChunkBlocks:
         Args:
             air_block_runtime_id (int): The block runtime id of air block.
         """
-        self.blocks = [
-            air_block_runtime_id
-            for _ in range(4096 * ((self.end_range - self.start_range + 1) >> 4))
-        ]
+        self.blocks = numpy.full(
+            4096 * ((self.end_range - self.start_range + 1) >> 4),
+            air_block_runtime_id,
+            dtype=numpy.uint32,
+        )
 
-    def block(self, x: int, y: int, z: int) -> int:
+    def block(self, x: int, y: int, z: int) -> numpy.uint32:
         """Block returns the runtime ID of the block at a given x, y and z in this chunk.
 
         Args:
@@ -170,7 +173,7 @@ class QuickChunkBlocks:
             (((y >> 4) - (self.start_range >> 4)) << 12) + x * 256 + (y & 15) * 16 + z
         ]
 
-    def set_block(self, x: int, y: int, z: int, block_runtime_id: int):
+    def set_block(self, x: int, y: int, z: int, block_runtime_id: int | numpy.uint32):
         """
         set_block sets the runtime ID of a block at a given x, y and z in this chunk.
         Note that:
@@ -201,7 +204,9 @@ class QuickSubChunkBlocks:
                                       Defaults to empty list.
     """
 
-    blocks: list[int] = field(default_factory=lambda: [])
+    blocks: numpy.ndarray = field(
+        default_factory=lambda: numpy.array([], dtype=numpy.uint32)
+    )
 
     def set_empty(self, air_block_runtime_id: int):
         """set_empty make this sub chunk full of air.
@@ -209,9 +214,9 @@ class QuickSubChunkBlocks:
         Args:
             air_block_runtime_id (int): The block runtime id of air block.
         """
-        self.blocks = [air_block_runtime_id for _ in range(4096)]
+        self.blocks = numpy.full(4096, air_block_runtime_id, dtype=numpy.uint32)
 
-    def block(self, x: int, y: int, z: int) -> int:
+    def block(self, x: int, y: int, z: int) -> numpy.uint32:
         """
         block returns the runtime ID of the block located at the given X, Y and Z.
         X, Y and Z must be in a range of 0-15.
@@ -227,7 +232,7 @@ class QuickSubChunkBlocks:
         """
         return self.blocks[x * 256 + y * 16 + z]
 
-    def set_block(self, x: int, y: int, z: int, block_runtime_id: int):
+    def set_block(self, x: int, y: int, z: int, block_runtime_id: int | numpy.uint32):
         """
         set_block sets the given block runtime ID at the given X, Y and Z.
         X, Y and Z must be in a range of 0-15.
