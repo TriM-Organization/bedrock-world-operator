@@ -1,4 +1,5 @@
 import nbtlib
+from .constant import DIMENSION_OVERWORLD
 from ..world.chunk import Chunk
 from ..world.sub_chunk import SubChunk
 from ..internal.symbol_export_world import (
@@ -51,6 +52,17 @@ class WorldBase:
     def __del__(self):
         if self._world_id >= 0 and not release_bedrock_world is None:
             release_bedrock_world(self._world_id)
+
+    def is_valid(self) -> bool:
+        """
+        is_valid check the opened world is valid or not.
+        If not valid, it means current world is actually not opened.
+        Try to use a world that not opened is not allowed, and any operation will be terminated.
+
+        Returns:
+            bool: The current world is valid or not.
+        """
+        return self._world_id >= 0
 
     def close_world(self):
         """close_world close this game saves.
@@ -131,10 +143,12 @@ class World(WorldBase):
                 If success, then return the level dat.
                 Otherwise, return None.
         """
+        ldt = LevelDat()
+
         result, success = world_get_level_dat(self._world_id)
         if not success:
             return None
-        ldt = LevelDat()
+
         ldt.unmarshal(result)  # type: ignore
         return ldt
 
@@ -151,12 +165,14 @@ class World(WorldBase):
         if len(err) > 0:
             raise Exception(err)
 
-    def load_biomes(self, dm: Dimension, chunk_pos: ChunkPos) -> bytes:
+    def load_biomes(
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
+    ) -> bytes:
         """load_biomes loads the biome data of a chunk whose in chunk_pos and dm.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             bytes: The biome data of target chunk.
@@ -164,13 +180,18 @@ class World(WorldBase):
         """
         return load_biomes(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
-    def save_biomes(self, dm: Dimension, chunk_pos: ChunkPos, biomes_data: bytes):
+    def save_biomes(
+        self,
+        chunk_pos: ChunkPos,
+        biomes_data: bytes,
+        dm: Dimension = DIMENSION_OVERWORLD,
+    ):
         """save_biomes set the biome data of a chunk whose in chunk_pos and dm.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             biomes_data (bytes): The biome data want to set to this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to set biome data.
@@ -180,15 +201,15 @@ class World(WorldBase):
             raise Exception(err)
 
     def load_chunk_payload_only(
-        self, dm: Dimension, chunk_pos: ChunkPos
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> list[bytes]:
         """
         load_chunk_payload_only loads a chunk at the position passed from the leveldb database.
         Note that we here don't decode chunk data and just return the origin payload.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             list[bytes]: The raw payload of this chunk.
@@ -197,36 +218,37 @@ class World(WorldBase):
         return load_chunk_payload_only(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
     def load_chunk(
-        self, dm: Dimension, chunk_pos: ChunkPos
-    ) -> tuple[Chunk | None, bool]:
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
+    ) -> Chunk:
         """load_chunk loads a chunk at the position passed from the leveldb database.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
-            tuple[Chunk | None, bool]: If current world or the chunk is not exist, then return (None, False).
-                                       Otherwise, return the target chunk and True.
+            Chunk: If current world or the chunk is not exist, then return a invalid chunk.
+                   Otherwise, return the target chunk and True.
+                   Note that you could use c.is_valid() to check whether the chunk is valid or not.
         """
-        chunk_id = load_chunk(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
-        if chunk_id == -1:
-            return (None, False)
         c = Chunk()
-        c._chunk_id = chunk_id
-        return (c, True)
+        c._chunk_id = load_chunk(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+        return c
 
     def save_chunk_payload_only(
-        self, dm: Dimension, chunk_pos: ChunkPos, payload: list[bytes]
+        self,
+        chunk_pos: ChunkPos,
+        payload: list[bytes],
+        dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
         save_chunk_payload_only saves a serialized chunk at the position passed to the leveldb database.
         Note that we also write the version of this chunk.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             payload (list[bytes]): The payload of each sub chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save payload chunk.
@@ -237,15 +259,20 @@ class World(WorldBase):
         if len(err) > 0:
             raise Exception(err)
 
-    def save_chunk(self, dm: Dimension, chunk_pos: ChunkPos, chunk: Chunk):
+    def save_chunk(
+        self,
+        chunk_pos: ChunkPos,
+        chunk: Chunk,
+        dm: Dimension = DIMENSION_OVERWORLD,
+    ):
         """
         save_chunk saves a chunk at the position passed to the leveldb database.
         Note that we also write the version of this chunk.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             chunk (Chunk): The chunk we want to save to the game saves.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save chunk.
@@ -257,38 +284,41 @@ class World(WorldBase):
             raise Exception(err)
 
     def load_sub_chunk(
-        self, dm: Dimension, sub_chunk_pos: SubChunkPos
-    ) -> tuple[SubChunk | None, bool]:
+        self,
+        sub_chunk_pos: SubChunkPos,
+        dm: Dimension = DIMENSION_OVERWORLD,
+    ) -> SubChunk:
         """load_sub_chunk loads a sub chunk at the position from the leveldb database.
 
         Args:
-            dm (Dimension): The dimension of this sub chunk.
             sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
+            dm (Dimension, optional): The dimension of this sub chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
-            tuple[SubChunk | None, bool]: If current world or the sub chunk is not exist, then return (None, False).
-                                          Otherwise, return the target sub chunk and True.
+            SubChunk: If current world or the sub chunk is not exist, then return a invalid sub chunk.
+                      Otherwise, return the target sub chunk and True.
+                      Note that you could use s.is_valid() to check whether the sub chunk is valid or not.
         """
-        sub_chunk_id = load_sub_chunk(
+        s = SubChunk()
+        s._sub_chunk_id = load_sub_chunk(
             self._world_id, dm.dm, sub_chunk_pos.x, sub_chunk_pos.y, sub_chunk_pos.z
         )
-        if sub_chunk_id == -1:
-            return (None, False)
-        s = SubChunk()
-        s._sub_chunk_id = sub_chunk_id
-        return (s, True)
+        return s
 
     def save_sub_chunk(
-        self, dm: Dimension, sub_chunk_pos: SubChunkPos, sub_chunk: SubChunk
+        self,
+        sub_chunk_pos: SubChunkPos,
+        sub_chunk: SubChunk,
+        dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
         save_sub_chunk saves a sub chunk at the position passed to the leveldb database.
         Note that we also write the version of the whole chunk where this sub chunk is in.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
             sub_chunk (SubChunk): The sub chunk we want to save to the game saves.
+            dm (Dimension, optional): The dimension of this sub chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save sub chunk.
@@ -304,13 +334,15 @@ class World(WorldBase):
         if len(err) > 0:
             raise Exception(err)
 
-    def load_nbt_payload_only(self, dm: Dimension, chunk_pos: ChunkPos) -> bytes:
+    def load_nbt_payload_only(
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
+    ) -> bytes:
         """
         load_nbt_payload_only loads payload of all block entities from the chunk position passed.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             bytes: The raw NBT payload of all block entities in this chunk.
@@ -318,12 +350,14 @@ class World(WorldBase):
         """
         return load_nbt_payload_only(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
-    def load_nbt(self, dm: Dimension, chunk_pos: ChunkPos) -> list[nbtlib.tag.Compound]:
+    def load_nbt(
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
+    ) -> list[nbtlib.tag.Compound]:
         """load_nbt loads all block entities from the chunk position passed.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             list[nbtlib.tag.Compound]: The decoded block entities NBT of this chunk.
@@ -331,13 +365,15 @@ class World(WorldBase):
         """
         return load_nbt(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
-    def save_nbt_payload_only(self, dm: Dimension, chunk_pos: ChunkPos, payload: bytes):
+    def save_nbt_payload_only(
+        self, chunk_pos: ChunkPos, payload: bytes, dm: Dimension = DIMENSION_OVERWORLD
+    ):
         """save_nbt_payload_only saves a serialized NBT data to the chunk position passed.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
-            payload (bytes): The raw payload of all block entities NBT in this chunk
+            payload (bytes): The raw payload of all block entities NBT in this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save payload NBT
@@ -349,14 +385,17 @@ class World(WorldBase):
             raise Exception(err)
 
     def save_nbt(
-        self, dm: Dimension, chunk_pos: ChunkPos, nbts: list[nbtlib.tag.Compound]
+        self,
+        chunk_pos: ChunkPos,
+        nbts: list[nbtlib.tag.Compound],
+        dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """save_nbt saves all block NBT data to the chunk position passed.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             nbts (list[nbtlib.tag.Compound]): A list holds all block entities NBT data of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save NBT
@@ -366,17 +405,15 @@ class World(WorldBase):
             raise Exception(err)
 
     def load_delta_update(
-        self,
-        dm: Dimension,
-        chunk_pos: ChunkPos,
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> bytes:
         """
         load_delta_update load a custom purpose payload which related a chunk from leveldb database.
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             bytes: The delta update payload of this chunk.
@@ -384,7 +421,9 @@ class World(WorldBase):
         """
         return load_delta_update(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
-    def save_delta_update(self, dm: Dimension, chunk_pos: ChunkPos, payload: bytes):
+    def save_delta_update(
+        self, chunk_pos: ChunkPos, payload: bytes, dm: Dimension = DIMENSION_OVERWORLD
+    ):
         """
         save_delta_update save a custom purpose payload which related a chunk to leveldb database.
         This is not used by standard Minecraft, and just for some own purpose.
@@ -393,6 +432,7 @@ class World(WorldBase):
             dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             payload (bytes): The delta update payload want to set for this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save delta update payload.
@@ -403,14 +443,16 @@ class World(WorldBase):
         if len(err) > 0:
             raise Exception(err)
 
-    def load_time_stamp(self, dm: Dimension, chunk_pos: ChunkPos) -> int:
+    def load_time_stamp(
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
+    ) -> int:
         """
         load_time_stamp load the last update unix time of a chunk whose in chunk_pos and dm.
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             int: The last update unix time of this chunk.
@@ -419,15 +461,17 @@ class World(WorldBase):
         """
         return load_time_stamp(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
-    def save_time_stamp(self, dm: Dimension, chunk_pos: ChunkPos, time_stamp: int):
+    def save_time_stamp(
+        self, chunk_pos: ChunkPos, time_stamp: int, dm: Dimension = DIMENSION_OVERWORLD
+    ):
         """
         save_time_stamp save the last update unix time of a chunk whose in chunk_pos and dm.
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             time_stamp (int): The last update unix time that want to set for this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save time stamp.
@@ -438,15 +482,17 @@ class World(WorldBase):
         if len(err) > 0:
             raise Exception(err)
 
-    def load_delta_time_stamp(self, dm: Dimension, chunk_pos: ChunkPos) -> int:
+    def load_delta_time_stamp(
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
+    ) -> int:
         """
         load_delta_time_stamp load the last update unix time of a delta update
         which related to a chunk in chunk_pos and dm.
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of the chunk.
             chunk_pos (ChunkPos): The chunk pos of the chunk.
+            dm (Dimension, optional): The dimension of the chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             int: The last update unix time of the delta update.
@@ -458,16 +504,16 @@ class World(WorldBase):
         )
 
     def save_delta_time_stamp(
-        self, dm: Dimension, chunk_pos: ChunkPos, time_stamp: int
+        self, chunk_pos: ChunkPos, time_stamp: int, dm: Dimension = DIMENSION_OVERWORLD
     ):
         """
         save_time_stamp save the last update unix time of a delta update which related to chunk in chunk_pos and dm.
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of the chunk.
             chunk_pos (ChunkPos): The chunk pos of the chunk.
             time_stamp (int): The last update unix time that want to set for the delta update.
+            dm (Dimension, optional): The dimension of the chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save time stamp.
@@ -479,9 +525,7 @@ class World(WorldBase):
             raise Exception(err)
 
     def load_full_sub_chunk_blob_hash(
-        self,
-        dm: Dimension,
-        chunk_pos: ChunkPos,
+        self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> list[HashWithPosY]:
         """
         load_full_sub_chunk_blob_hash loads the blob hash of a chunk.
@@ -490,8 +534,8 @@ class World(WorldBase):
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             list[HashWithPosY]: The hashes of this chunk.
@@ -506,7 +550,10 @@ class World(WorldBase):
         return result
 
     def save_full_sub_chunk_blob_hash(
-        self, dm: Dimension, chunk_pos: ChunkPos, new_hash: list[HashWithPosY]
+        self,
+        chunk_pos: ChunkPos,
+        new_hash: list[HashWithPosY],
+        dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
         save_full_sub_chunk_blob_hash update the blob hash of a chunk.
@@ -519,9 +566,9 @@ class World(WorldBase):
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             hashes (list[HashWithPosY]): The hashes want to save to this chunk.
+            dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save blob hash of this chunk.
@@ -538,16 +585,16 @@ class World(WorldBase):
 
     def load_sub_chunk_blob_hash(
         self,
-        dm: Dimension,
         sub_chunk_pos: SubChunkPos,
+        dm: Dimension = DIMENSION_OVERWORLD,
     ) -> int:
         """
         load_sub_chunk_blob_hash loads the blob hash of a sub chunk that in sub_chunk_pos and in dm dimension.
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of this sub chunk.
             sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
+            dm (Dimension, optional): The dimension of this sub chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
             int: The blob hash value of target sub chunk.
@@ -560,9 +607,9 @@ class World(WorldBase):
 
     def save_sub_chunk_blob_hash(
         self,
-        dm: Dimension,
         sub_chunk_pos: SubChunkPos,
         hash: int,
+        dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
         save_sub_chunk_blob_hash save the hash for sub chunk which in sub_chunk_pos and in dm dimension.
@@ -570,8 +617,8 @@ class World(WorldBase):
         This is not used by standard Minecraft, and just for some own purpose.
 
         Args:
-            dm (Dimension): The dimension of this sub chunk.
             sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
+            dm (Dimension, optional): The dimension of this sub chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
             Exception: When failed to save blob hash of this sub chunk.
@@ -588,7 +635,7 @@ class World(WorldBase):
             raise Exception(err)
 
 
-def new_world(dir: str) -> tuple[World | None, bool]:
+def new_world(dir: str) -> World:
     """
     new_world creates a new provider reading and writing from/to files under the path
     passed using default options. If a world is present at the path, new_world will
@@ -598,13 +645,11 @@ def new_world(dir: str) -> tuple[World | None, bool]:
         dir (str): The minecraft bedrock leveldb path (folder path)
 
     Returns:
-        tuple[World | None, bool]: If database can't be initialise or the level dat is cannot be
-                                   parsed, then return (None, False).
-                                   Otherwise, return the bedrock world and True.
+        World: If database can't be initialise or the level dat is cannot be
+               parsed, then return a invalid world.
+               Otherwise, return the bedrock world and True.
+               Note that you could use w.is_valid() to check the world is valid or not.
     """
-    world_id = nbw(dir)
-    if world_id == -1:
-        return (None, False)
     w = World()
-    w._world_id = world_id
-    return (w, True)
+    w._world_id = nbw(dir)
+    return w

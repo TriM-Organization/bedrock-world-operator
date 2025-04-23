@@ -1,6 +1,6 @@
-from attr import dataclass
-import time as Time
 import nbtlib
+import time as Time
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -123,7 +123,7 @@ class LevelDat:
     network_version: int = 630
     platform: int = 2
     platform_broadcast_intent: int = 3
-    random_seed: int = int(Time.time())
+    random_seed: int = field(default_factory=lambda: int(Time.time()))
     show_tags: bool = True
     single_use_world: bool = False
     spawn_x: int = 0
@@ -135,7 +135,7 @@ class LevelDat:
     XBL_broadcast: bool = False
     XBL_broadcast_intent: int = 3
     XBL_broadcast_mode: int = 0
-    abilities: Abilities = Abilities()
+    abilities: Abilities = field(default_factory=lambda: Abilities())
     bonus_chest_enabled: bool = False
     bonus_chest_spawned: bool = False
     command_block_output: bool = True
@@ -191,9 +191,13 @@ class LevelDat:
     tnt_explodes: bool = True
     use_msa_gamer_tags_only: bool = False
     world_start_count: int = 0
-    experiments: nbtlib.tag.Compound = nbtlib.tag.Compound()
+    experiments: nbtlib.tag.Compound = field(
+        default_factory=lambda: nbtlib.tag.Compound()
+    )
     freeze_damage: bool = True
-    world_policies: nbtlib.tag.Compound = nbtlib.tag.Compound()
+    world_policies: nbtlib.tag.Compound = field(
+        default_factory=lambda: nbtlib.tag.Compound()
+    )
     world_version: int = 1
     respawn_blocks_explode: bool = True
     show_border_effect: bool = True

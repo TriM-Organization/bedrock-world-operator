@@ -30,6 +30,7 @@
   - [基础功能](#基础功能)
   - [额外实现](#额外实现)
   - [实用功能](#实用功能)
+- [兼容性](#兼容性)
 - [快速上手](#快速上手)
 - [注意事项](#注意事项)
 - [🐍 Pypi 包](#-pypi-包)
@@ -94,6 +95,13 @@
 
 
 
+# 兼容性
+对于目前的 `0.0.x` 版本，我们暂时不考虑后向兼容性，因为本操作器仍然处于早期测试阶段。
+
+
+
+
+
 # 快速上手
 ```python
 from .world.chunk import Chunk, new_chunk
@@ -101,11 +109,23 @@ from .world.sub_chunk import SubChunk, SubChunkWithIndex, new_sub_chunk
 from .world.world import World, new_world
 from .world.level_dat import LevelDat, Abilities
 
-from .world.define import (
+from .world.constant import (
+    EMPTY_COMPOUND,
+    EMPTY_BLOCK_STATES,
+    DIMENSION_ID_OVERWORLD,
+    DIMENSION_ID_NETHER,
+    DIMENSION_ID_END,
     DIMENSION_OVERWORLD,
     DIMENSION_NETHER,
     DIMENSION_END,
+    RANGE_OVERWORLD,
+    RANGE_NETHER,
+    RANGE_END,
+    RANGE_INVALID,
+    AIR_BLOCK_STATES,
+    AIR_BLOCK_RUNTIME_ID,
 )
+
 
 from .world.define import (
     ChunkPos,
@@ -125,7 +145,7 @@ from .world.conversion import (
     from_sub_chunk_disk_payload,
 )
 
-from nbtlib.tag import Compound
+from nbtlib.tag import Compound, String, Byte, Int
 ```
 我们默认导出了以上类、常量及函数，下面将阐述几个重要的函数。
 - `new_chunk` - 创建一个新的区块

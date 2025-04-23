@@ -3,11 +3,23 @@ from .world.sub_chunk import SubChunk, SubChunkWithIndex, new_sub_chunk
 from .world.world import World, new_world
 from .world.level_dat import LevelDat, Abilities
 
-from .world.define import (
+from .world.constant import (
+    EMPTY_COMPOUND,
+    EMPTY_BLOCK_STATES,
+    DIMENSION_ID_OVERWORLD,
+    DIMENSION_ID_NETHER,
+    DIMENSION_ID_END,
     DIMENSION_OVERWORLD,
     DIMENSION_NETHER,
     DIMENSION_END,
+    RANGE_OVERWORLD,
+    RANGE_NETHER,
+    RANGE_END,
+    RANGE_INVALID,
+    AIR_BLOCK_STATES,
+    AIR_BLOCK_RUNTIME_ID,
 )
+
 
 from .world.define import (
     ChunkPos,
@@ -27,4 +39,4 @@ from .world.conversion import (
     from_sub_chunk_disk_payload,
 )
 
-from nbtlib.tag import Compound
+from nbtlib.tag import Compound, String, Byte, Int

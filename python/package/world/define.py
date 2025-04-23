@@ -1,10 +1,5 @@
-from attr import dataclass
 import nbtlib
-
-
-DIMENSION_OVERWORLD = 0
-DIMENSION_NETHER = 1
-DIMENSION_END = 2
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -121,7 +116,7 @@ class BlockStates:
     """BlockState holds a combination of a name and properties."""
 
     Name: str = ""
-    States: nbtlib.tag.Compound = nbtlib.tag.Compound()
+    States: nbtlib.tag.Compound = field(default_factory=lambda: nbtlib.tag.Compound())
 
 
 @dataclass

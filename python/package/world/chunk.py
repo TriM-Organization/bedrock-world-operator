@@ -1,3 +1,4 @@
+from .constant import RANGE_INVALID, RANGE_OVERWORLD
 from ..internal.symbol_export_chunk import (
     chunk_biome,
     chunk_block,
@@ -29,6 +30,17 @@ class ChunkBase:
     def __del__(self):
         if self._chunk_id >= 0 and not release_chunk is None:
             release_chunk(self._chunk_id)
+
+    def is_valid(self) -> bool:
+        """
+        is_valid check current chunk is valid or not.
+        If not valid, it means the chunk is actually not exist, not only Python but also in Go.
+        Try to use a invalid chunk is not allowed, and any operation will be terminated.
+
+        Returns:
+            bool: Wheatear the chunk is valid or not.
+        """
+        return self._chunk_id >= 0
 
 
 class Chunk(ChunkBase):
@@ -86,21 +98,19 @@ class Chunk(ChunkBase):
         if len(err) > 0:
             raise Exception(err)
 
-    def equals(self, another_chunk: ChunkBase) -> tuple[bool, bool]:
+    def equals(self, another_chunk: ChunkBase) -> bool:
         """equals returns if the chunk passed is equal to the current one.
 
         Args:
             another_chunk (ChunkBase): The chunk passed.
 
         Returns:
-            tuple[bool, bool]: The first element refer to the compare result,
-                               and the second one refer to if their have any
-                               any error occurred.
-                               If the second one is False, then it means current
-                               chunk or another_chunk is not found.
+            bool: The compare result.
+                  True for the contents of two chunk is the same.
+                  False for current chunk or another_chunk is not found.
         """
         result = chunk_equals(self._chunk_id, another_chunk._chunk_id)
-        return (result == 1, result != -1)
+        return result == 1
 
     def highest_filled_sub_chunk(self) -> int:
         """
@@ -114,17 +124,17 @@ class Chunk(ChunkBase):
         """
         return chunk_highest_filled_sub_chunk(self._chunk_id)
 
-    def range(self) -> tuple[Range, bool]:
+    def range(self) -> Range:
         """Range returns the Range of the Chunk as passed to new_chunk.
 
         Returns:
-            tuple[Range, bool]: If current chunk is not found, return (Range(0,0), False).
-                                Otherwise, return the range and True.
+            Range: If current chunk is not found, return RANGE_INVALID.
+                   Otherwise, return the range and True.
         """
         start_range, end_range, ok = chunk_range(self._chunk_id)
         if not ok:
-            return (Range(0, 0), False)
-        return (Range(start_range, end_range), True)
+            return RANGE_INVALID
+        return Range(start_range, end_range)
 
     def set_biome(self, x: int, y: int, z: int, biome_id: int):
         """set_biome sets the biome ID at a specific column in the chunk.
@@ -180,7 +190,7 @@ class Chunk(ChunkBase):
             result.append(s)
         return result
 
-    def sub_chunk(self, y: int) -> tuple[SubChunk | None, bool]:
+    def sub_chunk(self, y: int) -> SubChunk:
         """
         sub_chunk finds the correct SubChunk in the Chunk by a y position.
         Note that after edit this sub chunk, you just only need to save this chunk,
@@ -191,15 +201,13 @@ class Chunk(ChunkBase):
                      Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
 
         Returns:
-            tuple[SubChunk | None, bool]: If current chunk is not found, then return (None, False).
-                                          Otherwise, return the target sub chunk and True.
+            SubChunk: If current chunk is not found, then return a invalid sub chunk.
+                      Otherwise, return the target sub chunk and True.
+                      Note that you could use s.is_vaild() to check whether the sub chunk is valid or not.
         """
-        sub_chunk_id = chunk_sub_chunk(self._chunk_id, y)
-        if sub_chunk_id == -1:
-            return (None, False)
         s = SubChunk()
-        s._sub_chunk_id = sub_chunk_id
-        return (s, True)
+        s._sub_chunk_id = chunk_sub_chunk(self._chunk_id, y)
+        return s
 
     def sub_index(self, y: int) -> int:
         """sub_index returns the sub chunk index matching the y position passed.
@@ -228,11 +236,11 @@ class Chunk(ChunkBase):
         return chunk_sub_y(self._chunk_id, index)
 
 
-def new_chunk(r: Range) -> Chunk:
+def new_chunk(r: Range = RANGE_OVERWORLD) -> Chunk:
     """NewChunk initialises a new chunk who full of air and returns it, so that it may be used.
 
     Args:
-        r (Range): The Y range of this chunk could reach.
+        r (Range, optional): The Y range of this chunk could reach. Defaults to RANGE_OVERWORLD.
 
     Returns:
         Chunk: A new chunk.

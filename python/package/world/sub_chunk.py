@@ -1,4 +1,4 @@
-from attr import dataclass
+from dataclasses import dataclass, field
 from ..internal.symbol_export_sub_chunk import (
     new_sub_chunk as nsc,
     release_sub_chunk,
@@ -21,6 +21,17 @@ class SubChunkBase:
         if self._sub_chunk_id >= 0 and not release_sub_chunk is None:
             release_sub_chunk(self._sub_chunk_id)
 
+    def is_valid(self) -> bool:
+        """
+        is_valid check current sub chunk is valid or not.
+        If not valid, it means the sub chunk is actually not exist, not only Python but also in Go.
+        Try to use a invalid sub chunk is not allowed, and any operation will be terminated.
+
+        Returns:
+            bool: Wheatear the sub chunk is valid or not.
+        """
+        return self._sub_chunk_id >= 0
+
 
 class SubChunk(SubChunkBase):
     """
@@ -31,33 +42,31 @@ class SubChunk(SubChunkBase):
     def __init__(self):
         super().__init__()
 
-    def equals(self, another_sub_chunk: SubChunkBase) -> tuple[bool, bool]:
+    def equals(self, another_sub_chunk: SubChunkBase) -> bool:
         """Equals returns if the sub chunk passed is equal to the current one.
 
         Args:
             another_sub_chunk (SubChunkBase): The sub chunk passed.
 
         Returns:
-            tuple[bool, bool]: The first element refer to the compare result,
-                               and the second one refer to if their have any
-                               any error occurred.
-                               If the second one is False, then it means current
-                               sub chunk or another_sub_chunk is not found.
+            bool: The compare result.
+                  True for the contents of two sub chunk is the same.
+                  False for current sub chunk or another_sub_chunk is not found.
         """
         result = sub_chunk_equals(self._sub_chunk_id, another_sub_chunk._sub_chunk_id)
-        return (result == 1, result != -1)
+        return result == 1
 
-    def empty(self) -> tuple[bool, bool]:
+    def empty(self) -> bool:
         """
         empty checks if the SubChunk is considered empty.
         This is the case if the SubChunk has 0 block storages or if it has a single one that is completely filled with air.
 
         Returns:
-            tuple[bool, bool]: If current sub chunk is not found, return (False, False).
-                               Otherwise, return the result (is empty or not) and True.
+            bool: True for the sub chunk is empty.
+                  False for the sub chunk is not empty, or the current sub chunk is not found.
         """
         result = sub_chunk_empty(self._sub_chunk_id)
-        return (result == 1, result != -1)
+        return result == 1
 
     def block(self, x: int, y: int, z: int, layer: int) -> int:
         """
@@ -114,7 +123,7 @@ class SubChunkWithIndex:
     """
 
     index: int = 0
-    sub_chunk: SubChunk = SubChunk()
+    sub_chunk: SubChunk = field(default_factory=lambda: SubChunk())
 
 
 def new_sub_chunk() -> SubChunk:
