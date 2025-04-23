@@ -46,7 +46,7 @@
 
 存档操作器的主要目的在于为网易我的世界基岩版（v1.20.51）提供支持（但不包含解密其存档的实现），即，提供了相关的函数可以将子区块解码或编码为网端格式（Network Encoding），以供在网络传输区块上使用。
 
-您可以前往 [block.go](./block/block.go) 并将 `const UseNeteaseBlockStates = true` 改为 `const UseNeteaseBlockStates = false` 以将本操作器作为国际版的使用。
+您可以前往 [block.go](./block/block.go) 并将 `const UseNeteaseBlockStates = true` 改为 `const UseNeteaseBlockStates = false` 以将本操作器作为国际版（v1.20.51）的使用。
 
 需要指出的是，**Python** 的内存中几乎不会维护存档的任何部分，在大部分情况下，存档中的区块或子区块，甚至是 **Python** 创建的区块或子区块，都由 **Go** 进行管理，而 **Python** 只控制这些内存的回收。
 

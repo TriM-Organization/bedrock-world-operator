@@ -89,21 +89,16 @@ func (blockPaletteEncoding) DecodeBlockState(m map[string]any) (uint32, error) {
 		return 0, fmt.Errorf("invalid state in block entry")
 	}
 
-	if !block.UseNeteaseBlockStates {
-		// Upgrade the block state if necessary.
-		upgraded := blockupgrader.Upgrade(blockupgrader.BlockState{
-			Name:       name,
-			Properties: state,
-			Version:    version,
-		})
-		name = upgraded.Name
-		state = upgraded.Properties
-		version = upgraded.Version
-	}
+	// Upgrade the block state if necessary.
+	upgraded := blockupgrader.Upgrade(blockupgrader.BlockState{
+		Name:       name,
+		Properties: state,
+		Version:    version,
+	})
 
-	v, ok := block.StateToRuntimeID(name, state)
+	v, ok := block.StateToRuntimeID(upgraded.Name, upgraded.Properties)
 	if !ok {
-		return 0, fmt.Errorf("cannot get runtime ID of block state %v{%+v} %v", name, state, version)
+		return 0, fmt.Errorf("cannot get runtime ID of block state %v{%+v} %v", upgraded.Name, upgraded.Properties, upgraded.Version)
 	}
 	return v, nil
 }
