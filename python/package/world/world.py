@@ -212,7 +212,7 @@ class World(WorldBase):
             dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
-            list[bytes]: The raw payload of this chunk.
+            list[bytes]: The raw payload of this chunk, where each element in the list corresponds to a sub block payload.
                          If meet error or not exist, then return empty list.
         """
         return load_chunk_payload_only(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
@@ -242,7 +242,7 @@ class World(WorldBase):
         dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
-        save_chunk_payload_only saves a serialized chunk at the position passed to the leveldb database.
+        save_chunk_payload_only saves multiple sub chunks payload to the leveldb database which all these sub chunks are in a chunk.
         Note that we also write the version of this chunk.
 
         Args:
