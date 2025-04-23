@@ -20,7 +20,6 @@ from .world.constant import (
     AIR_BLOCK_RUNTIME_ID,
 )
 
-
 from .world.define import (
     ChunkPos,
     SubChunkPos,
