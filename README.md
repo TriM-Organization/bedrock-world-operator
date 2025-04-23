@@ -44,6 +44,10 @@
 ## 世界观
 **Bedrock World Operator** 是一个以 **Go** 语言为底层，以动态库调用的方式，皆在为 **Python** 提供一个效率足够的我的世界基岩版存档操作器。
 
+存档操作器的主要目的在于为网易我的世界基岩版（v1.20.51）提供支持（但不包含解密其存档的实现），即，提供了相关的函数可以将子区块解码或编码为网端格式（Network Encoding），以供在网络传输区块上使用。
+
+您可以前往 [block.go](./block/block.go) 并将 `const UseNeteaseBlockStates = true` 改为 `const UseNeteaseBlockStates = false` 以将本操作器作为国际版的使用。
+
 需要指出的是，**Python** 的内存中几乎不会维护存档的任何部分，在大部分情况下，存档中的区块或子区块，甚至是 **Python** 创建的区块或子区块，都由 **Go** 进行管理，而 **Python** 只控制这些内存的回收。
 
 另外，**Go** 部分的大部分代码参阅并修改自[该存储库](https://github.com/df-mc/dragonfly)，您可以通过它进行更深入的研究（如果可能）。
@@ -125,7 +129,6 @@ from .world.constant import (
     AIR_BLOCK_STATES,
     AIR_BLOCK_RUNTIME_ID,
 )
-
 
 from .world.define import (
     ChunkPos,

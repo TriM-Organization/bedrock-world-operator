@@ -203,7 +203,7 @@ class Chunk(ChunkBase):
         Returns:
             SubChunk: If current chunk is not found, then return a invalid sub chunk.
                       Otherwise, return the target sub chunk and True.
-                      Note that you could use s.is_vaild() to check whether the sub chunk is valid or not.
+                      Note that you could use s.is_valid() to check whether the sub chunk is valid or not.
         """
         s = SubChunk()
         s._sub_chunk_id = chunk_sub_chunk(self._chunk_id, y)
