@@ -28,7 +28,7 @@ def runtime_id_to_state(
     reader = BytesIO(payload)
 
     if reader.read(1) == b"\x00":
-        return ("", None, False)
+        return "", None, False
 
     l: int = struct.unpack("<H", reader.read(2))[0]
     name = reader.read(l).decode(encoding="utf-8")
@@ -55,9 +55,9 @@ def state_to_runtime_id(
     reader = BytesIO(payload)
 
     if reader.read(1) == b"\x00":
-        return (0, False)
+        return 0, False
 
-    return (struct.unpack("<I", reader.read(4))[0], True)
+    return struct.unpack("<I", reader.read(4))[0], True
 
 
 def sub_chunk_network_payload(
@@ -82,12 +82,12 @@ def from_sub_chunk_network_payload(
     )
 
     if reader.read(1) == b"\x00":
-        return (0, 0, False)
+        return 0, 0, False
 
     index = reader.read(1)[0]
     sub_chunk_id = struct.unpack("<I", reader.read(4))[0]
 
-    return (index, sub_chunk_id, True)
+    return index, sub_chunk_id, True
 
 
 def sub_chunk_disk_payload(
@@ -110,9 +110,9 @@ def from_sub_chunk_disk_payload(
     )
 
     if reader.read(1) == b"\x00":
-        return (0, 0, False)
+        return 0, 0, False
 
     index = reader.read(1)[0]
     sub_chunk_id = struct.unpack("<I", reader.read(4))[0]
 
-    return (index, sub_chunk_id, True)
+    return index, sub_chunk_id, True

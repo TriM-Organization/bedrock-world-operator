@@ -78,10 +78,10 @@ def world_close_world(id: int) -> str:
 def world_get_level_dat(id: int) -> tuple[nbtlib.tag.Compound | None, bool]:
     payload = as_python_bytes(LIB.World_GetLevelDat(CInt(id)))
     if len(payload) == 0:
-        return (None, False)
+        return None, False
 
     level_dat_data, _ = unmarshalNBT.UnMarshalBufferToPythonNBTObject(BytesIO(payload))
-    return (level_dat_data, True)  # type: ignore
+    return level_dat_data, True  # type: ignore
 
 
 def world_modify_level_dat(id: int, level_dat: nbtlib.tag.Compound) -> str:

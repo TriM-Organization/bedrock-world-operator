@@ -52,7 +52,6 @@ func (b *BedrockWorld) LoadSubChunkBlobHash(dm define.Dimension, position define
 }
 
 // SaveFullSubChunkBlobHash update the blob hash of a chunk.
-//
 // Note that:
 //   - If len(newHash) is 0, then the blob hash
 //     data of this chunk will be delete.

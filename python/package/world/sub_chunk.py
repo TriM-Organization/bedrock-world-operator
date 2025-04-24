@@ -27,11 +27,15 @@ class SubChunkBase:
     def is_valid(self) -> bool:
         """
         is_valid check current sub chunk is valid or not.
-        If not valid, it means the sub chunk is actually not exist, not only Python but also in Go.
-        Try to use a invalid sub chunk is not allowed, and any operation will be terminated.
+
+        If not valid, it means the sub chunk actually not exist,
+        not only Python but also in Go.
+
+        Try to use an invalid sub chunk is not allowed,
+        and any operation will be terminated.
 
         Returns:
-            bool: Wheatear the sub chunk is valid or not.
+            bool: Whether the sub chunk is valid or not.
         """
         return self._sub_chunk_id >= 0
 
@@ -39,7 +43,9 @@ class SubChunkBase:
 class SubChunk(SubChunkBase):
     """
     SubChunk is a cube of blocks located in a chunk.
-    It has a size of 16x16x16 blocks and forms part of a stack that forms a Chunk.
+
+    It has a size of 16x16x16 blocks and forms part
+    of a stack that forms a Chunk.
     """
 
     def __init__(self):
@@ -53,8 +59,8 @@ class SubChunk(SubChunkBase):
 
         Returns:
             bool: The compare result.
-                  True for the contents of two sub chunk is the same.
-                  False for current sub chunk or another_sub_chunk is not found.
+                  Return True for the contents of two sub chunks is the same.
+                  Return False for the current sub chunk or another_sub_chunk is not found.
         """
         result = sub_chunk_equals(self._sub_chunk_id, another_sub_chunk._sub_chunk_id)
         return result == 1
@@ -62,18 +68,22 @@ class SubChunk(SubChunkBase):
     def empty(self) -> bool:
         """
         empty checks if the SubChunk is considered empty.
-        This is the case if the SubChunk has 0 block storages or if it has a single one that is completely filled with air.
+
+        This is the case if the SubChunk has 0 block storage
+        or if it has a single one that is filled with air.
 
         Returns:
-            bool: True for the sub chunk is empty.
-                  False for the sub chunk is not empty, or the current sub chunk is not found.
+            bool: Return True for the sub chunk is empty.
+                  Return False for the sub chunk is not empty, or the current sub chunk is not found.
         """
         result = sub_chunk_empty(self._sub_chunk_id)
         return result == 1
 
     def block(self, x: int, y: int, z: int, layer: int) -> int:
         """
-        block returns the runtime ID of the block located at the given X, Y and Z.
+        block returns the runtime ID of the block
+        located at the given X, Y and Z.
+
         X, Y and Z must be in a range of 0-15.
 
         Args:
@@ -84,7 +94,7 @@ class SubChunk(SubChunkBase):
 
         Returns:
             int: Return the block runtime ID of target block.
-                 If current sub chunk is not found, then return -1.
+                 If the current sub chunk is not found, then return -1.
                  Note that if no sub chunk exists at the given y, the block is assumed to be air.
         """
         return sub_chunk_block(self._sub_chunk_id, x, y, z, layer)
@@ -92,25 +102,29 @@ class SubChunk(SubChunkBase):
     def blocks(self, layer: int) -> QuickSubChunkBlocks:
         """
         blocks all blocks (block runtime ids) whose in layer.
-        It is highly suggest you use this instead of s.block(...) if you are trying to query
-        so many blocks from this sub chunk.
+
+        It is highly suggested you use this instead of s.block(...)
+        if you are trying to query so many blocks from this sub chunk.
 
         Args:
             layer (int): The sub chunk blocks you want to find.
-                         layer refer to the finded blocks will from this layer.
+                         layer refers to the found blocks from this layer.
 
         Returns:
-            QuickSubChunkBlocks: All blocks of the target layer in this sub chunk if current sub chunk is exist.
-                                 If the target layer is not exist, then you get a sub chunk full of air.
-                                 Note that this implement don't do further check (maybe the underlying blocks list is empty)
-                                 due to this is aims to increase block query/set speed, and you should take responsibility for
-                                 any possible error.
+            QuickSubChunkBlocks:
+                All blocks of the target layer in this sub chunk if the current sub chunk exists.
+                If the target layer does not exist, then you get a sub chunk full of air.
+                Note that this implement doesn't do further check (maybe the underlying blocks list is empty)
+                due to this is aims to increase block query/set speed, and you should take responsibility for
+                any possible error.
         """
         return QuickSubChunkBlocks(sub_chunk_blocks(self._sub_chunk_id, layer))
 
     def set_block(self, x: int, y: int, z: int, layer: int, block_runtime_id: int):
         """
-        set_block sets the given block runtime ID at the given X, Y and Z.
+        set_block sets the given block runtime
+        ID at the given X, Y and Z.
+
         X, Y and Z must be in a range of 0-15.
 
         Args:
@@ -131,8 +145,8 @@ class SubChunk(SubChunkBase):
         """
         set_blocks sets the whole chunk blocks in layer by given block runtime ids.
 
-        It is highly suggest you use this instead of s.set_block(...) if you are trying to modify
-        so many blocks to this sub chunk.
+        It is highly suggested you use this instead of s.set_block(...) if you are
+        trying to modify so many blocks to this sub chunk.
 
         Note that this implement will not check the underlying blocks list is valid
         or not due to this is aims to increase block query/set speed, and you should
@@ -151,15 +165,17 @@ class SubChunk(SubChunkBase):
 
 @dataclass
 class SubChunkWithIndex:
-    """SubChunkWithIndex represents a sub chunk and its index in a whole chunk where this sub chunk is in.
+    """
+    SubChunkWithIndex represents a sub chunk and its
+    index in a whole chunk where this sub chunk is in.
 
     Args:
         sub_chunk (SubChunk): The sub chunk.
-        index (int): The index of this sub chunk, must bigger than -1.
-                     For example, for a block in (x, -63, z), than its
+        index (int): The index of this sub chunk, and must be bigger than -1.
+                     For example, for a block in (x, -63, z), then its
                      sub chunk Y pos will be -63>>4 (-4).
                      However, this is not the index of this sub chunk,
-                     we need do other compute to get the index:
+                     and we need to do other compute to get the index:
                      index = (-63>>4) - (r.start_range>>4)
                            = (-63>>4) - (-64>>4)
                            = 0
@@ -172,10 +188,12 @@ class SubChunkWithIndex:
 def new_sub_chunk() -> SubChunk:
     """
     NewSubChunk creates a new sub chunk.
-    All sub chunks should be created through this function.
+
+    All sub chunks should be created
+    through this function.
 
     Returns:
-        SubChunk: A new sub chunk that full of air.
+        SubChunk: A new sub chunk that is full of air.
     """
     s = SubChunk()
     s._sub_chunk_id = nsc()

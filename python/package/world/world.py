@@ -56,8 +56,12 @@ class WorldBase:
     def is_valid(self) -> bool:
         """
         is_valid check the opened world is valid or not.
-        If not valid, it means current world is actually not opened.
-        Try to use a world that not opened is not allowed, and any operation will be terminated.
+
+        If not valid, it means the current world is
+        actually not opened.
+
+        Try to use a world that is not opened is not
+        allowed, and any operation will be terminated.
 
         Returns:
             bool: The current world is valid or not.
@@ -75,13 +79,13 @@ class WorldBase:
             raise Exception(err)
 
     def has(self, key: bytes) -> bool:
-        """has check the if the key is in the underlying database of this game saves.
+        """has determinate if the key is in the underlying database of this game saves.
 
         Args:
             key (bytes): The bytes represent of the key.
 
         Returns:
-            bool: If key is exist, then this is true.
+            bool: If key exists, then this is true.
                   Otherwise, when meet error or not exist, return false.
         """
         return db_has(self._world_id, key) == 1
@@ -93,13 +97,13 @@ class WorldBase:
             key (bytes): The bytes represent of the key.
 
         Returns:
-            bytes: If key is exist, then return the value of this key.
+            bytes: If key exists, then return the value of this key.
                    Otherwise, when meet error or not exist, return empty bytes.
         """
         return db_get(self._world_id, key)
 
     def put(self, key: bytes, value: bytes):
-        """put set the key to value in the underlying database.
+        """put sets the key to value in the underlying database.
 
         Args:
             key (bytes): The bytes represent of the key.
@@ -113,7 +117,7 @@ class WorldBase:
             raise Exception(err)
 
     def delete(self, key: bytes):
-        """delete remove the key and its value from the underlying database.
+        """delete removes the key and its value from the underlying database.
 
         Args:
             key (bytes): The bytes represent of the key.
@@ -128,7 +132,7 @@ class WorldBase:
 
 class World(WorldBase):
     """
-    World is the completely implements of Minecraft bedrock game saves,
+    World is the complete implements of Minecraft bedrock game saves,
     which only entities and player data related things are not implement.
     """
 
@@ -204,16 +208,19 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> list[bytes]:
         """
-        load_chunk_payload_only loads a chunk at the position passed from the leveldb database.
-        Note that we here don't decode chunk data and just return the origin payload.
+        load_chunk_payload_only loads a chunk at the
+        position passed from the leveldb database.
+
+        Note that we here don't decode chunk data and
+        just return the origin payload.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
             dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
-            list[bytes]: The raw payload of this chunk, where each element in the list corresponds to a sub block payload.
-                         If meet error or not exist, then return empty list.
+            list[bytes]: The raw payload of this chunk, where each element in the list corresponds to a sub chunk payload.
+                         If meet error or not exist, then return an empty list.
         """
         return load_chunk_payload_only(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
@@ -227,7 +234,7 @@ class World(WorldBase):
             dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
-            Chunk: If current world or the chunk is not exist, then return a invalid chunk, with a
+            Chunk: If the current world or the chunk does not exist, then return an invalid chunk, with an
                    invalid chunk range which is RANGE_INVALID.
                    Otherwise, if success, you will get a valid chunk.
                    Note that you could use c.is_valid() to check whether the chunk is valid or not.
@@ -245,7 +252,9 @@ class World(WorldBase):
         dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
-        save_chunk_payload_only saves multiple sub chunks payload to the leveldb database which all these sub chunks are in a chunk.
+        save_chunk_payload_only saves multiple sub chunks payload to
+        the leveldb database which all these sub chunks are in a chunk.
+
         Note that we also write the version of this chunk.
 
         Args:
@@ -269,7 +278,9 @@ class World(WorldBase):
         dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
-        save_chunk saves a chunk at the position passed to the leveldb database.
+        save_chunk saves a chunk at the position passed to
+        the leveldb database.
+
         Note that we also write the version of this chunk.
 
         Args:
@@ -298,7 +309,7 @@ class World(WorldBase):
             dm (Dimension, optional): The dimension of this sub chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
-            SubChunk: If current world or the sub chunk is not exist, then return a invalid sub chunk.
+            SubChunk: If the current world or the sub chunk does not exist, then return an invalid sub chunk.
                       Otherwise, return the target sub chunk.
                       Note that you could use s.is_valid() to check whether the sub chunk is valid or not.
         """
@@ -315,8 +326,11 @@ class World(WorldBase):
         dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
-        save_sub_chunk saves a sub chunk at the position passed to the leveldb database.
-        Note that we also write the version of the whole chunk where this sub chunk is in.
+        save_sub_chunk saves a sub chunk at the
+        position passed to the leveldb database.
+
+        Note that we also write the version of the
+        whole chunk where this sub chunk is in.
 
         Args:
             sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
@@ -341,7 +355,8 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> bytes:
         """
-        load_nbt_payload_only loads payload of all block entities from the chunk position passed.
+        load_nbt_payload_only loads payload of all
+        block entities from the chunk position passed.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
@@ -364,14 +379,14 @@ class World(WorldBase):
 
         Returns:
             list[nbtlib.tag.Compound]: The decoded block entities NBT of this chunk.
-                                       If meet error or not exist, then return empty list.
+                                       If meet error or not exist, then return an empty list.
         """
         return load_nbt(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
     def save_nbt_payload_only(
         self, chunk_pos: ChunkPos, payload: bytes, dm: Dimension = DIMENSION_OVERWORLD
     ):
-        """save_nbt_payload_only saves a serialized NBT data to the chunk position passed.
+        """save_nbt_payload_only saves serialized NBT data to the chunk position passed.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
@@ -411,8 +426,11 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> bytes:
         """
-        load_delta_update load a custom purpose payload which related a chunk from leveldb database.
-        This is not used by standard Minecraft, and just for some own purpose.
+        load_delta_update load a custom purpose payload
+        which related a chunk from a leveldb database.
+
+        This is not used by standard Minecraft and just
+        for some own purpose.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
@@ -428,13 +446,16 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, payload: bytes, dm: Dimension = DIMENSION_OVERWORLD
     ):
         """
-        save_delta_update save a custom purpose payload which related a chunk to leveldb database.
-        This is not used by standard Minecraft, and just for some own purpose.
+        save_delta_update save a custom purpose payload
+        which related a chunk to a leveldb database.
+
+        This is not used by standard Minecraft and just
+        for some own purpose.
 
         Args:
             dm (Dimension): The dimension of this chunk.
             chunk_pos (ChunkPos): The chunk pos of this chunk.
-            payload (bytes): The delta update payload want to set for this chunk.
+            payload (bytes): The delta update payload wants to set for this chunk.
             dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
@@ -450,8 +471,11 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> int:
         """
-        load_time_stamp load the last update unix time of a chunk whose in chunk_pos and dm.
-        This is not used by standard Minecraft, and just for some own purpose.
+        load_time_stamp load the last update unix time
+        of a chunk whose in chunk_pos and dm.
+
+        This is not used by standard Minecraft and just
+        for some own purpose.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
@@ -459,8 +483,8 @@ class World(WorldBase):
 
         Returns:
             int: The last update unix time of this chunk.
-                 Return -1 for current world is not exist,
-                 Return 0 for the time stamp is not exist.
+                 Return -1 for the current world is not existed,
+                 Return 0 for the time stamp does not exist.
         """
         return load_time_stamp(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
 
@@ -468,8 +492,11 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, time_stamp: int, dm: Dimension = DIMENSION_OVERWORLD
     ):
         """
-        save_time_stamp save the last update unix time of a chunk whose in chunk_pos and dm.
-        This is not used by standard Minecraft, and just for some own purpose.
+        save_time_stamp save the last update unix time
+        of a chunk whose in chunk_pos and dm.
+
+        This is not used by standard Minecraft and just
+        for some own purpose.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
@@ -489,9 +516,12 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, dm: Dimension = DIMENSION_OVERWORLD
     ) -> int:
         """
-        load_delta_time_stamp load the last update unix time of a delta update
-        which related to a chunk in chunk_pos and dm.
-        This is not used by standard Minecraft, and just for some own purpose.
+        load_delta_time_stamp load the last update unix
+        time of a delta update which related to a chunk
+        in chunk_pos and dm.
+
+        This is not used by standard Minecraft and just
+        for some own purpose.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of the chunk.
@@ -499,8 +529,8 @@ class World(WorldBase):
 
         Returns:
             int: The last update unix time of the delta update.
-                 Return -1 for current world is not exist,
-                 Return 0 for the time stamp is not exist.
+                 Return -1 for the current world is not existed,
+                 Return 0 for the time stamp does not exist.
         """
         return load_delta_update_time_stamp(
             self._world_id, dm.dm, chunk_pos.x, chunk_pos.z
@@ -510,12 +540,16 @@ class World(WorldBase):
         self, chunk_pos: ChunkPos, time_stamp: int, dm: Dimension = DIMENSION_OVERWORLD
     ):
         """
-        save_time_stamp save the last update unix time of a delta update which related to chunk in chunk_pos and dm.
-        This is not used by standard Minecraft, and just for some own purpose.
+        save_time_stamp save the last update unix time
+        of a delta update which related to chunk in
+        chunk_pos and dm.
+
+        This is not used by standard Minecraft and just
+        for some own purpose.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of the chunk.
-            time_stamp (int): The last update unix time that want to set for the delta update.
+            time_stamp (int): The last update unix time that wants to set for the delta update.
             dm (Dimension, optional): The dimension of the chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
@@ -532,9 +566,12 @@ class World(WorldBase):
     ) -> list[HashWithPosY]:
         """
         load_full_sub_chunk_blob_hash loads the blob hash of a chunk.
+
         Actually speaking, this is hash for multiple sub chunks
-        (each sub chunks who have payload will have a hash value), not just a completely chunk.
-        This is not used by standard Minecraft, and just for some own purpose.
+        (each sub chunk who have payload will have a hash value),
+        not just a complete chunk.
+
+        This is not used by standard Minecraft and just for some own purpose.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
@@ -542,7 +579,7 @@ class World(WorldBase):
 
         Returns:
             list[HashWithPosY]: The hashes of this chunk.
-                                If not exist or meet error, then return empty list.
+                                If not exist or meet error, then return an empty list.
         """
         hashes = load_full_sub_chunk_blob_hash(
             self._world_id, dm.dm, chunk_pos.x, chunk_pos.z
@@ -560,17 +597,23 @@ class World(WorldBase):
     ):
         """
         save_full_sub_chunk_blob_hash update the blob hash of a chunk.
-        It's necessary to say that this is not a hash of a completely chunk,
-        but are multiple hash for each sub chunk who have payload in this chunk.
+
+        It's necessary to say that this is not a hash of a complete chunk,
+        but there are multiple hash for each sub chunk who have payload in
+        this chunk.
+
+        This is not used by standard Minecraft and just for some own purpose.
+
         Note that:
             - If len(new_hash) is 0, then the blob hash
-              data of this chunk will be delete.
+              data of this chunk will be deleted.
             - Zero hash is allowed.
-        This is not used by standard Minecraft, and just for some own purpose.
+
+        This is not used by standard Minecraft and just for some own purpose.
 
         Args:
             chunk_pos (ChunkPos): The chunk pos of this chunk.
-            hashes (list[HashWithPosY]): The hashes want to save to this chunk.
+            new_hash (list[HashWithPosY]): The hashes want to save it to this chunk.
             dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Raises:
@@ -592,8 +635,10 @@ class World(WorldBase):
         dm: Dimension = DIMENSION_OVERWORLD,
     ) -> int:
         """
-        load_sub_chunk_blob_hash loads the blob hash of a sub chunk that in sub_chunk_pos and in dm dimension.
-        This is not used by standard Minecraft, and just for some own purpose.
+        load_sub_chunk_blob_hash loads the blob hash of a sub chunk that in
+        sub_chunk_pos and in dm dimension.
+
+        This is not used by standard Minecraft and just for some own purpose.
 
         Args:
             sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
@@ -602,7 +647,7 @@ class World(WorldBase):
         Returns:
             int: The blob hash value of target sub chunk.
                  If meet error or not exist, then return -1.
-                 Return 0 for a sub chunk that full of air.
+                 Return 0 for a sub chunk that is full of air.
         """
         return load_sub_chunk_blob_hash(
             self._world_id, dm.dm, sub_chunk_pos.x, sub_chunk_pos.y, sub_chunk_pos.z
@@ -615,9 +660,13 @@ class World(WorldBase):
         dm: Dimension = DIMENSION_OVERWORLD,
     ):
         """
-        save_sub_chunk_blob_hash save the hash for sub chunk which in sub_chunk_pos and in dm dimension.
+        save_sub_chunk_blob_hash save the hash for sub
+        chunk which in sub_chunk_pos and in dm dimension.
+
         Note that zero hash is allowed.
-        This is not used by standard Minecraft, and just for some own purpose.
+
+        This is not used by standard Minecraft and just
+        for some own purpose.
 
         Args:
             sub_chunk_pos (SubChunkPos): The sub chunk pos of this sub chunk.
@@ -640,17 +689,20 @@ class World(WorldBase):
 
 def new_world(dir: str) -> World:
     """
-    new_world creates a new provider reading and writing from/to files under the path
-    passed using default options. If a world is present at the path, new_world will
-    parse its data and initialise the world with it.
+    new_world creates a new provider reading and
+    writing from/to files under the path passed
+    using default options.
+
+    If a world is present on the path, new_world will
+    parse its data and initialize the world with it.
 
     Args:
         dir (str): The minecraft bedrock leveldb path (folder path)
 
     Returns:
-        World: If database can't be initialise or the level dat is cannot be
-               parsed, then return a invalid world.
-               Otherwise, the bedrock world will be created or opened, and we return the world.
+        World: If a database can't be initialized or the level dat is cannot be
+               parsed, then return an invalid world.
+               Otherwise, the bedrock world will be created or opened, and we return a bedrock world.
                Note that you could use w.is_valid() to check the world is valid or not.
     """
     w = World()

@@ -6,9 +6,11 @@ from dataclasses import dataclass, field
 class ChunkPos:
     """
     ChunkPos holds the position of a chunk. The type is provided as a utility struct for keeping track of a
-    chunk's position. Chunks do not themselves keep track of that. Chunk positions are different from block
-    positions in the way that increasing the X/Z by one means increasing the absolute value on the X/Z axis in
-    terms of blocks by 16.
+    chunk's position.
+
+    Chunks do not themselves keep track of that. Chunk positions are different from block positions in the
+    way that increasing the X/Z by one means increasing the absolute value on the X/Z axis in terms of blocks
+    by 16.
     """
 
     x: int = 0
@@ -18,9 +20,11 @@ class ChunkPos:
 @dataclass
 class SubChunkPos:
     """
-    SubChunkPos holds the position of a sub-chunk. The type is provided as a utility struct for keeping track of a
-    sub-chunk's position. Sub-chunks do not themselves keep track of that. Sub-chunk positions are different from
-    block positions in the way that increasing the X/Y/Z by one means increasing the absolute value on the X/Y/Z axis in
+    SubChunkPos holds the position of a sub-chunk. The type is provided as a utility struct for keeping
+    track of a sub-chunk's position.
+
+    Sub-chunks do not themselves keep track of that. Sub-chunk positions are different from block positions
+    in the way that increasing the X/Y/Z by one means increasing the absolute value on the X/Y/Z axis in
     terms of blocks by 16.
     """
 
@@ -32,9 +36,10 @@ class SubChunkPos:
 @dataclass
 class Range:
     """
-    Range represents the height range of a Dimension in blocks. The first value
-    of the Range holds the minimum Y value, the second value holds the maximum Y
-    value.
+    Range represents the height range of a Dimension in blocks.
+
+    The first value of the Range holds the minimum Y value,
+    the second value holds the maximum Y value.
     """
 
     start_range: int = 0
@@ -43,9 +48,10 @@ class Range:
 
 class Dimension:
     """
-    Dimension is a dimension of a World. It influences a variety of
-    properties of a World such as the building range, the sky colour and the
-    behaviour of liquid blocks.
+    Dimension is a dimension of a World.
+
+    It influences a variety of properties of a World such as the building range,
+    the sky color and the behavior of liquid blocks.
     """
 
     dm: int = 0
@@ -59,12 +65,12 @@ class Dimension:
         self.dm = dm
 
     def range(self) -> Range:
-        """range return the range that player could build block in this dimension.
+        """range returns the range that player could build block in this dimension.
 
         Returns:
             Range: The range that player could build block in this dimension.
                    If this dimension is not standard dimension, then redirect
-                   to overworld range.
+                   to Overworld range.
         """
         match self.dm:
             case 0:
@@ -79,15 +85,16 @@ class Dimension:
     def height(self) -> int:
         """
         height returns the height of this dimension.
-        For example, the height of overworld is 384
+
+        For example, the height of Overworld is 384
         due to "384 = 319 - (-64) + 1", and 319 is
-        the max Y that overworld could build, and -64
-        is the min Y that overworld could build.
+        the max Y that Overworld could build, and -64
+        is the min Y that Overworld could build.
 
         Returns:
             int: The height of this dimension.
                  If this dimension is not standard dimension, then redirect
-                 to overworld height.
+                 to Overworld height.
         """
         match self.dm:
             case 0:
@@ -124,17 +131,19 @@ class BlockStates:
 @dataclass
 class QuickChunkBlocks:
     """
-    QuickChunkBlocks is a quick blocks getter and setter, which used for a Minecraft chunk.
-    Note that it is only represent one layer in this chunk.
+    QuickChunkBlocks is a quick blocks getter and setter,
+    which used for a Minecraft chunk.
+
+    Note that it is only representing one layer in this chunk.
 
     Args:
-        blocks (list[int], optional): A dense matrix that represent each block in a layer of this chunk.
-                                      Defaults to empty list.
+        blocks (list[int], optional): A dense matrix that represents each block in a layer of this chunk.
+                                      Default to an empty list.
         start_range (int): The min Y position of this chunk.
-                           For overworld is -64, but nether and end is 0.
-                           Defaults to -64.
+                           For Overworld is -64, but Nether and End is 0.
+                           Default to -64.
         end_range (int): The max Y position of this chunk.
-                         For overworld is 319, for nether is 127, and for end is 255.
+                         For Overworld is 319, for Nether is 127, and for End is 255.
                          Defaults to 319.
     """
 
@@ -176,6 +185,7 @@ class QuickChunkBlocks:
     def set_block(self, x: int, y: int, z: int, block_runtime_id: int | numpy.uint32):
         """
         set_block sets the runtime ID of a block at a given x, y and z in this chunk.
+
         Note that:
             - This operation is just on program, and you need to use c.set_blocks(layer, QuickChunkBlocks) to apply
               changes to the chunk. Then, after you apply changes, use w.save_chunk(...) to apply changes to the game saves.
@@ -196,12 +206,14 @@ class QuickChunkBlocks:
 @dataclass
 class QuickSubChunkBlocks:
     """
-    QuickSubChunkBlocks is a quick blocks getter and setter, which used for a Minecraft sub chunk.
-    Note that it is only represent one layer in this sub chunk.
+    QuickSubChunkBlocks is a quick blocks getter and setter,
+    which used for a Minecraft sub chunk.
+
+    Note that it is only representing one layer in this sub chunk.
 
     Args:
-        blocks (list[int], optional): A dense matrix that represent each block in a layer of this sub chunk.
-                                      Defaults to empty list.
+        blocks (list[int], optional): A dense matrix that represents each block in a layer of this sub chunk.
+                                      Default to an empty list.
     """
 
     blocks: numpy.ndarray = field(
@@ -218,7 +230,9 @@ class QuickSubChunkBlocks:
 
     def block(self, x: int, y: int, z: int) -> numpy.uint32:
         """
-        block returns the runtime ID of the block located at the given X, Y and Z.
+        block returns the runtime ID of the block
+        located at the given X, Y and Z.
+
         X, Y and Z must be in a range of 0-15.
 
         Args:
@@ -234,13 +248,16 @@ class QuickSubChunkBlocks:
 
     def set_block(self, x: int, y: int, z: int, block_runtime_id: int | numpy.uint32):
         """
-        set_block sets the given block runtime ID at the given X, Y and Z.
+        set_block sets the given block runtime
+        ID at the given X, Y and Z.
+
         X, Y and Z must be in a range of 0-15.
+
         Note that:
             - This operation is just on program, and you need to use s.set_blocks(layer, QuickSubChunkBlocks) to apply changes
               to the sub chunk. Then, after you apply changes,
                 - use w.save_sub_chunk(...) to apply changes to the game saves.
-                - if this sub chunk is from a loaded chunk, then you'd be suggest to use w.save_chunk(...) to apply changes
+                - if this sub chunk is from a loaded chunk, then you'd be suggested to use w.save_chunk(...) to apply changes
                   to the game saves if there are multiple sub chunk changes in the target chunk.
             - It will not check whether the index is overflowing.
 

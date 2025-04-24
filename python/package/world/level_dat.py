@@ -28,7 +28,7 @@ class Abilities:
         """marshal encode abilities to its NBT represent
 
         Returns:
-            Compound: The NBT represent of abilities
+            Compound: The NBT represents of abilities
         """
         return nbtlib.tag.Compound(
             {
@@ -82,10 +82,14 @@ class Abilities:
 @dataclass
 class LevelDat:
     """
-    LevelDat holds a collection of data that specify a range of Settings of the
-    world. These Settings usually alter the way that players interact with the
-    world. The data held here is usually saved in a level.dat file of the world.
-    LevelDat may be used in LevelDat.Unmarshal to collect the data of the level.dat.
+    LevelDat holds a collection of data that
+    specify a range of Settings of the world.
+
+    These Settings usually alter the way that
+    players interact with the world.
+
+    The data held here is usually saved in a
+    level.dat file of the world.
     """
 
     base_game_version: str = "*"

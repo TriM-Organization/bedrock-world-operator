@@ -39,11 +39,15 @@ class ChunkBase:
     def is_valid(self) -> bool:
         """
         is_valid check current chunk is valid or not.
-        If not valid, it means the chunk is actually not exist, not only Python but also in Go.
-        Try to use a invalid chunk is not allowed, and any operation will be terminated.
+
+        If not valid, it means the chunk actually not exist,
+        not only Python but also in Go.
+
+        Try to use an invalid chunk is not allowed,
+        and any operation will be terminated.
 
         Returns:
-            bool: Wheatear the chunk is valid or not.
+            bool: Whether the chunk is valid or not.
         """
         return (
             self._chunk_id >= 0
@@ -53,9 +57,12 @@ class ChunkBase:
 
 class Chunk(ChunkBase):
     """
-    Chunk is a segment in the world with a size of 16x16x256 blocks. A chunk contains multiple sub chunks
-    and stores other information such as biomes.
-    It is not safe to call methods on Chunk simultaneously from multiple goroutines.
+    Chunk is a segment in the world
+    with a size of 16x16x256 blocks.
+
+    A chunk contains multiple sub chunks
+    and stores other information such as
+    biomes.
     """
 
     def __init__(self):
@@ -72,7 +79,7 @@ class Chunk(ChunkBase):
 
         Returns:
             int: The biome ID of this column.
-                 If current chunk is not found, then return -1.
+                 If the current chunk is not found, then return -1.
         """
         return chunk_biome(self._chunk_id, x, y, z)
 
@@ -88,27 +95,35 @@ class Chunk(ChunkBase):
 
         Returns:
             int: Return the block runtime ID of target block.
-                 If current chunk is not found, then return -1.
+                 If the current chunk is not found, then return -1.
                  Note that if no sub chunk exists at the given y, the block is assumed to be air.
         """
         return chunk_block(self._chunk_id, x, y, z, layer)
 
     def blocks(self, layer: int) -> QuickChunkBlocks:
         """
-        blocks returns all blocks (block runtime ids) whose in the target layer of this chunk.
-        It is highly suggest you use this instead of c.block(...) if you are trying to query so
-        many blocks from this chunk.
+        blocks returns all blocks (block runtime ids) whose in the
+        target layer of this chunk.
+
+        It is highly suggested you use this instead of c.block(...)
+        if you are trying to query so many blocks from this chunk.
 
         Args:
             layer (int): The layer of the blocks in this chunk that you want to find.
 
         Returns:
-            QuickChunkBlocks: All blocks of the target layer in this chunk if current chunk is exist.
-                              If the target layer is not exist, then you get a chunk full of air.
-                              Note that this implement don't do further check (current chunk hava a
-                              invalid range or underlying blocks list is empty) due to this is aims to
-                              increase block query/set speed, and you should take responsibility for
-                              any possible error.
+            QuickChunkBlocks:
+                All blocks of the target layer in this chunk if the current chunk exists.
+                If the target layer does not exist, then you get a chunk full of air.
+
+                Note that this implement doesn't do further check due to this is aims to
+                increase block query/set speed, and you should take responsibility for
+                any possible error.
+
+                Here we listed all possible errors that we have not checked.
+                    - Current chunk has an invalid range
+                    - Underlying blocks list is empty
+
         """
         return QuickChunkBlocks(
             chunk_blocks(self._chunk_id, layer),
@@ -118,9 +133,13 @@ class Chunk(ChunkBase):
 
     def compact(self):
         """
-        compact compacts the chunk as much as possible, getting rid of any sub chunks that are empty,
-        and compacts all storages in the sub chunks to occupy as little space as possible.
-        compact should be called right before the chunk is saved in order to optimise the storage space.
+        compact compacts the chunk as much as possible,
+        getting rid of any sub chunks that are empty,
+        and compacts all storages in the sub chunks to
+        occupy as little space as possible.
+
+        compact should be called right before the chunk
+        is saved to optimize the storage space.
 
         Raises:
             Exception: When failed to compact.
@@ -137,21 +156,24 @@ class Chunk(ChunkBase):
 
         Returns:
             bool: The compare result.
-                  True for the contents of two chunk is the same.
-                  False for current chunk or another_chunk is not found.
+                  Return True for the contents of two chunks is the same.
+                  Return False for current chunk or another_chunk is not found.
         """
         result = chunk_equals(self._chunk_id, another_chunk._chunk_id)
         return result == 1
 
     def highest_filled_sub_chunk(self) -> int:
         """
-        highest_filled_sub_chunk returns the index of the highest sub chunk in the chunk
-        that has any blocks in it. 0 is returned if no subchunks have any blocks.
+        highest_filled_sub_chunk returns the index of
+        the highest sub chunk in the chunk that has any
+        blocks in it.
+
+        0 is returned if no sub chunks have any blocks.
 
         Returns:
             int: The index of the highest sub chunk in the chunk that has any blocks in it.
-                 If no subchunks have any block, then return 0.
-                 Additionally, if current chunk is not found, then return -1.
+                 If no sub chunks have any block, then return 0.
+                 Additionally, if the current chunk is not found, then return -1.
         """
         return chunk_highest_filled_sub_chunk(self._chunk_id)
 
@@ -159,8 +181,8 @@ class Chunk(ChunkBase):
         """Range returns the Range of the Chunk as passed to new_chunk.
 
         Returns:
-            Range: The Y range that player could build on of this chunk.
-                   If current chunk is valid, then return RANGE_INVALID.
+            Range: The Y range that player could build in of this chunk.
+                   If the current chunk is valid, then return RANGE_INVALID.
         """
         return self._chunk_range
 
@@ -183,15 +205,18 @@ class Chunk(ChunkBase):
 
     def set_block(self, x: int, y: int, z: int, layer: int, block_runtime_id: int):
         """
-        set_block sets the runtime ID of a block at a given x, y and z in a chunk at the given layer.
-        If no sub chunk exists at the given y, a new sub chunk is created and the block is set.
+        set_block sets the runtime ID of a block at
+        a given x, y and z in a chunk at the given layer.
+
+        If no sub chunk exists at the given y,
+        a new sub chunk is created and the block is set.
 
         Args:
             x (int): The relative x position of this block. Must in a range of 0-15.
             y (int): The y position of this block.
                      Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this block. Must in a range of 0-15.
-            layer (int): The layer that this block in.
+            layer (int): The layer that this blocks in.
             block_runtime_id (int): The result block that this block will be.
 
         Raises:
@@ -205,8 +230,8 @@ class Chunk(ChunkBase):
         """
         set_blocks sets the whole chunk blocks in layer by given block runtime ids.
 
-        It is highly suggest you use this instead of c.set_block(...) if you are trying to modify
-        so many blocks to this chunk.
+        It is highly suggested you use this instead of c.set_block(...) if you are
+        trying to modify so many blocks to this chunk.
 
         Note that this implement will not check the underlying blocks list is valid
         or not due to this is aims to increase block query/set speed, and you should
@@ -225,12 +250,15 @@ class Chunk(ChunkBase):
     def sub(self) -> list[SubChunk]:
         """
         sub returns a list of all sub chunks present in the chunk.
-        Note that after edit those sub chunk, you just only need to save this chunk,
+
+        Note that after editing those sub chunks,
+        you just only need to save this chunk,
         but not need to save the modified sub chunks.
 
         Returns:
             list[SubChunk]: All sub chunks present in the chunk.
-                            If current chunk is not found, or this chunk have no sub chunk, then return empty list.
+                            If the current chunk is not found,
+                            or this chunk has no sub chunk, then return an empty list.
         """
         result = []
         for i in chunk_sub(self._chunk_id):
@@ -242,7 +270,9 @@ class Chunk(ChunkBase):
     def sub_chunk(self, y: int) -> SubChunk:
         """
         sub_chunk finds the correct sub chunk in the Chunk by a y position.
-        Note that after edit this sub chunk, you just only need to save this chunk,
+
+        Note that after editing this sub chunk,
+        you just only need to save this chunk,
         but not need to save the modified sub chunks.
 
         Args:
@@ -250,7 +280,7 @@ class Chunk(ChunkBase):
                      Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
 
         Returns:
-            SubChunk: If current chunk is not found, then return a invalid sub chunk.
+            SubChunk: If the current chunk is not found, then return an invalid sub chunk.
                       Otherwise, return the target sub chunk.
                       Note that you could use s.is_valid() to check whether the sub chunk is valid or not.
         """
@@ -267,7 +297,7 @@ class Chunk(ChunkBase):
 
         Returns:
             int: The index of the y position.
-                 If current sub chunk is not found, then return -1.
+                 If the current sub chunk is not found, then return -1.
         """
         return chunk_sub_index(self._chunk_id, y)
 
@@ -280,7 +310,7 @@ class Chunk(ChunkBase):
         Returns:
             int: The y position who could match the given index.
                  y is in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
-                 If current sub chunk is not found, then return -1.
+                 If the current sub chunk is not found, then return -1.
         """
         return chunk_sub_y(self._chunk_id, index)
 
