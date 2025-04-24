@@ -32,9 +32,6 @@ class ChunkBase:
         )
     )
 
-    def __init__(self):
-        self._chunk_id = -1
-
     def __del__(self):
         if self._chunk_id >= 0 and not release_chunk is None:
             release_chunk(self._chunk_id)
@@ -298,7 +295,7 @@ def new_chunk(r: Range = RANGE_OVERWORLD) -> Chunk:
         Chunk: A new chunk.
     """
     c = Chunk()
-    c._chunk_id, c._chunk_range.start_range, c._chunk_range.end_range = nc(
+    c._chunk_range.start_range, c._chunk_range.end_range, c._chunk_id = nc(
         r.start_range, r.end_range
     )
     return c

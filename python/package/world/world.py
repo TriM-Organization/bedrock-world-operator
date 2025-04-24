@@ -233,7 +233,7 @@ class World(WorldBase):
                    Note that you could use c.is_valid() to check whether the chunk is valid or not.
         """
         c = Chunk()
-        c._chunk_id, c._chunk_range.start_range, c._chunk_range.end_range = load_chunk(
+        c._chunk_range.start_range, c._chunk_range.end_range, c._chunk_id = load_chunk(
             self._world_id, dm.dm, chunk_pos.x, chunk_pos.z
         )
         return c
