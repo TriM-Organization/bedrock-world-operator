@@ -1,4 +1,4 @@
-import nbtlib
+import nbtlib, numpy
 from .constant import (
     AIR_BLOCK_STATES,
     EMPTY_BLOCK_STATES,
@@ -17,12 +17,12 @@ from ..internal.symbol_export_conversion import (
 
 
 def runtime_id_to_state(
-    block_runtime_id: int,
+    block_runtime_id: int | numpy.uint32,
 ) -> BlockStates:
     """runtime_id_to_state convert block runtime id to a BlockStates.
 
     Args:
-        block_runtime_id (int): The runtime id of target block.
+        block_runtime_id (int | numpy.uint32): The runtime id of target block.
 
     Returns:
         BlockStates: If not found, return AIR_BLOCK_STATES.
@@ -30,7 +30,7 @@ def runtime_id_to_state(
     """
     block_states = BlockStates()
 
-    name, states, success = rits(block_runtime_id)
+    name, states, success = rits(block_runtime_id)  # type: ignore
     if not success:
         return AIR_BLOCK_STATES
 
@@ -40,7 +40,7 @@ def runtime_id_to_state(
 
 def state_to_runtime_id(
     block_name: str, block_states: nbtlib.tag.Compound = EMPTY_BLOCK_STATES
-) -> int:
+) -> int | numpy.uint32:
     """
     state_to_runtime_id convert a block which name is block_name
     and states is block_states to its block runtime id represent.
@@ -51,8 +51,8 @@ def state_to_runtime_id(
                                                       Defaults to EMPTY_BLOCK_STATES.
 
     Returns:
-        int: If not found, return 0.
-             Otherwise, return its block runtime id.
+        int | numpy.uint32: If not found, return 0.
+                            Otherwise, return its block runtime id.
     """
     block_runtime_id, success = stri(block_name, block_states)
     if not success:
