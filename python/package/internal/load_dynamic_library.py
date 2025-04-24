@@ -33,7 +33,7 @@ match system:
             LIB = ctypes.cdll.LoadLibrary(
                 os.path.join(lib_path, "bedrock-world-operator_android_arm64.so")
             )
-        elif arch == "amd64":
+        elif arch == "amd64" or arch == "x86_64":
             LIB = ctypes.cdll.LoadLibrary(
                 os.path.join(lib_path, "bedrock-world-operator_linux_amd64.so")
             )
@@ -43,4 +43,4 @@ match system:
             )
 
 if LIB is None:
-    raise FileNotFoundError("Your machine is not supported.")
+    raise Exception(f"Your machine (system={system}, arch={arch}) is not supported.")

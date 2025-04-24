@@ -40,5 +40,5 @@ setuptools.setup(
         ],
     },
     install_requires=dependences,
-    python_requires=">=3.11",
+    python_requires=">=3.10",
 )

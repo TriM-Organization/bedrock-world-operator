@@ -66,7 +66,7 @@
     * arm64
 - Linux
     * aarch64
-    * amd64
+    * amd64/x86_64
     * arm64
 
 您可以通过参阅[此文件](./python/package/internal/load_dynamic_library.py)来了解 **Bedrock World Operator** 加载相应动态库的具体逻辑。
