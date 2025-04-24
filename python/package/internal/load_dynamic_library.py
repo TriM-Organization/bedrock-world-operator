@@ -20,7 +20,7 @@ match system:
                 os.path.join(lib_path, "bedrock-world-operator_windows_x86.dll")
             )
     case "darwin":
-        if arch == "amd64":
+        if arch == "amd64" or arch == "x86_64":
             LIB = ctypes.cdll.LoadLibrary(
                 os.path.join(lib_path, "bedrock-world-operator_macos_amd64.dylib")
             )
