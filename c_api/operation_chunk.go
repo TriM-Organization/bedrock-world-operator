@@ -167,21 +167,3 @@ func Chunk_SubChunk(id C.int, y C.int) C.int {
 	}
 	return C.int(savedSubChunk.AddObject((*c).SubChunk(int16(y))))
 }
-
-//export Chunk_SubIndex
-func Chunk_SubIndex(id C.int, y C.int) C.int {
-	c := savedChunk.LoadObject(int(id))
-	if c == nil {
-		return -1
-	}
-	return C.int((*c).SubIndex(int16(y)))
-}
-
-//export Chunk_SubY
-func Chunk_SubY(id C.int, index C.int) C.int {
-	c := savedChunk.LoadObject(int(id))
-	if c == nil {
-		return -1
-	}
-	return C.int((*c).SubY(int16(index)))
-}

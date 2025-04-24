@@ -12,8 +12,6 @@ from ..internal.symbol_export_chunk import (
     chunk_set_blocks,
     chunk_sub,
     chunk_sub_chunk,
-    chunk_sub_index,
-    chunk_sub_y,
     new_chunk as nc,
     release_chunk,
 )
@@ -299,7 +297,7 @@ class Chunk(ChunkBase):
             int: The index of the y position.
                  If the current sub chunk is not found, then return -1.
         """
-        return chunk_sub_index(self._chunk_id, y)
+        return (y - self._chunk_range.start_range) >> 4
 
     def sub_y(self, index: int) -> int:
         """sub_y returns the sub chunk y value matching the index passed.
@@ -312,7 +310,7 @@ class Chunk(ChunkBase):
                  y is in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
                  If the current sub chunk is not found, then return -1.
         """
-        return chunk_sub_y(self._chunk_id, index)
+        return (index << 4) + self._chunk_range.start_range
 
 
 def new_chunk(r: Range = RANGE_OVERWORLD) -> Chunk:

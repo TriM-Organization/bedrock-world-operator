@@ -17,8 +17,6 @@ LIB.Chunk_SetBlock.argtypes = [CInt, CInt, CInt, CInt, CInt, CInt]
 LIB.Chunk_SetBlocks.argtypes = [CInt, CInt, CSlice]
 LIB.Chunk_Sub.argtypes = [CInt]
 LIB.Chunk_SubChunk.argtypes = [CInt, CInt]
-LIB.Chunk_SubIndex.argtypes = [CInt, CInt]
-LIB.Chunk_SubY.argtypes = [CInt, CInt]
 
 LIB.NewChunk.restype = CLongLong
 LIB.ReleaseChunk.restype = None
@@ -33,8 +31,6 @@ LIB.Chunk_SetBlock.restype = CString
 LIB.Chunk_SetBlocks.restype = CString
 LIB.Chunk_Sub.restype = CSlice
 LIB.Chunk_SubChunk.restype = CInt
-LIB.Chunk_SubIndex.restype = CInt
-LIB.Chunk_SubY.restype = CInt
 
 
 def new_chunk(range_start: int, range_end: int) -> tuple[int, int, int]:
@@ -112,11 +108,3 @@ def chunk_sub(id: int) -> list[int]:
 
 def chunk_sub_chunk(id: int, y: int) -> int:
     return int(LIB.Chunk_SubChunk(CInt(id), CInt(y)))
-
-
-def chunk_sub_index(id: int, y: int) -> int:
-    return int(LIB.Chunk_SubIndex(CInt(id), CInt(y)))
-
-
-def chunk_sub_y(id: int, index: int) -> int:
-    return int(LIB.Chunk_SubY(CInt(id), CInt(index)))
