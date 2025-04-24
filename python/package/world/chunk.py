@@ -7,7 +7,6 @@ from ..internal.symbol_export_chunk import (
     chunk_compact,
     chunk_equals,
     chunk_highest_filled_sub_chunk,
-    chunk_range,
     chunk_set_biome,
     chunk_set_block,
     chunk_set_blocks,
@@ -22,10 +21,16 @@ from ..world.define import QuickChunkBlocks, Range
 from ..world.sub_chunk import SubChunk
 
 
+@dataclass
 class ChunkBase:
     """ChunkBase is the base implement of a Minecraft chunk."""
 
-    _chunk_id: int
+    _chunk_id: int = -1
+    _chunk_range: Range = field(
+        default_factory=lambda: Range(
+            RANGE_INVALID.start_range, RANGE_INVALID.end_range
+        )
+    )
 
     def __init__(self):
         self._chunk_id = -1
@@ -43,19 +48,18 @@ class ChunkBase:
         Returns:
             bool: Wheatear the chunk is valid or not.
         """
-        return self._chunk_id >= 0
+        return (
+            self._chunk_id >= 0
+            and self._chunk_range.end_range >= self._chunk_range.start_range
+        )
 
 
-@dataclass
 class Chunk(ChunkBase):
     """
     Chunk is a segment in the world with a size of 16x16x256 blocks. A chunk contains multiple sub chunks
     and stores other information such as biomes.
     It is not safe to call methods on Chunk simultaneously from multiple goroutines.
     """
-
-    _range: Range = field(default_factory=lambda: Range())
-    _known_range: bool = False
 
     def __init__(self):
         super().__init__()
@@ -104,17 +108,15 @@ class Chunk(ChunkBase):
         Returns:
             QuickChunkBlocks: All blocks of the target layer in this chunk if current chunk is exist.
                               If the target layer is not exist, then you get a chunk full of air.
-                              Note that this implement don't do further check (failed to get range of
-                              current chunk or underlying blocks list is empty) due to this is aims to
+                              Note that this implement don't do further check (current chunk hava a
+                              invalid range or underlying blocks list is empty) due to this is aims to
                               increase block query/set speed, and you should take responsibility for
                               any possible error.
         """
-        if not self._known_range:
-            self._range = self.range()
         return QuickChunkBlocks(
             chunk_blocks(self._chunk_id, layer),
-            self._range.start_range,
-            self._range.end_range,
+            self._chunk_range.start_range,
+            self._chunk_range.end_range,
         )
 
     def compact(self):
@@ -160,20 +162,10 @@ class Chunk(ChunkBase):
         """Range returns the Range of the Chunk as passed to new_chunk.
 
         Returns:
-            Range: If current chunk is not found, return RANGE_INVALID.
-                   Otherwise, return the range and True.
+            Range: The Y range that player could build on of this chunk.
+                   If current chunk is valid, then return RANGE_INVALID.
         """
-        if self._known_range:
-            return self._range
-
-        start_range, end_range, ok = chunk_range(self._chunk_id)
-        if not ok:
-            return RANGE_INVALID
-
-        self._known_range = True
-        self._range = Range(start_range, end_range)
-
-        return self._range
+        return self._chunk_range
 
     def set_biome(self, x: int, y: int, z: int, biome_id: int):
         """set_biome sets the biome ID at a specific column in the chunk.
@@ -262,7 +254,7 @@ class Chunk(ChunkBase):
 
         Returns:
             SubChunk: If current chunk is not found, then return a invalid sub chunk.
-                      Otherwise, return the target sub chunk and True.
+                      Otherwise, return the target sub chunk.
                       Note that you could use s.is_valid() to check whether the sub chunk is valid or not.
         """
         s = SubChunk()
@@ -306,5 +298,7 @@ def new_chunk(r: Range = RANGE_OVERWORLD) -> Chunk:
         Chunk: A new chunk.
     """
     c = Chunk()
-    c._chunk_id = nc(r.start_range, r.end_range)
+    c._chunk_id, c._chunk_range.start_range, c._chunk_range.end_range = nc(
+        r.start_range, r.end_range
+    )
     return c

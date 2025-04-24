@@ -143,18 +143,18 @@ func LoadChunkPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
 }
 
 //export LoadChunk
-func LoadChunk(id C.int, dm C.int, posx C.int, posz C.int) C.int {
+func LoadChunk(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
-		return -1
+		return packChunkRangeAndID(define.Range{0, -1}, -1)
 	}
 
 	c, _, _ := (*w).LoadChunk(define.Dimension(dm), define.ChunkPos{int32(posx), int32(posz)})
 	if c == nil {
-		return -1
+		return packChunkRangeAndID(define.Range{0, -1}, -1)
 	}
 
-	return C.int(savedChunk.AddObject(c))
+	return packChunkRangeAndID(c.Range(), savedChunk.AddObject(c))
 }
 
 //export SaveChunkPayloadOnly

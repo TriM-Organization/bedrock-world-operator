@@ -42,7 +42,7 @@ LIB.World_ModifyLevelDat.restype = CString
 LIB.LoadBiomes.restype = CSlice
 LIB.SaveBiomes.restype = CString
 LIB.LoadChunkPayloadOnly.restype = CSlice
-LIB.LoadChunk.restype = CInt
+LIB.LoadChunk.restype = CLongLong
 LIB.SaveChunkPayloadOnly.restype = CString
 LIB.SaveChunk.restype = CString
 LIB.LoadSubChunk.restype = CInt
@@ -117,8 +117,13 @@ def load_chunk_payload_only(id: int, dm: int, x: int, z: int) -> list[bytes]:
     return result
 
 
-def load_chunk(id: int, dm: int, x: int, z: int) -> int:
-    return int(LIB.LoadChunk(CInt(id), CInt(dm), CInt(x), CInt(z)))
+def load_chunk(id: int, dm: int, x: int, z: int) -> tuple[int, int, int]:
+    result = int(LIB.LoadChunk(CInt(id), CInt(dm), CInt(x), CInt(z)))
+    return (
+        (result & 1023) - 512,
+        ((result >> 10) & 1023) - 512,
+        result >> 20,
+    )
 
 
 def save_chunk_payload_only(

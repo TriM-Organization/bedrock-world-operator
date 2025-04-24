@@ -33,6 +33,10 @@ func asGoBytes(p *C.char) []byte {
 	return C.GoBytes(unsafe.Pointer(p), C.int(4+l))[4:]
 }
 
+func packChunkRangeAndID(r define.Range, chunkID int) C.longlong {
+	return C.longlong((r[0] + 512) | ((r[1] + 512) << 10) | (chunkID << 20))
+}
+
 func fromSubChunkPayload(rangeStart C.int, rangeEnd C.int, payload *C.char, e chunk.Encoding) (complexReturn *C.char) {
 	s, ind, err := chunk.DecodeSubChunk(
 		bytes.NewBuffer(asGoBytes(payload)),

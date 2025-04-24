@@ -12,9 +12,9 @@ import (
 var savedChunk = NewSimpleManager[*chunk.Chunk]()
 
 //export NewChunk
-func NewChunk(rangeStart C.int, rangeEnd C.int) C.int {
+func NewChunk(rangeStart C.int, rangeEnd C.int) C.longlong {
 	c := chunk.NewChunk(block.AirRuntimeID, [2]int{int(rangeStart), int(rangeEnd)})
-	return C.int(savedChunk.AddObject(c))
+	return packChunkRangeAndID(c.Range(), savedChunk.AddObject(c))
 }
 
 //export ReleaseChunk
@@ -91,21 +91,6 @@ func Chunk_HighestFilledSubChunk(id C.int) C.int {
 		return -1
 	}
 	return C.int((*c).HighestFilledSubChunk())
-}
-
-//export Chunk_Range
-func Chunk_Range(id C.int) (rangeBytes *C.char) {
-	c := savedChunk.LoadObject(int(id))
-	if c == nil {
-		return asCbytes(nil)
-	}
-
-	result := make([]byte, 8)
-	r := (*c).Range()
-	binary.LittleEndian.PutUint32(result, uint32(r[0]))
-	binary.LittleEndian.PutUint32(result[4:], uint32(r[1]))
-
-	return asCbytes(result)
 }
 
 //export Chunk_SetBiome

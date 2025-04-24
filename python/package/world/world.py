@@ -227,12 +227,15 @@ class World(WorldBase):
             dm (Dimension, optional): The dimension of this chunk. Defaults to DIMENSION_OVERWORLD.
 
         Returns:
-            Chunk: If current world or the chunk is not exist, then return a invalid chunk.
-                   Otherwise, return the target chunk and True.
+            Chunk: If current world or the chunk is not exist, then return a invalid chunk, with a
+                   invalid chunk range which is RANGE_INVALID.
+                   Otherwise, if success, you will get a valid chunk.
                    Note that you could use c.is_valid() to check whether the chunk is valid or not.
         """
         c = Chunk()
-        c._chunk_id = load_chunk(self._world_id, dm.dm, chunk_pos.x, chunk_pos.z)
+        c._chunk_id, c._chunk_range.start_range, c._chunk_range.end_range = load_chunk(
+            self._world_id, dm.dm, chunk_pos.x, chunk_pos.z
+        )
         return c
 
     def save_chunk_payload_only(
@@ -296,7 +299,7 @@ class World(WorldBase):
 
         Returns:
             SubChunk: If current world or the sub chunk is not exist, then return a invalid sub chunk.
-                      Otherwise, return the target sub chunk and True.
+                      Otherwise, return the target sub chunk.
                       Note that you could use s.is_valid() to check whether the sub chunk is valid or not.
         """
         s = SubChunk()
@@ -647,7 +650,7 @@ def new_world(dir: str) -> World:
     Returns:
         World: If database can't be initialise or the level dat is cannot be
                parsed, then return a invalid world.
-               Otherwise, return the bedrock world and True.
+               Otherwise, the bedrock world will be created or opened, and we return the world.
                Note that you could use w.is_valid() to check the world is valid or not.
     """
     w = World()
