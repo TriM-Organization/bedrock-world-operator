@@ -31,6 +31,15 @@ func Chunk_Biome(id C.int, x C.int, y C.int, z C.int) C.int {
 	return C.int((*c).Biome(uint8(x), int16(y), uint8(z)))
 }
 
+//export Chunk_Biomes
+func Chunk_Biomes(id C.int) *C.char {
+	c := savedChunk.LoadObject(int(id))
+	if c == nil {
+		return asCbytes(nil)
+	}
+	return asCbytes(packDenseBlockMatrix((*c).Biomes(), 4096))
+}
+
 //export Chunk_Block
 func Chunk_Block(id C.int, x C.int, y C.int, z C.int, layer C.int) (blockRuntimeID C.int) {
 	c := savedChunk.LoadObject(int(id))
@@ -47,21 +56,7 @@ func Chunk_Blocks(id C.int, layer C.int) (complexReturn *C.char) {
 	if c == nil {
 		return asCbytes(nil)
 	}
-
-	allBlocks := (*c).Blocks(uint8(layer))
-	result := make([]byte, 4096*len(allBlocks)*4)
-
-	ptr := 0
-	for _, value := range allBlocks {
-		for _, v := range value {
-			runtimeIDBytes := make([]byte, 4)
-			binary.LittleEndian.PutUint32(runtimeIDBytes, v)
-			result[ptr], result[ptr+1], result[ptr+2], result[ptr+3] = runtimeIDBytes[0], runtimeIDBytes[1], runtimeIDBytes[2], runtimeIDBytes[3]
-			ptr += 4
-		}
-	}
-
-	return asCbytes(result)
+	return asCbytes(packDenseBlockMatrix((*c).Blocks(uint8(layer)), 4096))
 }
 
 //export Chunk_Compact
@@ -103,6 +98,16 @@ func Chunk_SetBiome(id C.int, x C.int, y C.int, z C.int, biomeId C.int) *C.char 
 	return C.CString("")
 }
 
+//export Chunk_SetBiomes
+func Chunk_SetBiomes(id C.int, payload *C.char) *C.char {
+	c := savedChunk.LoadObject(int(id))
+	if c == nil {
+		return C.CString("Chunk_SetBiomes: Chunk not found")
+	}
+	(*c).SetBiomes(unpackDenseBlockMatrix(asGoBytes(payload), 4096))
+	return C.CString("")
+}
+
 //export Chunk_SetBlock
 func Chunk_SetBlock(id C.int, x C.int, y C.int, z C.int, layer C.int, block C.int) *C.char {
 	c := savedChunk.LoadObject(int(id))
@@ -119,20 +124,7 @@ func Chunk_SetBlocks(id C.int, layer C.int, payload *C.char) *C.char {
 	if c == nil {
 		return C.CString("Chunk_SetBlock: Chunk not found")
 	}
-
-	goBytes := asGoBytes(payload)
-	blocks := make([][]uint32, len(goBytes)/4/4096)
-
-	ptr := 0
-	for i := range len(blocks) {
-		blocks[i] = make([]uint32, 4096)
-		for j := range 4096 {
-			blocks[i][j] = binary.LittleEndian.Uint32(goBytes[ptr : ptr+4])
-			ptr += 4
-		}
-	}
-
-	(*c).SetBlocks(uint8(layer), blocks)
+	(*c).SetBlocks(uint8(layer), unpackDenseBlockMatrix(asGoBytes(payload), 4096))
 	return C.CString("")
 }
 

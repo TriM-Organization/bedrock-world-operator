@@ -134,10 +134,17 @@ class QuickChunkBlocks:
     QuickChunkBlocks is a quick blocks getter and setter,
     which used for a Minecraft chunk.
 
-    Note that it is only representing one layer in this chunk.
+    Note that it is only representing the blocks in one
+    layer in this chunk.
+
+    Actually, the chunk biomes data is also similar to this
+    data struct, so QuickChunkBlocks can also representing
+    the biome IDs for each block in this chunk.
 
     Args:
         blocks (list[int], optional): A dense matrix that represents each block in a layer of this chunk.
+                                      If this is used for biome data, then this matrix represents the
+                                      biome ID for each blocks in this chunk.
                                       Default to an empty list.
         start_range (int): The min Y position of this chunk.
                            For Overworld is -64, but Nether and End is 0.
@@ -153,20 +160,34 @@ class QuickChunkBlocks:
     start_range: int = -64
     end_range: int = 319
 
-    def set_empty(self, air_block_runtime_id: int):
-        """set_empty make this chunk full of air.
+    def set_empty(self, default_id: int):
+        """
+        set_empty make this chunk full of one thing.
+
+        If QuickChunkBlocks is used to represent blocks,
+        then set_empty make this chunk full of air.
+
+        Otherwise, this QuickChunkBlocks is represents to the
+        biome ID of each block, and set_empty will make the
+        biome ID of each block in this chunk as default_id.
 
         Args:
-            air_block_runtime_id (int): The block runtime id of air block.
+            default_id (int): The block runtime ID of air block or the default biome id.
         """
         self.blocks = numpy.full(
             4096 * ((self.end_range - self.start_range + 1) >> 4),
-            air_block_runtime_id,
+            default_id,
             dtype=numpy.uint32,
         )
 
     def block(self, x: int, y: int, z: int) -> numpy.uint32:
-        """Block returns the runtime ID of the block at a given x, y and z in this chunk.
+        """
+        block returns the runtime ID of the block at a given x, y and z in this chunk.
+
+        If QuickChunkBlocks is used to represents the biome data of this chunk,
+        then block return the biome ID of the block at (x,y,z).
+
+        Note that this function will not check whether the index is overflowing.
 
         Args:
             x (int): The relative x position of this block. Must in a range of 0-15.
@@ -176,15 +197,19 @@ class QuickChunkBlocks:
 
         Returns:
             int: Return the block runtime ID of target block.
-                 It will not check whether the index is overflowing.
+                 Or, if QuickChunkBlocks is used to represents the biome data of this chunk,
+                 then return the biome ID of target block.
         """
         return self.blocks[
             (((y >> 4) - (self.start_range >> 4)) << 12) + x * 256 + (y & 15) * 16 + z
         ]
 
-    def set_block(self, x: int, y: int, z: int, block_runtime_id: int | numpy.uint32):
+    def set_block(self, x: int, y: int, z: int, id: int | numpy.uint32):
         """
         set_block sets the runtime ID of a block at a given x, y and z in this chunk.
+
+        If QuickChunkBlocks is used to represents the biome data of this chunk,
+        then set_block sets the biome ID of the block at (x,y,z).
 
         Note that:
             - This operation is just on program, and you need to use c.set_blocks(layer, QuickChunkBlocks) to apply
@@ -196,11 +221,13 @@ class QuickChunkBlocks:
             y (int): The y position of this block.
                      Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this block. Must in a range of 0-15.
-            block_runtime_id (int): The result block that this block will be.
+            id (int): The runtime ID of result block that this block will be.
+                      Or, if QuickChunkBlocks is used to represents the biome data of this chunk,
+                      then id is the biome id of this block that you want to set.
         """
         self.blocks[
             (((y >> 4) - (self.start_range >> 4)) << 12) + x * 256 + (y & 15) * 16 + z
-        ] = block_runtime_id
+        ] = id
 
 
 @dataclass
@@ -224,7 +251,7 @@ class QuickSubChunkBlocks:
         """set_empty make this sub chunk full of air.
 
         Args:
-            air_block_runtime_id (int): The block runtime id of air block.
+            air_block_runtime_id (int): The block runtime ID of air block.
         """
         self.blocks = numpy.full(4096, air_block_runtime_id, dtype=numpy.uint32)
 
@@ -265,7 +292,7 @@ class QuickSubChunkBlocks:
             x (int): The relative x position of target block. Must in a range of 0-15.
             y (int): The relative y position of target block. Must in a range of 0-15.
             z (int): The relative z position of target block. Must in a range of 0-15.
-            block_runtime_id (int): The block runtime id of target block will be.
+            block_runtime_id (int): The block runtime ID of target block will be.
         """
         self.blocks[x * 256 + y * 16 + z] = block_runtime_id
 

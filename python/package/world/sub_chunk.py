@@ -101,7 +101,7 @@ class SubChunk(SubChunkBase):
 
     def blocks(self, layer: int) -> QuickSubChunkBlocks:
         """
-        blocks all blocks (block runtime ids) whose in layer.
+        blocks all blocks (block runtime IDs) whose in layer.
 
         It is highly suggested you use this instead of s.block(...)
         if you are trying to query so many blocks from this sub chunk.
@@ -132,7 +132,7 @@ class SubChunk(SubChunkBase):
             y (int): The relative y position of target block. Must in a range of 0-15.
             z (int): The relative z position of target block. Must in a range of 0-15.
             layer (int): The layer that the target block is in.
-            block_runtime_id (int): The block runtime id of target block will be.
+            block_runtime_id (int): The block runtime ID of target block will be.
 
         Raises:
             Exception: When failed to set block.
@@ -143,7 +143,7 @@ class SubChunk(SubChunkBase):
 
     def set_blocks(self, layer: int, blocks: QuickSubChunkBlocks):
         """
-        set_blocks sets the whole chunk blocks in layer by given block runtime ids.
+        set_blocks sets the whole chunk blocks in layer by given block runtime IDs.
 
         It is highly suggested you use this instead of s.set_block(...) if you are
         trying to modify so many blocks to this sub chunk.

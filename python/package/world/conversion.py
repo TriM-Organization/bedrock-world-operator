@@ -19,10 +19,10 @@ from ..internal.symbol_export_conversion import (
 def runtime_id_to_state(
     block_runtime_id: int | numpy.uint32,
 ) -> BlockStates:
-    """runtime_id_to_state convert block runtime id to a BlockStates.
+    """runtime_id_to_state convert block runtime ID to a BlockStates.
 
     Args:
-        block_runtime_id (int | numpy.uint32): The runtime id of target block.
+        block_runtime_id (int | numpy.uint32): The runtime ID of target block.
 
     Returns:
         BlockStates: If not found, return AIR_BLOCK_STATES.
@@ -43,7 +43,7 @@ def state_to_runtime_id(
 ) -> int | numpy.uint32:
     """
     state_to_runtime_id convert a block which name is block_name
-    and states is block_states to its block runtime id represent.
+    and states is block_states to its block runtime ID represent.
 
     Args:
         block_name (str): The name of this block.
@@ -52,7 +52,7 @@ def state_to_runtime_id(
 
     Returns:
         int | numpy.uint32: If not found, return 0.
-                            Otherwise, return its block runtime id.
+                            Otherwise, return its block runtime ID.
     """
     block_runtime_id, success = stri(block_name, block_states)
     if not success:

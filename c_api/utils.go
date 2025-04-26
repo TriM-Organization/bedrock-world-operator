@@ -37,6 +37,37 @@ func packChunkRangeAndID(r define.Range, chunkID int) C.longlong {
 	return C.longlong((r[0] + 512) | ((r[1] + 512) << 10) | (chunkID << 20))
 }
 
+func packDenseBlockMatrix(blockMatrix [][]uint32, subLength int) (encodeBytes []byte) {
+	encodeBytes = make([]byte, len(blockMatrix)*subLength*4)
+
+	ptr := 0
+	for _, value := range blockMatrix {
+		for _, v := range value {
+			runtimeIDBytes := make([]byte, 4)
+			binary.LittleEndian.PutUint32(runtimeIDBytes, v)
+			encodeBytes[ptr], encodeBytes[ptr+1], encodeBytes[ptr+2], encodeBytes[ptr+3] = runtimeIDBytes[0], runtimeIDBytes[1], runtimeIDBytes[2], runtimeIDBytes[3]
+			ptr += 4
+		}
+	}
+
+	return
+}
+
+func unpackDenseBlockMatrix(encodeBytes []byte, subLength int) (blockMatrix [][]uint32) {
+	blockMatrix = make([][]uint32, len(encodeBytes)/subLength/4)
+
+	ptr := 0
+	for i := range len(blockMatrix) {
+		blockMatrix[i] = make([]uint32, subLength)
+		for j := range subLength {
+			blockMatrix[i][j] = binary.LittleEndian.Uint32(encodeBytes[ptr : ptr+4])
+			ptr += 4
+		}
+	}
+
+	return
+}
+
 func fromSubChunkPayload(rangeStart C.int, rangeEnd C.int, payload *C.char, e chunk.Encoding) (complexReturn *C.char) {
 	s, ind, err := chunk.DecodeSubChunk(
 		bytes.NewBuffer(asGoBytes(payload)),
