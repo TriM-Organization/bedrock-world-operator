@@ -59,15 +59,15 @@
 当然，我们随时欢迎发起 **Pull Request**。
 
 - Windows
-    * x86_64
-    * amd64
+    * x86_64/amd64
+    * x86/i686
 - Darwin (MacOS)
-    * amd64
-    * arm64
+    * x86_64/amd64
+    * arm64/aarch64
 - Linux
-    * aarch64
-    * amd64/x86_64
+    * x86_64/amd64
     * arm64
+    * aarch64 (Termux on Android)
 
 您可以通过参阅[此文件](./python/package/internal/load_dynamic_library.py)来了解 **Bedrock World Operator** 加载相应动态库的具体逻辑。
 
