@@ -7,7 +7,7 @@ with open("README.md", "r+", encoding="utf-8") as file:
     long_description = file.read()
 
 with open("version", "r+", encoding="utf-8") as file:
-    version = file.read().strip()
+    version = file.read().split("\n")[0].strip()
 
 
 setuptools.setup(
