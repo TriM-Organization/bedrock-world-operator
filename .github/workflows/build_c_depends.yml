@@ -18,13 +18,22 @@ jobs:
 
     - name: Checkout Code
       uses: actions/checkout@v4
+    
+    - name: Check Should Build C Depends
+      id: test_should_build_c_depends
+      run: |
+        cp .github/workflows/test_should_build_c_depends.sh ./
+        sh test_should_build_c_depends.sh
+        rm -rf test_should_build_c_depends.sh
 
     - name: Set Up Go
+      if: steps.test_should_build_c_depends.outputs.result == 'true'
       uses: actions/setup-go@v2
       with:
         go-version: '1.24'
 
     - name: Install Dependencies
+      if: steps.test_should_build_c_depends.outputs.result == 'true'
       run: |
         brew install mingw-w64
         brew install messense/macos-cross-toolchains/x86_64-unknown-linux-gnu
@@ -32,6 +41,7 @@ jobs:
         brew install make
 
     - name: Build and Move Files
+      if: steps.test_should_build_c_depends.outputs.result == 'true'
       run: |
         cd c_api
         make all
@@ -40,6 +50,7 @@ jobs:
         mv dynamic_libs ../python/package
 
     - name: Submit Changes
+      if: steps.test_should_build_c_depends.outputs.result == 'true'
       uses: EndBug/add-and-commit@v9
       with:
         default_author: github_actions
