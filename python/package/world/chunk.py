@@ -2,12 +2,14 @@ from dataclasses import dataclass, field
 from .constant import RANGE_INVALID, RANGE_OVERWORLD
 from ..internal.symbol_export_chunk import (
     chunk_biome,
+    chunk_biomes,
     chunk_block,
     chunk_blocks,
     chunk_compact,
     chunk_equals,
     chunk_highest_filled_sub_chunk,
     chunk_set_biome,
+    chunk_set_biomes,
     chunk_set_block,
     chunk_set_blocks,
     chunk_sub,
@@ -81,6 +83,32 @@ class Chunk(ChunkBase):
         """
         return chunk_biome(self._chunk_id, x, y, z)
 
+    def biomes(self) -> QuickChunkBlocks:
+        """
+        biomes returns all biome IDs for each blocks in this chunk.
+
+        It is highly suggested you use this instead of c.biome(...)
+        if you are trying to query the biome ID of so many blocks from
+        this chunk.
+
+        Returns:
+            QuickChunkBlocks:
+                All biome IDs for each blocks in this chunks.
+
+                Note that this implement doesn't do further check due to this is aims to
+                increase biome ID query/set speed, and you should take responsibility for
+                any possible error.
+
+                Here we listed all possible errors that we have not checked.
+                    - Current chunk has an invalid range
+                    - Underlying blocks list is empty
+        """
+        return QuickChunkBlocks(
+            chunk_biomes(self._chunk_id),
+            self._chunk_range.start_range,
+            self._chunk_range.end_range,
+        )
+
     def block(self, x: int, y: int, z: int, layer: int) -> int:
         """Block returns the runtime ID of the block at a given x, y and z in a chunk at the given layer.
 
@@ -100,7 +128,7 @@ class Chunk(ChunkBase):
 
     def blocks(self, layer: int) -> QuickChunkBlocks:
         """
-        blocks returns all blocks (block runtime ids) whose in the
+        blocks returns all blocks (block runtime IDs) whose in the
         target layer of this chunk.
 
         It is highly suggested you use this instead of c.block(...)
@@ -121,7 +149,6 @@ class Chunk(ChunkBase):
                 Here we listed all possible errors that we have not checked.
                     - Current chunk has an invalid range
                     - Underlying blocks list is empty
-
         """
         return QuickChunkBlocks(
             chunk_blocks(self._chunk_id, layer),
@@ -201,6 +228,28 @@ class Chunk(ChunkBase):
         if len(err) > 0:
             raise Exception(err)
 
+    def set_biomes(self, biome_ids: QuickChunkBlocks):
+        """
+        set_biomes sets the biome IDs for each block in this chunk.
+
+        It is highly suggested you use this instead of c.set_biome(...)
+        if you are trying to modify the biome ID of so many blocks in
+        this chunk.
+
+        Note that this implement will not check the underlying blocks list is valid
+        or not due to this is aims to increase block query/set speed, and you should
+        take responsibility for any possible error.
+
+        Args:
+            biome_ids (QuickChunkBlocks): The biome IDs for each block in this chunk that you want to overwrite.
+
+        Raises:
+            Exception: When failed to set blocks.
+        """
+        err = chunk_set_biomes(self._chunk_id, biome_ids.blocks)
+        if len(err) > 0:
+            raise Exception(err)
+
     def set_block(self, x: int, y: int, z: int, layer: int, block_runtime_id: int):
         """
         set_block sets the runtime ID of a block at
@@ -226,7 +275,7 @@ class Chunk(ChunkBase):
 
     def set_blocks(self, layer: int, blocks: QuickChunkBlocks):
         """
-        set_blocks sets the whole chunk blocks in layer by given block runtime ids.
+        set_blocks sets the whole chunk blocks in layer by given block runtime IDs.
 
         It is highly suggested you use this instead of c.set_block(...) if you are
         trying to modify so many blocks to this chunk.
@@ -236,7 +285,8 @@ class Chunk(ChunkBase):
         take responsibility for any possible error.
 
         Args:
-            layer (int): The blocks in the target layer of this chunk that you want to overwrite.
+            layer (int): The layer of the blocks in this chunk that you want to overwrite.
+            blocks (QuickChunkBlocks): The blocks in the target layer of this chunk that you want to overwrite.
 
         Raises:
             Exception: When failed to set blocks.

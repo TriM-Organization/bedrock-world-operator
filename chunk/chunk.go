@@ -115,9 +115,63 @@ func (chunk *Chunk) Biome(x uint8, y int16, z uint8) uint32 {
 	return chunk.biomes[chunk.SubIndex(y)].At(x, uint8(y), z)
 }
 
+// Blocks returns all biome IDs for each blocks in this chunk.
+// The length of returned slice is the sub chunk counts of this chunk.
+// For example, for a completely overworld chunk, the length is 24.
+// Note that for each slice in this big slice, the length of it is 4096 (16*16*16).
+func (chunk *Chunk) Biomes() [][]uint32 {
+	n := (chunk.r.Height() >> 4) + 1
+	result := make([][]uint32, n)
+
+	for i := range n {
+		singleBiome := chunk.biomes[i]
+		singleBiomeIDs := make([]uint32, 4096)
+
+		ptr := 0
+		for x := range byte(16) {
+			for y := range byte(16) {
+				for z := range byte(16) {
+					singleBiomeIDs[ptr] = singleBiome.At(x, y, z)
+					ptr++
+				}
+			}
+		}
+
+		result[i] = singleBiomeIDs
+	}
+
+	return result
+}
+
 // SetBiome sets the biome ID at a specific column in the chunk.
 func (chunk *Chunk) SetBiome(x uint8, y int16, z uint8, biome uint32) {
 	chunk.biomes[chunk.SubIndex(y)].Set(x, uint8(y), z, biome)
+}
+
+// SetBiomes sets the biome IDs for each blocks in this chunk.
+// The length of biomes could less or bigger than the sub chunk counts of this
+// whole chunk.
+//
+// If less, then only the given part will be modified,
+// if bigger, then the bigger part will be not used.
+//
+// The length of each slice in this big slice must be 4096 (16*16*16).
+func (chunk *Chunk) SetBiomes(biomes [][]uint32) {
+	n := (chunk.r.Height() >> 4) + 1
+	for i := range min(n, len(biomes)) {
+		singleBiomeIDs := biomes[i]
+		singleBiome := chunk.biomes[i]
+
+		ptr := 0
+		for x := range byte(16) {
+			for y := range byte(16) {
+				for z := range byte(16) {
+					singleBiome.Set(x, y, z, singleBiomeIDs[ptr])
+					ptr++
+				}
+			}
+		}
+	}
 }
 
 // Compact compacts the chunk as much as possible, getting rid of any sub chunks that are empty, and compacts

@@ -7,12 +7,14 @@ from .types import as_c_bytes, as_python_bytes, as_python_string
 LIB.NewChunk.argtypes = [CInt, CInt]
 LIB.ReleaseChunk.argtypes = [CInt]
 LIB.Chunk_Biome.argtypes = [CInt, CInt, CInt, CInt]
+LIB.Chunk_Biomes.argtypes = [CInt]
 LIB.Chunk_Block.argtypes = [CInt, CInt, CInt, CInt, CInt]
 LIB.Chunk_Blocks.argtypes = [CInt, CInt]
 LIB.Chunk_Compact.argtypes = [CInt]
 LIB.Chunk_Equals.argtypes = [CInt, CInt]
 LIB.Chunk_HighestFilledSubChunk.argtypes = [CInt]
 LIB.Chunk_SetBiome.argtypes = [CInt, CInt, CInt, CInt, CInt]
+LIB.Chunk_SetBiomes.argtypes = [CInt, CSlice]
 LIB.Chunk_SetBlock.argtypes = [CInt, CInt, CInt, CInt, CInt, CInt]
 LIB.Chunk_SetBlocks.argtypes = [CInt, CInt, CSlice]
 LIB.Chunk_Sub.argtypes = [CInt]
@@ -21,12 +23,14 @@ LIB.Chunk_SubChunk.argtypes = [CInt, CInt]
 LIB.NewChunk.restype = CLongLong
 LIB.ReleaseChunk.restype = None
 LIB.Chunk_Biome.restype = CInt
+LIB.Chunk_Biomes.restype = CSlice
 LIB.Chunk_Block.restype = CInt
 LIB.Chunk_Blocks.restype = CSlice
 LIB.Chunk_Compact.restype = CString
 LIB.Chunk_Equals.restype = CInt
 LIB.Chunk_HighestFilledSubChunk.restype = CInt
 LIB.Chunk_SetBiome.restype = CString
+LIB.Chunk_SetBiomes.restype = CString
 LIB.Chunk_SetBlock.restype = CString
 LIB.Chunk_SetBlocks.restype = CString
 LIB.Chunk_Sub.restype = CSlice
@@ -60,6 +64,12 @@ def chunk_blocks(id: int, layer: int) -> numpy.ndarray:
     ).copy()
 
 
+def chunk_biomes(id: int) -> numpy.ndarray:
+    return numpy.frombuffer(
+        as_python_bytes(LIB.Chunk_Biomes(CInt(id))), dtype=numpy.uint32
+    ).copy()
+
+
 def chunk_compact(id: int) -> str:
     return as_python_string(LIB.Chunk_Compact(CInt(id)))
 
@@ -76,6 +86,10 @@ def chunk_set_biome(id: int, x: int, y: int, z: int, biome_id: int) -> str:
     return as_python_string(
         LIB.Chunk_SetBiome(CInt(id), CInt(x), CInt(y), CInt(z), CInt(biome_id))
     )
+
+
+def chunk_set_biomes(id: int, blocks: numpy.ndarray) -> str:
+    return as_python_string(LIB.Chunk_SetBiomes(CInt(id), as_c_bytes(blocks.tobytes())))
 
 
 def chunk_set_block(
