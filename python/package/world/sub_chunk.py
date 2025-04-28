@@ -1,3 +1,4 @@
+import numpy
 from dataclasses import dataclass, field
 from .define import QuickSubChunkBlocks
 from ..internal.symbol_export_sub_chunk import (
@@ -120,7 +121,9 @@ class SubChunk(SubChunkBase):
         """
         return QuickSubChunkBlocks(sub_chunk_blocks(self._sub_chunk_id, layer))
 
-    def set_block(self, x: int, y: int, z: int, layer: int, block_runtime_id: int):
+    def set_block(
+        self, x: int, y: int, z: int, layer: int, block_runtime_id: int | numpy.uint32
+    ):
         """
         set_block sets the given block runtime
         ID at the given X, Y and Z.
@@ -132,12 +135,12 @@ class SubChunk(SubChunkBase):
             y (int): The relative y position of target block. Must in a range of 0-15.
             z (int): The relative z position of target block. Must in a range of 0-15.
             layer (int): The layer that the target block is in.
-            block_runtime_id (int): The block runtime ID of target block will be.
+            block_runtime_id (int | numpy.uint32): The block runtime ID of target block will be.
 
         Raises:
             Exception: When failed to set block.
         """
-        err = sub_chunk_set_block(self._sub_chunk_id, x, y, z, layer, block_runtime_id)
+        err = sub_chunk_set_block(self._sub_chunk_id, x, y, z, layer, block_runtime_id)  # type: ignore
         if len(err) > 0:
             raise Exception(err)
 

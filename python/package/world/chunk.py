@@ -1,3 +1,4 @@
+import numpy
 from dataclasses import dataclass, field
 from .constant import RANGE_INVALID, RANGE_OVERWORLD
 from ..internal.symbol_export_chunk import (
@@ -250,7 +251,9 @@ class Chunk(ChunkBase):
         if len(err) > 0:
             raise Exception(err)
 
-    def set_block(self, x: int, y: int, z: int, layer: int, block_runtime_id: int):
+    def set_block(
+        self, x: int, y: int, z: int, layer: int, block_runtime_id: int | numpy.uint32
+    ):
         """
         set_block sets the runtime ID of a block at
         a given x, y and z in a chunk at the given layer.
@@ -264,12 +267,12 @@ class Chunk(ChunkBase):
                      Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this block. Must in a range of 0-15.
             layer (int): The layer that this blocks in.
-            block_runtime_id (int): The result block that this block will be.
+            block_runtime_id (int | numpy.uint32): The result block that this block will be.
 
         Raises:
             Exception: When failed to set block.
         """
-        err = chunk_set_block(self._chunk_id, x, y, z, layer, block_runtime_id)
+        err = chunk_set_block(self._chunk_id, x, y, z, layer, block_runtime_id)  # type: ignore
         if len(err) > 0:
             raise Exception(err)
 
