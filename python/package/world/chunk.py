@@ -373,7 +373,7 @@ def new_chunk(r: Range = RANGE_OVERWORLD) -> Chunk:
         Chunk: A new chunk.
     """
     c = Chunk()
-    c._chunk_range.start_range, c._chunk_range.end_range, c._chunk_id = nc(
-        r.start_range, r.end_range
-    )
+    start_range, end_range, chunk_id = nc(r.start_range, r.end_range)
+    c._chunk_range = Range(start_range, end_range)
+    c._chunk_id = chunk_id
     return c
