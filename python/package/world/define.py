@@ -2,7 +2,7 @@ import nbtlib, numpy
 from dataclasses import dataclass, field
 
 
-@dataclass
+@dataclass(frozen=True)
 class ChunkPos:
     """
     ChunkPos holds the position of a chunk. The type is provided as a utility struct for keeping track of a
@@ -11,13 +11,15 @@ class ChunkPos:
     Chunks do not themselves keep track of that. Chunk positions are different from block positions in the
     way that increasing the X/Z by one means increasing the absolute value on the X/Z axis in terms of blocks
     by 16.
+
+    Note that ChunkPos is a hashable and cannot be further modified object.
     """
 
     x: int = 0
     z: int = 0
 
 
-@dataclass
+@dataclass(frozen=True)
 class SubChunkPos:
     """
     SubChunkPos holds the position of a sub-chunk. The type is provided as a utility struct for keeping
@@ -26,6 +28,8 @@ class SubChunkPos:
     Sub-chunks do not themselves keep track of that. Sub-chunk positions are different from block positions
     in the way that increasing the X/Y/Z by one means increasing the absolute value on the X/Y/Z axis in
     terms of blocks by 16.
+
+    Note that SubChunkPos is a hashable and cannot be further modified object.
     """
 
     x: int = 0
@@ -33,36 +37,39 @@ class SubChunkPos:
     z: int = 0
 
 
-@dataclass
+@dataclass(frozen=True)
 class Range:
     """
     Range represents the height range of a Dimension in blocks.
 
     The first value of the Range holds the minimum Y value,
     the second value holds the maximum Y value.
+
+    Note that Range is a hashable and cannot be further modified object.
     """
 
     start_range: int = 0
     end_range: int = 0
 
 
+@dataclass(frozen=True)
 class Dimension:
     """
     Dimension is a dimension of a World.
 
     It influences a variety of properties of a World such as the building range,
     the sky color and the behavior of liquid blocks.
+
+    Note that Dimension is a hashable and cannot be further modified object.
+
+    Args:
+        dm (int): The id of this dimension.
     """
 
     dm: int = 0
 
-    def __init__(self, dm: int):
-        """Init a new dimension represent.
-
-        Args:
-            dm (int): The id of this dimension.
-        """
-        self.dm = dm
+    def __int__(self) -> int:
+        return self.dm
 
     def range(self) -> Range:
         """range returns the range that player could build block in this dimension.
@@ -293,7 +300,9 @@ class QuickSubChunkBlocks:
         self.blocks[x * 256 + y * 16 + z] = block_runtime_id
 
 
-@dataclass
+@dataclass(frozen=True)
 class HashWithPosY:
+    """Note that HashWithPosY is a hashable and cannot be further modified object."""
+
     Hash: int = 0
     PosY: int = 0
