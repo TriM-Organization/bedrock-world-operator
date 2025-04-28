@@ -60,13 +60,13 @@ def chunk_block(id: int, x: int, y: int, z: int, layer: int) -> int:
 
 def chunk_blocks(id: int, layer: int) -> numpy.ndarray:
     return numpy.frombuffer(
-        as_python_bytes(LIB.Chunk_Blocks(CInt(id), CInt(layer))), dtype=numpy.uint32
+        as_python_bytes(LIB.Chunk_Blocks(CInt(id), CInt(layer))), dtype="<u4"
     ).copy()
 
 
 def chunk_biomes(id: int) -> numpy.ndarray:
     return numpy.frombuffer(
-        as_python_bytes(LIB.Chunk_Biomes(CInt(id))), dtype=numpy.uint32
+        as_python_bytes(LIB.Chunk_Biomes(CInt(id))), dtype="<u4"
     ).copy()
 
 
