@@ -36,7 +36,7 @@ def sub_chunk_block(id: int, x: int, y: int, z: int, layer: int) -> int:
 
 def sub_chunk_blocks(id: int, layer: int) -> numpy.ndarray:
     return numpy.frombuffer(
-        as_python_bytes(LIB.SubChunk_Blocks(CInt(id), CInt(layer))), dtype=numpy.uint32
+        as_python_bytes(LIB.SubChunk_Blocks(CInt(id), CInt(layer))), dtype="<u4"
     ).copy()
 
 

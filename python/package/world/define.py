@@ -154,9 +154,7 @@ class QuickChunkBlocks:
                          Defaults to 319.
     """
 
-    blocks: numpy.ndarray = field(
-        default_factory=lambda: numpy.array([], dtype=numpy.uint32)
-    )
+    blocks: numpy.ndarray = field(default_factory=lambda: numpy.array([], dtype="<u4"))
     start_range: int = -64
     end_range: int = 319
 
@@ -177,7 +175,7 @@ class QuickChunkBlocks:
         self.blocks = numpy.full(
             4096 * ((self.end_range - self.start_range + 1) >> 4),
             default_id,
-            dtype=numpy.uint32,
+            dtype="<u4",
         )
 
     def block(self, x: int, y: int, z: int) -> numpy.uint32:
@@ -243,9 +241,7 @@ class QuickSubChunkBlocks:
                                       Default to an empty list.
     """
 
-    blocks: numpy.ndarray = field(
-        default_factory=lambda: numpy.array([], dtype=numpy.uint32)
-    )
+    blocks: numpy.ndarray = field(default_factory=lambda: numpy.array([], dtype="<u4"))
 
     def set_empty(self, air_block_runtime_id: int):
         """set_empty make this sub chunk full of air.
@@ -253,7 +249,7 @@ class QuickSubChunkBlocks:
         Args:
             air_block_runtime_id (int): The block runtime ID of air block.
         """
-        self.blocks = numpy.full(4096, air_block_runtime_id, dtype=numpy.uint32)
+        self.blocks = numpy.full(4096, air_block_runtime_id, dtype="<u4")
 
     def block(self, x: int, y: int, z: int) -> numpy.uint32:
         """
