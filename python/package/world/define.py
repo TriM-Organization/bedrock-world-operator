@@ -226,7 +226,7 @@ class QuickChunkBlocks:
             y (int): The y position of this block.
                      Must in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
             z (int): The relative z position of this block. Must in a range of 0-15.
-            id (int): The runtime ID of result block that this block will be.
+            id (int | numpy.uint32): The runtime ID of result block that this block will be.
                       Or, if QuickChunkBlocks is used to represents the biome data of this chunk,
                       then id is the biome id of this block that you want to set.
         """
@@ -295,7 +295,7 @@ class QuickSubChunkBlocks:
             x (int): The relative x position of target block. Must in a range of 0-15.
             y (int): The relative y position of target block. Must in a range of 0-15.
             z (int): The relative z position of target block. Must in a range of 0-15.
-            block_runtime_id (int): The block runtime ID of target block will be.
+            block_runtime_id (int | numpy.uint32): The block runtime ID of target block will be.
         """
         self.blocks[x * 256 + y * 16 + z] = block_runtime_id
 
