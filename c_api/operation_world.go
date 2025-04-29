@@ -456,7 +456,7 @@ func SaveFullSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int, payloa
 		payloadGoBytes = payloadGoBytes[9:]
 	}
 
-	goError := (*w).SaveFullSubChunkBlobHash(define.Dimension(dm), define.ChunkPos{int32(posx), int32(posx)}, hashes)
+	goError := (*w).SaveFullSubChunkBlobHash(define.Dimension(dm), define.ChunkPos{int32(posx), int32(posz)}, hashes)
 	if goError != nil {
 		return C.CString(fmt.Sprintf("SaveFullSubChunkBlobHash: %v", err))
 	}
