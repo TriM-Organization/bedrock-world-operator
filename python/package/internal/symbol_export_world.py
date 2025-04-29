@@ -272,7 +272,7 @@ def save_full_sub_chunk_blob_hash(
     writer = BytesIO()
 
     for i in hashes:
-        writer.write(i[0].to_bytes())
+        writer.write(struct.pack("<b", i[0]))
         writer.write(struct.pack("<Q", i[1]))
 
     return as_python_string(
