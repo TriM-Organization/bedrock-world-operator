@@ -37,7 +37,7 @@ from ..internal.symbol_export_world_underlying import (
     db_has,
     db_put,
 )
-from ..world.define import ChunkPos, Dimension, HashWithPosY, SubChunkPos
+from ..world.define import ChunkPos, Dimension, HashWithPosY, Range, SubChunkPos
 from ..world.level_dat import LevelDat
 
 
@@ -240,9 +240,11 @@ class World(WorldBase):
                    Note that you could use c.is_valid() to check whether the chunk is valid or not.
         """
         c = Chunk()
-        c._chunk_range.start_range, c._chunk_range.end_range, c._chunk_id = load_chunk(
+        start_range, end_range, chunk_id = load_chunk(
             self._world_id, dm.dm, chunk_pos.x, chunk_pos.z
         )
+        c._chunk_range = Range(start_range, end_range)
+        c._chunk_id = chunk_id
         return c
 
     def save_chunk_payload_only(

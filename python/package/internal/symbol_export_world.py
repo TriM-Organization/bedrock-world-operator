@@ -259,7 +259,10 @@ def load_full_sub_chunk_blob_hash(
     ptr = 0
     while ptr < len(payload):
         result.append(
-            (payload[ptr], struct.unpack("<Q", payload[ptr + 1 : ptr + 9])[0])
+            (
+                struct.unpack("<b", payload[ptr : ptr + 1])[0],
+                struct.unpack("<Q", payload[ptr + 1 : ptr + 9])[0],
+            )
         )
         ptr += 9
 
