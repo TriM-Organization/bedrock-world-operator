@@ -13,6 +13,8 @@ from ..internal.symbol_export_chunk import (
     chunk_set_biomes,
     chunk_set_block,
     chunk_set_blocks,
+    chunk_set_sub,
+    chunk_set_sub_chunk,
     chunk_sub,
     chunk_sub_chunk,
     new_chunk as nc,
@@ -34,7 +36,7 @@ class ChunkBase:
     )
 
     def __del__(self):
-        if self._chunk_id >= 0 and not release_chunk is None:
+        if self._chunk_id >= 0 and release_chunk is not None:
             release_chunk(self._chunk_id)
 
     def is_valid(self) -> bool:
@@ -318,6 +320,33 @@ class Chunk(ChunkBase):
             result.append(s)
         return result
 
+    def set_sub(self, sub_chunks: list[SubChunk]):
+        """
+        set_sub overwrite the sub chunks of this chunk.
+
+        The length of sub_chunks could less or bigger
+        than the sub chunk counts of this whole chunk.
+
+        For Overworld, len(sub_chunks) = (319 - (-64) + 1) >> 4 = 24,
+        and for Nether, len(sub_chunks) = (127 - 0 + 1) >> 4 = 8,
+        and for End, len(sub_chunks) = (255 - 0 + 1) >> 4 = 16.
+
+        If sub_chunks is not enough, then only the given part will be modified,
+        if len(sub_chunks) is more than expected, then the unexpected part will be not used.
+
+        For example, if len(sub_chunks) = 27 and this is a chunk in Overworld,
+        then only sub_chunks[0:24] will be used, and sub_chunks[24:27] will be lost.
+
+        Args:
+            sub_chunks (list[SubChunk]): Those sub chunks that you want to overwrite to this chunk.
+
+        Raises:
+            Exception: When failed to set those sub chunks of this chunk.
+        """
+        err = chunk_set_sub(self._chunk_id, [i._sub_chunk_id for i in sub_chunks])
+        if len(err) > 0:
+            raise Exception(err)
+
     def sub_chunk(self, y: int) -> SubChunk:
         """
         sub_chunk finds the correct sub chunk in the Chunk by a y position.
@@ -339,8 +368,46 @@ class Chunk(ChunkBase):
         s._sub_chunk_id = chunk_sub_chunk(self._chunk_id, y)
         return s
 
+    def set_sub_chunk(self, sub_chunk: SubChunk, index: int):
+        """
+        set_sub_chunk set the a sub chunk of this chunk.
+
+        index is refer to the sub chunk Y index of this sub chunk,
+        and the index should bigger than -1.
+
+        For example, for a block in Overworld and place at (x, 24, z), its sub chunk Y pos will be 24>>4 (1).
+        However, this is not the index of this sub chunk, we need to do other compute to get the index:
+            index = (24>>4) - (self.range().start_range >> 4)
+                  = 1 - (-64 >> 4)
+                  = 1 - (-4)
+                  = 5
+
+        Args:
+            sub_chunk (SubChunk): _description_
+            index (int): _description_
+
+        Raises:
+            Exception: _description_
+        """
+        err = chunk_set_sub_chunk(self._chunk_id, sub_chunk._sub_chunk_id, index)
+        if len(err) > 0:
+            raise Exception(err)
+
     def sub_index(self, y: int) -> int:
-        """sub_index returns the sub chunk index matching the y position passed.
+        """
+        sub_index returns the sub chunk index matching the y position passed.
+
+        index is refer to the sub chunk Y index of this sub chunk,
+        and the index should bigger than -1.
+
+        For example, for a block in Overworld and place at (x, 24, z), its sub chunk Y pos will be 24>>4 (1).
+        However, this is not the index of this sub chunk, we need to do other compute to get the index:
+            ```
+            index = (24>>4) - (self.range().start_range >> 4)
+                  = 1 - (-64 >> 4)
+                  = 1 - (-4)
+                  = 5
+            ```
 
         Args:
             y (int): The relative y position of this block.
@@ -353,14 +420,32 @@ class Chunk(ChunkBase):
         return (y - self._chunk_range.start_range) >> 4
 
     def sub_y(self, index: int) -> int:
-        """sub_y returns the sub chunk y value matching the index passed.
+        """
+        sub_y returns the sub chunk Y value matching the index passed.
+        Note that y is in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
+
+        index is refer to the sub chunk Y index of this sub chunk,
+        and the index should bigger than -1.
+
+        For example, for a block in Overworld and place at (x, 24, z), its sub chunk Y pos will be 24>>4 (1).
+        However, this is not the index of this sub chunk, we need to do other compute to get the index:
+            ```
+            index = (24>>4) - (self.range().start_range >> 4)
+                  = 1 - (-64 >> 4)
+                  = 1 - (-4)
+                  = 5
+            ```
+
+        Therefore, this function use `(index << 4) + self.range().start_range` to get the sub Y value of given index.
+        However, we suggest you to use the function here, instead of compute the value by yourself.
+
+        Additionally, the returned Y value is likely a block Y position, but not sub chunk Y position.
 
         Args:
             index (int): The given index that used to compute the value of y.
 
         Returns:
             int: The y position who could match the given index.
-                 y is in a range of -64~319 (Overworld), 0-127 (Nether) and 0-255 (End).
                  If the current sub chunk is not found, then return -1.
         """
         return (index << 4) + self._chunk_range.start_range

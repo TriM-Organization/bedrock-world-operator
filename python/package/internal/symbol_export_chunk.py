@@ -1,3 +1,4 @@
+from io import BytesIO
 import struct
 import numpy
 from .types import LIB
@@ -19,7 +20,9 @@ LIB.Chunk_SetBiomes.argtypes = [CLongLong, CSlice]
 LIB.Chunk_SetBlock.argtypes = [CLongLong, CInt, CInt, CInt, CInt, CInt]
 LIB.Chunk_SetBlocks.argtypes = [CLongLong, CInt, CSlice]
 LIB.Chunk_Sub.argtypes = [CLongLong]
+LIB.Chunk_SetSub.argtypes = [CLongLong, CSlice]
 LIB.Chunk_SubChunk.argtypes = [CLongLong, CInt]
+LIB.Chunk_SetSubChunk.argtypes = [CLongLong, CLongLong, CInt]
 
 LIB.NewChunk.restype = CSlice
 LIB.ReleaseChunk.restype = None
@@ -35,7 +38,9 @@ LIB.Chunk_SetBiomes.restype = CString
 LIB.Chunk_SetBlock.restype = CString
 LIB.Chunk_SetBlocks.restype = CString
 LIB.Chunk_Sub.restype = CSlice
+LIB.Chunk_SetSub.restype = CString
 LIB.Chunk_SubChunk.restype = CLongLong
+LIB.Chunk_SetSubChunk.restype = CString
 
 
 def new_chunk(range_start: int, range_end: int) -> tuple[int, int, int]:
@@ -129,5 +134,20 @@ def chunk_sub(id: int) -> list[int]:
     return result
 
 
+def chunk_set_sub(id: int, sub_chunk_ids: list[int]) -> str:
+    writer = BytesIO()
+    for i in sub_chunk_ids:
+        writer.write(struct.pack("<Q", i))
+    return as_python_string(
+        LIB.Chunk_SetSub(CLongLong(id), as_c_bytes(writer.getvalue()))
+    )
+
+
 def chunk_sub_chunk(id: int, y: int) -> int:
     return int(LIB.Chunk_SubChunk(CLongLong(id), CInt(y)))
+
+
+def chunk_set_sub_chunk(id: int, sub_chunk_id: int, index: int) -> str:
+    return as_python_string(
+        LIB.Chunk_SetSubChunk(CLongLong(id), CLongLong(sub_chunk_id), CInt(index))
+    )

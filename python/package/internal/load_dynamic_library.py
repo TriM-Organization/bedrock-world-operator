@@ -1,4 +1,7 @@
-import ctypes, platform, os, sys
+import ctypes
+import platform
+import os
+import sys
 from pathlib import Path
 
 
