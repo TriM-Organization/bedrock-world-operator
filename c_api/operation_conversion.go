@@ -73,7 +73,7 @@ func StateToRuntimeID(name *C.char, states *C.char) (complexReturn *C.char) {
 }
 
 //export SubChunkNetworkPayload
-func SubChunkNetworkPayload(subChunkId C.int, rangeStart C.int, rangeEnd C.int, ind C.int) *C.char {
+func SubChunkNetworkPayload(subChunkId C.longlong, rangeStart C.int, rangeEnd C.int, ind C.int) *C.char {
 	return subChunkPayload(subChunkId, rangeStart, rangeEnd, ind, chunk.NetworkEncoding)
 }
 
@@ -83,7 +83,7 @@ func FromSubChunkNetworkPayload(rangeStart C.int, rangeEnd C.int, payload *C.cha
 }
 
 //export SubChunkDiskPayload
-func SubChunkDiskPayload(subChunkId C.int, rangeStart C.int, rangeEnd C.int, ind C.int) *C.char {
+func SubChunkDiskPayload(subChunkId C.longlong, rangeStart C.int, rangeEnd C.int, ind C.int) *C.char {
 	return subChunkPayload(subChunkId, rangeStart, rangeEnd, ind, chunk.DiskEncoding)
 }
 

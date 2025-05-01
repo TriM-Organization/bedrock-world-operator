@@ -1,5 +1,6 @@
+import ctypes
+import struct
 from .load_dynamic_library import LIB
-import ctypes, struct
 
 CPtr = ctypes.c_void_p
 CSlice = CPtr
@@ -21,8 +22,8 @@ def as_c_bytes(b: bytes) -> CSlice:
 
 
 def as_python_bytes(slice: CSlice) -> bytes:
-    l = struct.unpack("<I", ctypes.string_at(slice, 4))[0]
-    result = ctypes.string_at(slice, 4 + l)[4:]
+    length = struct.unpack("<I", ctypes.string_at(slice, 4))[0]
+    result = ctypes.string_at(slice, 4 + length)[4:]
     free_memory(slice)
     return result
 

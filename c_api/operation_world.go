@@ -15,21 +15,21 @@ import (
 var openedWorld = NewSimpleManager[world.World]()
 
 //export NewBedrockWorld
-func NewBedrockWorld(dirName *C.char) (id C.int) {
+func NewBedrockWorld(dirName *C.char) (id C.longlong) {
 	w, err := world.Open(C.GoString(dirName))
 	if err != nil {
 		return -1
 	}
-	return C.int(openedWorld.AddObject(w))
+	return C.longlong(openedWorld.AddObject(w))
 }
 
 //export ReleaseBedrockWorld
-func ReleaseBedrockWorld(id C.int) {
+func ReleaseBedrockWorld(id C.longlong) {
 	openedWorld.ReleaseObject(int(id))
 }
 
 //export World_CloseWorld
-func World_CloseWorld(id C.int) *C.char {
+func World_CloseWorld(id C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("World_CloseWorld: World not found")
@@ -44,7 +44,7 @@ func World_CloseWorld(id C.int) *C.char {
 }
 
 //export World_GetLevelDat
-func World_GetLevelDat(id C.int) *C.char {
+func World_GetLevelDat(id C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return asCbytes(nil)
@@ -62,7 +62,7 @@ func World_GetLevelDat(id C.int) *C.char {
 }
 
 //export World_ModifyLevelDat
-func World_ModifyLevelDat(id C.int, payload *C.char) *C.char {
+func World_ModifyLevelDat(id C.longlong, payload *C.char) *C.char {
 	var dat leveldat.Data
 
 	w := openedWorld.LoadObject(int(id))
@@ -85,7 +85,7 @@ func World_ModifyLevelDat(id C.int, payload *C.char) *C.char {
 }
 
 //export LoadBiomes
-func LoadBiomes(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
+func LoadBiomes(id C.longlong, dm C.int, posx C.int, posz C.int) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return asCbytes(nil)
@@ -100,7 +100,7 @@ func LoadBiomes(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
 }
 
 //export SaveBiomes
-func SaveBiomes(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) *C.char {
+func SaveBiomes(id C.longlong, dm C.int, posx C.int, posz C.int, payload *C.char) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveBiomes: World not found")
@@ -119,7 +119,7 @@ func SaveBiomes(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) *C.
 }
 
 //export LoadChunkPayloadOnly
-func LoadChunkPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
+func LoadChunkPayloadOnly(id C.longlong, dm C.int, posx C.int, posz C.int) *C.char {
 	buf := bytes.NewBuffer(nil)
 
 	w := openedWorld.LoadObject(int(id))
@@ -143,7 +143,7 @@ func LoadChunkPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
 }
 
 //export LoadChunk
-func LoadChunk(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
+func LoadChunk(id C.longlong, dm C.int, posx C.int, posz C.int) (complexReturn *C.char) {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return packChunkRangeAndID(define.Range{0, -1}, -1)
@@ -158,7 +158,7 @@ func LoadChunk(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
 }
 
 //export SaveChunkPayloadOnly
-func SaveChunkPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) (err *C.char) {
+func SaveChunkPayloadOnly(id C.longlong, dm C.int, posx C.int, posz C.int, payload *C.char) (err *C.char) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -188,7 +188,7 @@ func SaveChunkPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int, payload *C
 }
 
 //export SaveChunk
-func SaveChunk(id C.int, dm C.int, posx C.int, posz C.int, chunkID C.int) *C.char {
+func SaveChunk(id C.longlong, dm C.int, posx C.int, posz C.int, chunkID C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveChunk: World not found")
@@ -208,7 +208,7 @@ func SaveChunk(id C.int, dm C.int, posx C.int, posz C.int, chunkID C.int) *C.cha
 }
 
 //export LoadSubChunk
-func LoadSubChunk(id C.int, dm C.int, posx C.int, posy C.int, posz C.int) C.int {
+func LoadSubChunk(id C.longlong, dm C.int, posx C.int, posy C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
@@ -219,11 +219,11 @@ func LoadSubChunk(id C.int, dm C.int, posx C.int, posy C.int, posz C.int) C.int 
 		return -1
 	}
 
-	return C.int(savedSubChunk.AddObject(subChunk))
+	return C.longlong(savedSubChunk.AddObject(subChunk))
 }
 
 //export SaveSubChunk
-func SaveSubChunk(id C.int, dm C.int, posx C.int, posy C.int, posz C.int, subChunkId C.int) *C.char {
+func SaveSubChunk(id C.longlong, dm C.int, posx C.int, posy C.int, posz C.int, subChunkId C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveSubChunk: World not found")
@@ -243,7 +243,7 @@ func SaveSubChunk(id C.int, dm C.int, posx C.int, posy C.int, posz C.int, subChu
 }
 
 //export LoadNBTPayloadOnly
-func LoadNBTPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
+func LoadNBTPayloadOnly(id C.longlong, dm C.int, posx C.int, posz C.int) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return asCbytes(nil)
@@ -254,7 +254,7 @@ func LoadNBTPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
 }
 
 //export LoadNBT
-func LoadNBT(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
+func LoadNBT(id C.longlong, dm C.int, posx C.int, posz C.int) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return asCbytes(nil)
@@ -283,7 +283,7 @@ func LoadNBT(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
 }
 
 //export SaveNBTPayloadOnly
-func SaveNBTPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) *C.char {
+func SaveNBTPayloadOnly(id C.longlong, dm C.int, posx C.int, posz C.int, payload *C.char) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveNBTPayloadOnly: World not found")
@@ -298,7 +298,7 @@ func SaveNBTPayloadOnly(id C.int, dm C.int, posx C.int, posz C.int, payload *C.c
 }
 
 //export SaveNBT
-func SaveNBT(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) (err *C.char) {
+func SaveNBT(id C.longlong, dm C.int, posx C.int, posz C.int, payload *C.char) (err *C.char) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -334,7 +334,7 @@ func SaveNBT(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) (err *
 }
 
 //export LoadDeltaUpdate
-func LoadDeltaUpdate(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
+func LoadDeltaUpdate(id C.longlong, dm C.int, posx C.int, posz C.int) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return asCbytes(nil)
@@ -344,7 +344,7 @@ func LoadDeltaUpdate(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
 }
 
 //export SaveDeltaUpdate
-func SaveDeltaUpdate(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) *C.char {
+func SaveDeltaUpdate(id C.longlong, dm C.int, posx C.int, posz C.int, payload *C.char) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveDeltaUpdate: World not found")
@@ -360,7 +360,7 @@ func SaveDeltaUpdate(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char
 }
 
 //export LoadTimeStamp
-func LoadTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
+func LoadTimeStamp(id C.longlong, dm C.int, posx C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
@@ -371,7 +371,7 @@ func LoadTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
 }
 
 //export SaveTimeStamp
-func SaveTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.longlong) *C.char {
+func SaveTimeStamp(id C.longlong, dm C.int, posx C.int, posz C.int, timeStamp C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveTimeStamp: World not found")
@@ -386,7 +386,7 @@ func SaveTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.longl
 }
 
 //export LoadDeltaUpdateTimeStamp
-func LoadDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.longlong {
+func LoadDeltaUpdateTimeStamp(id C.longlong, dm C.int, posx C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
@@ -397,7 +397,7 @@ func LoadDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int) C.long
 }
 
 //export SaveDeltaUpdateTimeStamp
-func SaveDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeStamp C.longlong) *C.char {
+func SaveDeltaUpdateTimeStamp(id C.longlong, dm C.int, posx C.int, posz C.int, timeStamp C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveDeltaUpdateTimeStamp: World not found")
@@ -412,7 +412,7 @@ func SaveDeltaUpdateTimeStamp(id C.int, dm C.int, posx C.int, posz C.int, timeSt
 }
 
 //export LoadFullSubChunkBlobHash
-func LoadFullSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int) *C.char {
+func LoadFullSubChunkBlobHash(id C.longlong, dm C.int, posx C.int, posz C.int) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return asCbytes(nil)
@@ -432,7 +432,7 @@ func LoadFullSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int) *C.cha
 }
 
 //export SaveFullSubChunkBlobHash
-func SaveFullSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int, payload *C.char) (err *C.char) {
+func SaveFullSubChunkBlobHash(id C.longlong, dm C.int, posx C.int, posz C.int, payload *C.char) (err *C.char) {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -465,7 +465,7 @@ func SaveFullSubChunkBlobHash(id C.int, dm C.int, posx C.int, posz C.int, payloa
 }
 
 //export LoadSubChunkBlobHash
-func LoadSubChunkBlobHash(id C.int, dm C.int, posx C.int, posy C.int, posz C.int) C.longlong {
+func LoadSubChunkBlobHash(id C.longlong, dm C.int, posx C.int, posy C.int, posz C.int) C.longlong {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
@@ -480,7 +480,7 @@ func LoadSubChunkBlobHash(id C.int, dm C.int, posx C.int, posy C.int, posz C.int
 }
 
 //export SaveSubChunkBlobHash
-func SaveSubChunkBlobHash(id C.int, dm C.int, posx C.int, posy C.int, posz C.int, hash C.longlong) *C.char {
+func SaveSubChunkBlobHash(id C.longlong, dm C.int, posx C.int, posy C.int, posz C.int, hash C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("SaveSubChunkBlobHash: World not found")

@@ -33,8 +33,22 @@ func asGoBytes(p *C.char) []byte {
 	return C.GoBytes(unsafe.Pointer(p), C.int(4+l))[4:]
 }
 
-func packChunkRangeAndID(r define.Range, chunkID int) C.longlong {
-	return C.longlong((r[0] + 512) | ((r[1] + 512) << 10) | (chunkID << 20))
+func packChunkRangeAndID(r define.Range, chunkID int) (complexReturn *C.char) {
+	result := make([]byte, 0)
+
+	r1 := make([]byte, 2)
+	binary.LittleEndian.PutUint16(r1, uint16(r[0]))
+	result = append(result, r1...)
+
+	r2 := make([]byte, 2)
+	binary.LittleEndian.PutUint16(r2, uint16(r[1]))
+	result = append(result, r2...)
+
+	cID := make([]byte, 8)
+	binary.LittleEndian.PutUint64(cID, uint64(chunkID))
+	result = append(result, cID...)
+
+	return asCbytes(result)
 }
 
 func packDenseBlockMatrix(blockMatrix [][]uint32, subLength int) (encodeBytes []byte) {
@@ -79,8 +93,8 @@ func fromSubChunkPayload(rangeStart C.int, rangeEnd C.int, payload *C.char, e ch
 		return asCbytes([]byte{0})
 	}
 
-	idBytes := make([]byte, 4)
-	binary.LittleEndian.PutUint32(idBytes, uint32(savedSubChunk.AddObject(s)))
+	idBytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(idBytes, uint64(savedSubChunk.AddObject(s)))
 
 	// ok
 	result := []byte{1, byte(ind)}
@@ -89,7 +103,7 @@ func fromSubChunkPayload(rangeStart C.int, rangeEnd C.int, payload *C.char, e ch
 	return asCbytes(result)
 }
 
-func subChunkPayload(subChunkId C.int, rangeStart C.int, rangeEnd C.int, ind C.int, e chunk.Encoding) *C.char {
+func subChunkPayload(subChunkId C.longlong, rangeStart C.int, rangeEnd C.int, ind C.int, e chunk.Encoding) *C.char {
 	r := define.Range{int(rangeStart), int(rangeEnd)}
 
 	s := savedSubChunk.LoadObject(int(subChunkId))

@@ -4,7 +4,7 @@ import "C"
 import "fmt"
 
 //export DB_Has
-func DB_Has(id C.int, key *C.char) C.int {
+func DB_Has(id C.longlong, key *C.char) C.int {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return -1
@@ -14,7 +14,7 @@ func DB_Has(id C.int, key *C.char) C.int {
 }
 
 //export DB_Get
-func DB_Get(id C.int, key *C.char) *C.char {
+func DB_Get(id C.longlong, key *C.char) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return asCbytes(nil)
@@ -24,7 +24,7 @@ func DB_Get(id C.int, key *C.char) *C.char {
 }
 
 //export DB_Put
-func DB_Put(id C.int, key *C.char, value *C.char) *C.char {
+func DB_Put(id C.longlong, key *C.char, value *C.char) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("DB_Put: World not found")
@@ -39,7 +39,7 @@ func DB_Put(id C.int, key *C.char, value *C.char) *C.char {
 }
 
 //export DB_Delete
-func DB_Delete(id C.int, key *C.char) *C.char {
+func DB_Delete(id C.longlong, key *C.char) *C.char {
 	w := openedWorld.LoadObject(int(id))
 	if w == nil {
 		return C.CString("DB_Delete: World not found")

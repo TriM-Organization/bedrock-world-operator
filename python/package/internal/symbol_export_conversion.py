@@ -1,16 +1,17 @@
-import struct, nbtlib
+import struct
+import nbtlib
 from io import BytesIO
 from .types import LIB
-from .types import CSlice, CString, CInt
+from .types import CSlice, CString, CInt, CLongLong
 from .types import as_c_bytes, as_python_bytes, as_c_string
 from ..utils import marshalNBT, unmarshalNBT
 
 
 LIB.RuntimeIDToState.argtypes = [CInt]
 LIB.StateToRuntimeID.argtypes = [CString, CSlice]
-LIB.SubChunkNetworkPayload.argtypes = [CInt, CInt, CInt, CInt]
+LIB.SubChunkNetworkPayload.argtypes = [CLongLong, CInt, CInt, CInt]
 LIB.FromSubChunkNetworkPayload.argtypes = [CInt, CInt, CSlice]
-LIB.SubChunkDiskPayload.argtypes = [CInt, CInt, CInt, CInt]
+LIB.SubChunkDiskPayload.argtypes = [CLongLong, CInt, CInt, CInt]
 LIB.FromSubChunkDiskPayload.argtypes = [CInt, CInt, CSlice]
 
 LIB.RuntimeIDToState.restype = CSlice
@@ -30,11 +31,11 @@ def runtime_id_to_state(
     if reader.read(1) == b"\x00":
         return "", None, False
 
-    l: int = struct.unpack("<H", reader.read(2))[0]
-    name = reader.read(l).decode(encoding="utf-8")
+    length: int = struct.unpack("<H", reader.read(2))[0]
+    name = reader.read(length).decode(encoding="utf-8")
 
-    l = struct.unpack("<I", reader.read(4))[0]
-    states_nbt = reader.read(l)
+    length = struct.unpack("<I", reader.read(4))[0]
+    states_nbt = reader.read(length)
 
     return (
         name,
@@ -65,7 +66,7 @@ def sub_chunk_network_payload(
 ) -> bytes:
     return as_python_bytes(
         LIB.SubChunkNetworkPayload(
-            CInt(id), CInt(range_start), CInt(range_end), CInt(ind)
+            CLongLong(id), CInt(range_start), CInt(range_end), CInt(ind)
         )
     )
 
@@ -85,7 +86,7 @@ def from_sub_chunk_network_payload(
         return 0, 0, False
 
     index = reader.read(1)[0]
-    sub_chunk_id = struct.unpack("<I", reader.read(4))[0]
+    sub_chunk_id = struct.unpack("<Q", reader.read(8))[0]
 
     return index, sub_chunk_id, True
 
@@ -94,7 +95,9 @@ def sub_chunk_disk_payload(
     id: int, range_start: int, range_end: int, ind: int
 ) -> bytes:
     return as_python_bytes(
-        LIB.SubChunkDiskPayload(CInt(id), CInt(range_start), CInt(range_end), CInt(ind))
+        LIB.SubChunkDiskPayload(
+            CLongLong(id), CInt(range_start), CInt(range_end), CInt(ind)
+        )
     )
 
 
@@ -113,6 +116,6 @@ def from_sub_chunk_disk_payload(
         return 0, 0, False
 
     index = reader.read(1)[0]
-    sub_chunk_id = struct.unpack("<I", reader.read(4))[0]
+    sub_chunk_id = struct.unpack("<Q", reader.read(8))[0]
 
     return index, sub_chunk_id, True
