@@ -11,18 +11,18 @@ import (
 var savedSubChunk = NewSimpleManager[*chunk.SubChunk]()
 
 //export NewSubChunk
-func NewSubChunk() C.int {
+func NewSubChunk() C.longlong {
 	subChunk := chunk.NewSubChunk(block.AirRuntimeID)
-	return C.int(savedSubChunk.AddObject(subChunk))
+	return C.longlong(savedSubChunk.AddObject(subChunk))
 }
 
 //export ReleaseSubChunk
-func ReleaseSubChunk(id C.int) {
+func ReleaseSubChunk(id C.longlong) {
 	savedSubChunk.ReleaseObject(int(id))
 }
 
 //export SubChunk_Block
-func SubChunk_Block(id C.int, x C.int, y C.int, z C.int, layer C.int) (blockRuntimeID C.int) {
+func SubChunk_Block(id C.longlong, x C.int, y C.int, z C.int, layer C.int) (blockRuntimeID C.int) {
 	subChunk := savedSubChunk.LoadObject(int(id))
 	if subChunk == nil {
 		return -1
@@ -31,7 +31,7 @@ func SubChunk_Block(id C.int, x C.int, y C.int, z C.int, layer C.int) (blockRunt
 }
 
 //export SubChunk_Blocks
-func SubChunk_Blocks(id C.int, layer C.int) (complexReturn *C.char) {
+func SubChunk_Blocks(id C.longlong, layer C.int) (complexReturn *C.char) {
 	c := savedSubChunk.LoadObject(int(id))
 	if c == nil {
 		return asCbytes(nil)
@@ -52,7 +52,7 @@ func SubChunk_Blocks(id C.int, layer C.int) (complexReturn *C.char) {
 }
 
 //export SubChunk_Empty
-func SubChunk_Empty(id C.int) C.int {
+func SubChunk_Empty(id C.longlong) C.int {
 	subChunk := savedSubChunk.LoadObject(int(id))
 	if subChunk == nil {
 		return -1
@@ -61,7 +61,7 @@ func SubChunk_Empty(id C.int) C.int {
 }
 
 //export SubChunk_Equals
-func SubChunk_Equals(id C.int, anotherSubChunkId C.int) C.int {
+func SubChunk_Equals(id C.longlong, anotherSubChunkId C.longlong) C.int {
 	s1 := savedSubChunk.LoadObject(int(id))
 	s2 := savedSubChunk.LoadObject(int(anotherSubChunkId))
 	if s1 == nil || s2 == nil {
@@ -71,7 +71,7 @@ func SubChunk_Equals(id C.int, anotherSubChunkId C.int) C.int {
 }
 
 //export SubChunk_SetBlock
-func SubChunk_SetBlock(id C.int, x C.int, y C.int, z C.int, layer C.int, block C.int) *C.char {
+func SubChunk_SetBlock(id C.longlong, x C.int, y C.int, z C.int, layer C.int, block C.int) *C.char {
 	subChunk := savedSubChunk.LoadObject(int(id))
 	if subChunk == nil {
 		return C.CString("SubChunk_SetBlock: Sub chunk not found")
@@ -81,7 +81,7 @@ func SubChunk_SetBlock(id C.int, x C.int, y C.int, z C.int, layer C.int, block C
 }
 
 //export SubChunk_SetBlocks
-func SubChunk_SetBlocks(id C.int, layer C.int, payload *C.char) *C.char {
+func SubChunk_SetBlocks(id C.longlong, layer C.int, payload *C.char) *C.char {
 	c := savedSubChunk.LoadObject(int(id))
 	if c == nil {
 		return C.CString("SubChunk_SetBlocks: Chunk not found")
