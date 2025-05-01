@@ -1,4 +1,5 @@
-import nbtlib, numpy
+import nbtlib
+import numpy
 from dataclasses import dataclass, field
 
 

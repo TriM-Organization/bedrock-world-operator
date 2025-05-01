@@ -22,7 +22,7 @@ class SubChunkBase:
         self._sub_chunk_id = -1
 
     def __del__(self):
-        if self._sub_chunk_id >= 0 and not release_sub_chunk is None:
+        if self._sub_chunk_id >= 0 and release_sub_chunk is not None:
             release_sub_chunk(self._sub_chunk_id)
 
     def is_valid(self) -> bool:

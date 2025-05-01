@@ -50,7 +50,7 @@ class WorldBase:
         self._world_id = -1
 
     def __del__(self):
-        if self._world_id >= 0 and not release_bedrock_world is None:
+        if self._world_id >= 0 and release_bedrock_world is not None:
             release_bedrock_world(self._world_id)
 
     def is_valid(self) -> bool:

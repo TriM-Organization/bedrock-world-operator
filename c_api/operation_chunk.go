@@ -4,6 +4,7 @@ import "C"
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
@@ -151,6 +152,34 @@ func Chunk_Sub(id C.longlong) (complexReturn *C.char) {
 	return asCbytes(buf.Bytes())
 }
 
+//export Chunk_SetSub
+func Chunk_SetSub(id C.longlong, linkedIdBytes *C.char) *C.char {
+	linkedId := make([]int, 0)
+	subChunks := make([]*chunk.SubChunk, 0)
+
+	c := savedChunk.LoadObject(int(id))
+	if c == nil {
+		return C.CString("Chunk_SetSub: Chunk not found")
+	}
+
+	goBytes := asGoBytes(linkedIdBytes)
+	for len(goBytes) > 0 {
+		linkedId = append(linkedId, int(binary.LittleEndian.Uint64(goBytes)))
+		goBytes = goBytes[8:]
+	}
+
+	for index, value := range linkedId {
+		s := savedSubChunk.LoadObject(value)
+		if s == nil {
+			return C.CString(fmt.Sprintf("Chunk_SetSub: Sub chunk whose index is %d (id=%d) was not found", index, value))
+		}
+		subChunks = append(subChunks, *s)
+	}
+
+	(*c).SetSub(subChunks)
+	return C.CString("")
+}
+
 //export Chunk_SubChunk
 func Chunk_SubChunk(id C.longlong, y C.int) C.longlong {
 	c := savedChunk.LoadObject(int(id))
@@ -158,4 +187,20 @@ func Chunk_SubChunk(id C.longlong, y C.int) C.longlong {
 		return -1
 	}
 	return C.longlong(savedSubChunk.AddObject((*c).SubChunk(int16(y))))
+}
+
+//export Chunk_SetSubChunk
+func Chunk_SetSubChunk(id C.longlong, subChunkId C.longlong, index C.int) *C.char {
+	c := savedChunk.LoadObject(int(id))
+	if c == nil {
+		return C.CString("Chunk_SetSubChunk: Chunk not found")
+	}
+
+	s := savedSubChunk.LoadObject(int(subChunkId))
+	if s == nil {
+		return C.CString("Chunk_SetSubChunk: Chunk found bot sub chunk not found")
+	}
+
+	(*c).SetSubChunk(*s, int16(index))
+	return C.CString("")
 }

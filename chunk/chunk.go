@@ -60,6 +60,20 @@ func (chunk *Chunk) Sub() []*SubChunk {
 	return chunk.sub
 }
 
+// SetSub overwrite the sub chunks of this chunk.
+//
+// The length of subChunks could less or bigger than the sub chunk counts of this
+// whole chunk.
+//
+// If less, then only the given part will be modified,
+// if bigger, then the bigger part will be not used.
+func (chunk *Chunk) SetSub(subChunks []*SubChunk) {
+	n := (chunk.r.Height() >> 4) + 1
+	for i := range min(n, len(subChunks)) {
+		chunk.sub[i] = subChunks[i]
+	}
+}
+
 // Block returns the runtime ID of the block at a given x, y and z in a chunk at the given layer. If no
 // sub chunk exists at the given y, the block is assumed to be air.
 func (chunk *Chunk) Block(x uint8, y int16, z uint8, layer uint8) uint32 {
@@ -186,6 +200,12 @@ func (chunk *Chunk) Compact() {
 // SubChunk finds the correct SubChunk in the Chunk by a Y value.
 func (chunk *Chunk) SubChunk(y int16) *SubChunk {
 	return chunk.sub[chunk.SubIndex(y)]
+}
+
+// SetSubChunk set the a sub chunk of this chunk.
+// index is refer to the sub chunk Y index of this sub chunk.
+func (chunk *Chunk) SetSubChunk(subChunk *SubChunk, index int16) {
+	chunk.sub[index] = subChunk
 }
 
 // SubIndex returns the sub chunk Y index matching the y value passed.

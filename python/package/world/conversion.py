@@ -1,4 +1,5 @@
-import nbtlib, numpy
+import nbtlib
+import numpy
 from .constant import (
     AIR_BLOCK_STATES,
     EMPTY_BLOCK_STATES,
