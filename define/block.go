@@ -6,3 +6,13 @@ type BlockState struct {
 	Properties map[string]any `nbt:"states"`
 	Version    int32          `nbt:"version"`
 }
+
+// NetEaseBlock is the represents of a block in NetEase
+type NetEaseBlock struct {
+	Name           string         `nbt:"name"`
+	NameHash       int64          `nbt:"name_hash"`
+	BlockRuntimeID int32          `nbt:"network_id"`
+	States         map[string]any `nbt:"states"`
+	Val            int16          `nbt:"val"`
+	Version        int32          `nbt:"version"`
+}
