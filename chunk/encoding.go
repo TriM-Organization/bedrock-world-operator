@@ -101,8 +101,11 @@ func (blockPaletteEncoding) DecodeBlockState(m map[string]any) (uint32, error) {
 		// Target block is a block we don't know, and we don't want return error
 		// because this is not a big problem. Just redirect it as a unknown block,
 		// and print error information to the user so that they can solve.
-		fmt.Printf("cannot get runtime ID of block state %v{%+v} %v\n", upgraded.Name, upgraded.Properties, upgraded.Version)
 		v = block.ComputeBlockHash("minecraft:unknown", map[string]any{})
+		fmt.Printf(
+			"DecodeBlockState: Cannot get runtime ID of block state %v{%+v} %v\n",
+			upgraded.Name, upgraded.Properties, upgraded.Version,
+		)
 	}
 	return v, nil
 }
