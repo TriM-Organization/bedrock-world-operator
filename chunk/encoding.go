@@ -98,12 +98,11 @@ func (blockPaletteEncoding) DecodeBlockState(m map[string]any) (uint32, error) {
 
 	v, ok := block.StateToRuntimeID(upgraded.Name, upgraded.Properties)
 	if !ok {
-		// Target block maybe is NetEase exclusive, so it is safe to direct this
-		// block to a unknown block.
-		if block.UseNeteaseBlockStates {
-			return block.ComputeBlockHash("minecraft:unknown", map[string]any{}), nil
-		}
-		return 0, fmt.Errorf("cannot get runtime ID of block state %v{%+v} %v", upgraded.Name, upgraded.Properties, upgraded.Version)
+		// Target block is a block we don't know, and we don't want return error
+		// because this is not a big problem. Just redirect it as a unknown block,
+		// and print error information to the user so that they can solve.
+		fmt.Printf("cannot get runtime ID of block state %v{%+v} %v\n", upgraded.Name, upgraded.Properties, upgraded.Version)
+		v = block.ComputeBlockHash("minecraft:unknown", map[string]any{})
 	}
 	return v, nil
 }
