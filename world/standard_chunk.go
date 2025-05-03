@@ -14,7 +14,7 @@ import (
 // If an error is returned, exists is always assumed to be true.
 // Note that we here don't decode chunk data and just return the origin payload.
 func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define.ChunkPos) (subchunksBytes [][]byte, exists bool, err error) {
-	subchunksBytes = make([][]byte, (dm.Height()>>4)+1)
+	subchunksBytes = make([][]byte, dm.Height()>>4)
 	// This key is where the version of a chunk resides. The chunk version has changed many times, without any
 	// actual substantial changes, so we don't check this.
 
