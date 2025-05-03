@@ -45,12 +45,7 @@ LIB.Chunk_SetSubChunk.restype = CString
 
 def new_chunk(range_start: int, range_end: int) -> tuple[int, int, int]:
     result = as_python_bytes(LIB.NewChunk(CInt(range_start), CInt(range_end)))
-
-    r1 = struct.unpack("<h", result[0:2])[0]
-    r2 = struct.unpack("<h", result[2:4])[0]
-    id = struct.unpack("<Q", result[4:])[0]
-
-    return (r1, r2, id)
+    return struct.unpack("<hhQ", result)
 
 
 def release_chunk(id: int) -> None:

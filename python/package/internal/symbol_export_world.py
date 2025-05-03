@@ -120,12 +120,7 @@ def load_chunk_payload_only(id: int, dm: int, x: int, z: int) -> list[bytes]:
 
 def load_chunk(id: int, dm: int, x: int, z: int) -> tuple[int, int, int]:
     result = as_python_bytes(LIB.LoadChunk(CLongLong(id), CInt(dm), CInt(x), CInt(z)))
-
-    r1 = struct.unpack("<h", result[0:2])[0]
-    r2 = struct.unpack("<h", result[2:4])[0]
-    id = struct.unpack("<Q", result[4:])[0]
-
-    return (r1, r2, id)
+    return struct.unpack("<hhQ", result)
 
 
 def save_chunk_payload_only(
@@ -270,12 +265,7 @@ def load_full_sub_chunk_blob_hash(
 
     ptr = 0
     while ptr < len(payload):
-        result.append(
-            (
-                struct.unpack("<b", payload[ptr : ptr + 1])[0],
-                struct.unpack("<Q", payload[ptr + 1 : ptr + 9])[0],
-            )
-        )
+        result.append(struct.unpack("<bQ", payload[ptr : ptr + 9]))
         ptr += 9
 
     return result
@@ -287,8 +277,7 @@ def save_full_sub_chunk_blob_hash(
     writer = BytesIO()
 
     for i in hashes:
-        writer.write(struct.pack("<b", i[0]))
-        writer.write(struct.pack("<Q", i[1]))
+        writer.write(struct.pack("<bQ", i[0], i[1]))
 
     return as_python_string(
         LIB.SaveFullSubChunkBlobHash(
