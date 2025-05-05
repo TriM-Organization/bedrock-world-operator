@@ -109,10 +109,7 @@ func init() {
 }
 
 // registerBlockState registers a new blockState to the states slice.
-// The function panics if UseNeteaseBlockStates is false and the blockState
-// was already registered.
-// Additionally, if UseNeteaseBlockStates is true, then the runtime id
-// will register as the network block hash.
+// The function panics if the blockState was already registered.
 func registerBlockState(s define.BlockState) {
 	var rid uint32
 	hash := ComputeBlockHash(s.Name, s.Properties)
