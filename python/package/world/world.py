@@ -604,8 +604,6 @@ class World(WorldBase):
         but there are multiple hash for each sub chunk who have payload in
         this chunk.
 
-        This is not used by standard Minecraft and just for some own purpose.
-
         Note that:
             - If len(new_hash) is 0, then the blob hash
               data of this chunk will be deleted.
