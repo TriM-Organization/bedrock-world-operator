@@ -7,6 +7,7 @@ import (
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
+	"github.com/df-mc/worldupgrader/blockupgrader"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
@@ -54,7 +55,11 @@ func StateToRuntimeID(name *C.char, states *C.char) (complexReturn *C.char) {
 		return asCbytes(result)
 	}
 
-	runtimeID, found := block.StateToRuntimeID(blockName, blockStates)
+	upgraded := blockupgrader.Upgrade(blockupgrader.BlockState{
+		Name:       blockName,
+		Properties: blockStates,
+	})
+	runtimeID, found := block.StateToRuntimeID(upgraded.Name, upgraded.Properties)
 	if !found {
 		// not found
 		result = append(result, 0)
