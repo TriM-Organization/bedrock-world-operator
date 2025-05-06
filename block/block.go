@@ -46,7 +46,7 @@ func init() {
 		return "", nil, false
 	}
 	StateToRuntimeID = func(name string, properties map[string]any) (runtimeID uint32, found bool) {
-		if !strings.Contains(name, "minecraft:") {
+		if !strings.HasPrefix(name, "minecraft:") {
 			name = "minecraft:" + name
 		}
 
