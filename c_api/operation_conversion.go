@@ -4,6 +4,7 @@ import "C"
 import (
 	"bytes"
 	"encoding/binary"
+	"strings"
 
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
@@ -55,6 +56,9 @@ func StateToRuntimeID(name *C.char, states *C.char) (complexReturn *C.char) {
 		return asCbytes(result)
 	}
 
+	if !strings.HasPrefix(blockName, "minecraft:") {
+		blockName = "minecraft:" + blockName
+	}
 	upgraded := blockupgrader.Upgrade(blockupgrader.BlockState{
 		Name:       blockName,
 		Properties: blockStates,
