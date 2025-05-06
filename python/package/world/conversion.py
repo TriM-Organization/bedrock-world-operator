@@ -45,6 +45,12 @@ def state_to_runtime_id(
     """
     state_to_runtime_id convert a block which name is block_name
     and states is block_states to its block runtime ID represent.
+    
+    Note that the internal implement will try to upgrade the block states
+    to the newest version, and then do runtime id conversion.
+    
+    Therefore, it's safe to use a older version states to convert to block
+    runtime id.
 
     Args:
         block_name (str): The name of this block.
