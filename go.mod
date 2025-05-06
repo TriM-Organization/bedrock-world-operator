@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/df-mc/goleveldb v1.1.9
-	github.com/df-mc/worldupgrader v1.0.12
+	github.com/df-mc/worldupgrader v1.0.11
 	github.com/sandertv/gophertunnel v1.45.1
 )
 
