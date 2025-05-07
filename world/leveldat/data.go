@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
+	block_general "github.com/YingLunTown-DreamLand/bedrock-world-operator/block/general"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 )
 
@@ -186,7 +186,7 @@ func (d *Data) FillDefault() {
 	d.Generator = 2
 	d.HasBeenLoadedInCreative = true
 
-	if block.UseNeteaseBlockStates {
+	if block_general.UseNeteaseBlockStates {
 		d.InventoryVersion = "1.20.50"
 	} else {
 		d.InventoryVersion = protocol.CurrentVersion
@@ -208,7 +208,7 @@ func (d *Data) FillDefault() {
 	d.NaturalRegeneration = true
 	d.NetherScale = 8
 
-	if block.UseNeteaseBlockStates {
+	if block_general.UseNeteaseBlockStates {
 		d.NetworkVersion = 630
 	} else {
 		d.NetworkVersion = protocol.CurrentProtocol

@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
+	block_general "github.com/YingLunTown-DreamLand/bedrock-world-operator/block/general"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 )
 
@@ -19,7 +19,7 @@ var minimumCompatibleClientVersion []int32
 func init() {
 	var fullVersion []string
 
-	if block.UseNeteaseBlockStates {
+	if block_general.UseNeteaseBlockStates {
 		fullVersion = append(strings.Split("1.20.50", "."), "0", "0")
 	} else {
 		fullVersion = append(strings.Split(protocol.CurrentVersion, "."), "0", "0")
