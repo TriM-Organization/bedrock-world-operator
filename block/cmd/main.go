@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"compress/gzip"
 	_ "embed"
 	"fmt"
 	"io"
 	"os"
 	"slices"
-	"strings"
 
 	block_general "github.com/YingLunTown-DreamLand/bedrock-world-operator/block/general"
 	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
@@ -24,13 +24,13 @@ var (
 )
 
 var (
-	nameSet         []string                       = make([]string, 0)
-	blockStatesSet  []block_general.SingleStateKey = make([]block_general.SingleStateKey, 0)
-	blockVersionSet []int32                        = make([]int32, 0)
+	stringSet       []string                 = make([]string, 0)
+	blockStatesSet  []block_general.StateKey = make([]block_general.StateKey, 0)
+	blockVersionSet []int32                  = make([]int32, 0)
 )
 
 var (
-	nameToSetIndex         map[string]uint32 = make(map[string]uint32)
+	stringToSetIndex       map[string]uint32 = make(map[string]uint32)
 	blockStatesToSetIndex  map[string]uint32 = make(map[string]uint32)
 	blockVersionToSetIndex map[int32]uint32  = make(map[int32]uint32)
 )
@@ -99,64 +99,75 @@ func init() {
 }
 
 func initSet(states []define.BlockState) {
-	nameMapping := make(map[string]bool)
-	statesMapping := make(map[block_general.SingleStateKey]bool)
+	stringMapping := make(map[string]bool)
+	statesMapping := make(map[block_general.StateKey]bool)
 	versionMapping := make(map[int32]bool)
 
 	for _, value := range states {
-		nameMapping[value.Name] = true
+		stringMapping[value.Name] = true
 		versionMapping[value.Version] = true
-
 		for key, val := range value.Properties {
-			SingleStateKey := block_general.SingleStateKey{KeyName: key}
-
-			switch v := val.(type) {
-			case string:
-				nameMapping[v] = true
-				SingleStateKey.KeyType = block_general.StateKeyTypeString
-			case int32:
-				SingleStateKey.KeyType = block_general.StateKeyTypeInt32
-			case byte:
-				SingleStateKey.KeyType = block_general.StateKeyTypeByte
-			default:
-				panic(fmt.Sprintf("initSet: Unknown state key type of %#v(%T); key = %#v, block = %#v", val, val, key, value))
+			stringMapping[key] = true
+			if v, ok := val.(string); ok {
+				stringMapping[v] = true
 			}
-
-			statesMapping[SingleStateKey] = true
 		}
 	}
 
-	for key := range nameMapping {
-		nameSet = append(nameSet, key)
-	}
-	for key := range statesMapping {
-		blockStatesSet = append(blockStatesSet, key)
+	for key := range stringMapping {
+		stringSet = append(stringSet, key)
 	}
 	for key := range versionMapping {
 		blockVersionSet = append(blockVersionSet, key)
 	}
 
-	slices.Sort(nameSet)
+	slices.Sort(stringSet)
 	slices.Sort(blockVersionSet)
-	slices.SortStableFunc(blockStatesSet, func(a block_general.SingleStateKey, b block_general.SingleStateKey) int {
-		return strings.Compare(a.KeyName, b.KeyName)
-	})
 
-	for index, value := range nameSet {
-		nameToSetIndex[value] = uint32(index)
+	for index, value := range stringSet {
+		stringToSetIndex[value] = uint32(index)
 	}
 	for index, value := range blockVersionSet {
 		blockVersionToSetIndex[value] = uint32(index)
 	}
+
+	for _, value := range states {
+		for key, val := range value.Properties {
+			StateKey := block_general.StateKey{KeyNameIndex: stringToSetIndex[key]}
+
+			switch val.(type) {
+			case string:
+				StateKey.KeyType = block_general.StateKeyTypeString
+			case int32:
+				StateKey.KeyType = block_general.StateKeyTypeInt32
+			case byte:
+				StateKey.KeyType = block_general.StateKeyTypeByte
+			default:
+				panic(fmt.Sprintf("initSet: Unknown state key type of %#v(%T); key = %#v, block = %#v", val, val, key, value))
+			}
+
+			statesMapping[StateKey] = true
+		}
+	}
+
+	for key := range statesMapping {
+		blockStatesSet = append(blockStatesSet, key)
+	}
+
+	slices.SortStableFunc(blockStatesSet, func(a block_general.StateKey, b block_general.StateKey) int {
+		return cmp.Compare(a.KeyNameIndex, b.KeyNameIndex)
+	})
+
 	for index, value := range blockStatesSet {
-		if val, ok := blockStatesToSetIndex[value.KeyName]; ok {
+		keyName := stringSet[value.KeyNameIndex]
+		if val, ok := blockStatesToSetIndex[keyName]; ok {
 			panic(
 				fmt.Sprintf("initSet: Try to overwrite a state who name %#v to a different type; origin = %#v, newer = %#v",
-					value.KeyName, blockStatesSet[val].KeyType, value.KeyType,
+					keyName, blockStatesSet[val].KeyType, value.KeyType,
 				),
 			)
 		}
-		blockStatesToSetIndex[value.KeyName] = uint32(index)
+		blockStatesToSetIndex[keyName] = uint32(index)
 	}
 }
 
@@ -175,22 +186,22 @@ func sortProperties(in map[string]any) []block_general.IndexBlockProperty {
 
 		switch v := in[key].(type) {
 		case string:
-			ind := uint32(nameToSetIndex[v])
+			ind := uint32(stringToSetIndex[v])
 			w.Varuint32(&ind)
 			result = append(result, block_general.IndexBlockProperty{
-				Index: blockStatesToSetIndex[key],
-				Value: buf.Bytes(),
+				KeyIndex: blockStatesToSetIndex[key],
+				Value:    buf.Bytes(),
 			})
 		case int32:
 			w.Varint32(&v)
 			result = append(result, block_general.IndexBlockProperty{
-				Index: blockStatesToSetIndex[key],
-				Value: buf.Bytes(),
+				KeyIndex: blockStatesToSetIndex[key],
+				Value:    buf.Bytes(),
 			})
 		case byte:
 			result = append(result, block_general.IndexBlockProperty{
-				Index: blockStatesToSetIndex[key],
-				Value: []byte{v},
+				KeyIndex: blockStatesToSetIndex[key],
+				Value:    []byte{v},
 			})
 		}
 	}
@@ -202,7 +213,7 @@ func genSetBinary() []byte {
 	buf := bytes.NewBuffer(nil)
 	w := protocol.NewWriter(buf, 0)
 
-	protocol.FuncSliceUint16Length(w, &nameSet, w.String)
+	protocol.FuncSliceUint16Length(w, &stringSet, w.String)
 	protocol.FuncSliceUint16Length(w, &blockVersionSet, w.Varint32)
 	protocol.SliceUint16Length(w, &blockStatesSet)
 
@@ -215,7 +226,7 @@ func genBlockStatesBinary(states []define.BlockState) []byte {
 
 	for _, value := range states {
 		indexBlockState := block_general.IndexBlockState{
-			BlockNameIndex:  nameToSetIndex[value.Name],
+			BlockNameIndex:  stringToSetIndex[value.Name],
 			BlockProperties: sortProperties(value.Properties),
 			VersionIndex:    blockVersionToSetIndex[value.Version],
 		}
