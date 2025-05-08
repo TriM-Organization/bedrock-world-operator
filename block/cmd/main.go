@@ -133,20 +133,20 @@ func initSet(states []define.BlockState) {
 
 	for _, value := range states {
 		for key, val := range value.Properties {
-			StateKey := block_general.StateKey{KeyNameIndex: stringToSetIndex[key]}
+			stateKey := block_general.StateKey{KeyNameIndex: stringToSetIndex[key]}
 
 			switch val.(type) {
 			case string:
-				StateKey.KeyType = block_general.StateKeyTypeString
+				stateKey.KeyType = block_general.StateKeyTypeString
 			case int32:
-				StateKey.KeyType = block_general.StateKeyTypeInt32
+				stateKey.KeyType = block_general.StateKeyTypeInt32
 			case byte:
-				StateKey.KeyType = block_general.StateKeyTypeByte
+				stateKey.KeyType = block_general.StateKeyTypeByte
 			default:
 				panic(fmt.Sprintf("initSet: Unknown state key type of %#v(%T); key = %#v, block = %#v", val, val, key, value))
 			}
 
-			statesMapping[StateKey] = true
+			statesMapping[stateKey] = true
 		}
 	}
 
