@@ -18,9 +18,9 @@ type blockEntry struct {
 }
 
 var (
-	nameSet         []string                       = make([]string, 0)
-	blockStatesSet  []block_general.SingleStateKey = make([]block_general.SingleStateKey, 0)
-	blockVersionSet []int32                        = make([]int32, 0)
+	stringSet       []string                 = make([]string, 0)
+	blockStatesSet  []block_general.StateKey = make([]block_general.StateKey, 0)
+	blockVersionSet []int32                  = make([]int32, 0)
 )
 
 var (
@@ -71,7 +71,7 @@ func init() {
 }
 
 func decodeSet(io protocol.IO) {
-	protocol.FuncSliceUint16Length(io, &nameSet, io.String)
+	protocol.FuncSliceUint16Length(io, &stringSet, io.String)
 	protocol.FuncSliceUint16Length(io, &blockVersionSet, io.Varint32)
 	protocol.SliceUint16Length(io, &blockStatesSet)
 }
@@ -83,18 +83,20 @@ func decodeToNormalBlockProperties(p []block_general.IndexBlockProperty) map[str
 		buf := bytes.NewBuffer(value.Value)
 		r := protocol.NewReader(buf, 0, false)
 
-		key := blockStatesSet[value.Index]
+		key := blockStatesSet[value.KeyIndex]
+		keyName := stringSet[key.KeyNameIndex]
+
 		switch key.KeyType {
 		case block_general.StateKeyTypeString:
 			var ind uint32
 			r.Varuint32(&ind)
-			result[key.KeyName] = nameSet[ind]
+			result[keyName] = stringSet[ind]
 		case block_general.StateKeyTypeInt32:
 			var val int32
 			r.Varint32(&val)
-			result[key.KeyName] = val
+			result[keyName] = val
 		case block_general.StateKeyTypeByte:
-			result[key.KeyName] = value.Value[0]
+			result[keyName] = value.Value[0]
 		}
 	}
 
@@ -103,7 +105,7 @@ func decodeToNormalBlockProperties(p []block_general.IndexBlockProperty) map[str
 
 func decodeToNormalBlockState(s block_general.IndexBlockState) define.BlockState {
 	return define.BlockState{
-		Name:       nameSet[s.BlockNameIndex],
+		Name:       stringSet[s.BlockNameIndex],
 		Properties: decodeToNormalBlockProperties(s.BlockProperties),
 		Version:    blockVersionSet[s.VersionIndex],
 	}

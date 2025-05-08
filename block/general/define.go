@@ -8,23 +8,23 @@ const (
 	StateKeyTypeByte
 )
 
-type SingleStateKey struct {
-	KeyName string
-	KeyType uint8
+type StateKey struct {
+	KeyNameIndex uint32
+	KeyType      uint8
 }
 
-func (s *SingleStateKey) Marshal(io protocol.IO) {
-	io.String(&s.KeyName)
+func (s *StateKey) Marshal(io protocol.IO) {
+	io.Varuint32(&s.KeyNameIndex)
 	io.Uint8(&s.KeyType)
 }
 
 type IndexBlockProperty struct {
-	Index uint32
-	Value []byte
+	KeyIndex uint32
+	Value    []byte
 }
 
 func (i *IndexBlockProperty) Marshal(io protocol.IO) {
-	io.Varuint32(&i.Index)
+	io.Varuint32(&i.KeyIndex)
 	io.ByteSlice(&i.Value)
 }
 
