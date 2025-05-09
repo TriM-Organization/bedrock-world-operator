@@ -68,6 +68,26 @@ func init() {
 		s, ok := blockStateMapping[networkRuntimeID]
 		return s.rid, ok
 	}
+
+	RuntimeIDToIndexState = func(runtimeID uint32) (result block_general.IndexBlockState, found bool) {
+		s, found := blockStateMapping[runtimeID]
+		if found {
+			return s.block, true
+		}
+		return block_general.IndexBlockState{}, false
+	}
+	IndexStateToRuntimeID = func(state block_general.IndexBlockState) (runtimeID uint32, found bool) {
+		realBlock := decodeToNormalBlockState(state)
+
+		networkRuntimeID := ComputeBlockHash(realBlock.Name, realBlock.Properties)
+		if s, ok := blockStateMapping[networkRuntimeID]; ok {
+			return s.rid, true
+		}
+
+		networkRuntimeID = ComputeBlockHash(realBlock.Name, decodeToNormalBlockProperties(blockProperties[realBlock.Name]))
+		s, ok := blockStateMapping[networkRuntimeID]
+		return s.rid, ok
+	}
 }
 
 func decodeSet(io protocol.IO) {
