@@ -6,8 +6,8 @@ import (
 	"encoding/binary"
 	"unsafe"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/chunk"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
 
 func asCbool(b bool) C.int {

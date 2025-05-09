@@ -1,9 +1,9 @@
 package world
 
 import (
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world/leveldat"
+	"github.com/TriM-Organization/bedrock-world-operator/chunk"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/world/leveldat"
 )
 
 // LevelDB represent to a level database

@@ -3,7 +3,7 @@ package world_define
 import (
 	"encoding/binary"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
 
 //lint:file-ignore U1000 Unused unexported constants are present for future code using these.

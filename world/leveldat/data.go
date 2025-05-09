@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	block_general "github.com/YingLunTown-DreamLand/bedrock-world-operator/block/general"
+	block_general "github.com/TriM-Organization/bedrock-world-operator/block/general"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 )
 

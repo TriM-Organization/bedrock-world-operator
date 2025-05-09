@@ -10,8 +10,8 @@ import (
 	"os"
 	"slices"
 
-	block_general "github.com/YingLunTown-DreamLand/bedrock-world-operator/block/general"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	block_general "github.com/TriM-Organization/bedrock-world-operator/block/general"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 )

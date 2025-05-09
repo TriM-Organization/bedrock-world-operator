@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/block"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 	"github.com/df-mc/worldupgrader/blockupgrader"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"

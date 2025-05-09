@@ -1,8 +1,8 @@
 package world
 
 import (
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
-	world_define "github.com/YingLunTown-DreamLand/bedrock-world-operator/world/define"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
+	world_define "github.com/TriM-Organization/bedrock-world-operator/world/define"
 )
 
 func (b *BedrockWorld) LoadDeltaUpdate(dm define.Dimension, position define.ChunkPos) ([]byte, error) {
