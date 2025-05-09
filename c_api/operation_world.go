@@ -6,9 +6,9 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/world/leveldat"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/world"
+	"github.com/TriM-Organization/bedrock-world-operator/world/leveldat"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 

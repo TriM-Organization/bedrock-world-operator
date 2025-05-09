@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/block"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
 
 // NetworkDecode decodes the network serialised data passed into a Chunk if successful. If not, the chunk

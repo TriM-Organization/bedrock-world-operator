@@ -4,8 +4,8 @@ import "C"
 import (
 	"encoding/binary"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
+	"github.com/TriM-Organization/bedrock-world-operator/block"
+	"github.com/TriM-Organization/bedrock-world-operator/chunk"
 )
 
 var savedSubChunk = NewSimpleManager[*chunk.SubChunk]()

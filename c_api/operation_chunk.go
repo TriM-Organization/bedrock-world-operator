@@ -6,8 +6,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/block"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
+	"github.com/TriM-Organization/bedrock-world-operator/block"
+	"github.com/TriM-Organization/bedrock-world-operator/chunk"
 )
 
 var savedChunk = NewSimpleManager[*chunk.Chunk]()

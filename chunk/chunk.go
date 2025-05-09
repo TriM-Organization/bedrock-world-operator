@@ -1,7 +1,7 @@
 package chunk
 
 import (
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
 
 // Chunk is a segment in the world with a size of 16x16x256 blocks. A chunk contains multiple sub chunks

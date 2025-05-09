@@ -3,8 +3,8 @@ package world
 import (
 	"encoding/binary"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
-	world_define "github.com/YingLunTown-DreamLand/bedrock-world-operator/world/define"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
+	world_define "github.com/TriM-Organization/bedrock-world-operator/world/define"
 )
 
 // LoadFullSubChunkBlobHash load the blob hash of a chunk.

@@ -1,4 +1,4 @@
-module github.com/YingLunTown-DreamLand/bedrock-world-operator
+module github.com/TriM-Organization/bedrock-world-operator
 
 go 1.24
 

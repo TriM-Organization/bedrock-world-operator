@@ -4,9 +4,9 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/chunk"
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
-	world_define "github.com/YingLunTown-DreamLand/bedrock-world-operator/world/define"
+	"github.com/TriM-Organization/bedrock-world-operator/chunk"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
+	world_define "github.com/TriM-Organization/bedrock-world-operator/world/define"
 )
 
 // LoadChunkPayloadOnly loads a chunk at the position passed from the leveldb database.

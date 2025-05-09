@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"sync"
 
-	"github.com/YingLunTown-DreamLand/bedrock-world-operator/define"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
 
 const (
