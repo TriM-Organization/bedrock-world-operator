@@ -104,7 +104,7 @@ class LevelDat:
     force_game_type: bool = False
     game_type: int = 1
     generator: int = 2
-    inventory_version: str = "1.20.50"
+    inventory_version: str = "1.21.0"
     LANB_roadcast: bool = True
     LANB_roadcast_intent: bool = True
     last_played: int = 0

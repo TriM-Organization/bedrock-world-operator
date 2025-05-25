@@ -187,7 +187,7 @@ func (d *Data) FillDefault() {
 	d.HasBeenLoadedInCreative = true
 
 	if block_general.UseNeteaseBlockStates {
-		d.InventoryVersion = "1.20.50"
+		d.InventoryVersion = "1.21.0"
 	} else {
 		d.InventoryVersion = protocol.CurrentVersion
 	}

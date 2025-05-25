@@ -50,14 +50,14 @@
 **Bedrock World Operator** 是一个以 **Go** 语言为底层，以动态库调用的方式，皆在为 **Python** 提供一个效率足够的我的世界基岩版存档操作器。
 
 ### 主要目的
-存档操作器的主要目的在于为网易我的世界基岩版（v1.20.51）提供支持（但不包含解密其存档的实现），即，提供了相关的函数可以将子区块解码或编码为网端格式（Network Encoding），以供在网络传输区块上使用。
+存档操作器的主要目的在于为网易我的世界基岩版（v1.21.0）提供支持（但不包含解密其存档的实现），即，提供了相关的函数可以将子区块解码或编码为网端格式（Network Encoding），以供在网络传输区块上使用。
 
 ### 在国际版上使用
-您可以前往 [version.go](./block/general/version.go) 并将 `const UseNeteaseBlockStates = true` 改为 `const UseNeteaseBlockStates = false` 以将本操作器作为国际版（v1.20.51）的使用。
+您可以前往 [version.go](./block/general/version.go) 并将 `const UseNeteaseBlockStates = true` 改为 `const UseNeteaseBlockStates = false` 以将本操作器作为国际版（v1.21.0）的使用。
 
 需要注意的是，为了减少内存开销，我们会先使用 [main.go](./block/cmd/main.go) 生成 `block_states.bin`，因此您需要确保您已运行此文件以得到正确的 `block_states.bin`。
 
-可以通过替换 [standard_block_states.nbt](./block/cmd/standard_block_states.nbt) 为最新版本的我的世界的方块状态表来将本操作器用于最新版我的世界，而非仅仅 **v1.20.51** 版本。关于这个表来自哪里，请参见 [dragonfly](https://github.com/df-mc/dragonfly/blob/master/server/world/block_states.nbt)。
+可以通过替换 [standard_block_states.nbt](./block/cmd/standard_block_states.nbt) 为最新版本的我的世界的方块状态表来将本操作器用于最新版我的世界，而非仅仅 **v1.21.0** 版本。关于这个表来自哪里，请参见 [dragonfly](https://github.com/df-mc/dragonfly/blob/master/server/world/block_states.nbt)。
 
 另外，[version.go](./block/general/version.go) 中的 `UseNetworkBlockRuntimeID` 常量控制是否应当使用方块的哈希作为其运行时 ID（Block Runtime ID），而不是在预期的方块调色板中使用其索引。我们将此选项默认设置为开，这意味着我们使用哈希而非预期的调色板索引。<br/>
 关于该字段的更多信息，详见 [packet.StartGame & UseBlockNetworkIDHashes](https://github.com/Sandertv/gophertunnel/blob/master/minecraft/protocol/packet/start_game.go#L250)。
