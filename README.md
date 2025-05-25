@@ -62,7 +62,7 @@
 另外，[version.go](./block/general/version.go) 中的 `UseNetworkBlockRuntimeID` 常量控制是否应当使用方块的哈希作为其运行时 ID（Block Runtime ID），而不是在预期的方块调色板中使用其索引。我们将此选项默认设置为开，这意味着我们使用哈希而非预期的调色板索引。<br/>
 关于该字段的更多信息，详见 [packet.StartGame & UseBlockNetworkIDHashes](https://github.com/Sandertv/gophertunnel/blob/master/minecraft/protocol/packet/start_game.go#L250)。
 
-除此外，[encoding.go](./chunk/encoding.go) 中的 `DecodeBlockState` 函数使用了 [blockupgrader](https://github.com/df-mc/worldupgrader)，它用于将旧版的旧方块状态升级到最新版本。然而，由于我们目前支持的是 `v1.20.51` 版本的我的世界，所以它只会升级到 `v1.20.51` 版本的方块状态。如果您有任何需要（例如升级到更高版本的我的世界的方块状态），请自行更改 [go.mod](go.mod) 中 `blockupgrader` 的版本（目前我们使用 `v1.0.11`）
+除此外，[encoding.go](./chunk/encoding.go) 中的 `DecodeBlockState` 函数使用了 [blockupgrader](https://github.com/df-mc/worldupgrader)，它用于将旧版的旧方块状态升级到最新版本。然而，由于我们目前支持的是 `v1.21.0` 版本的我的世界，所以它只会升级到 `v1.21.0` 版本的方块状态。如果您有任何需要（例如升级到更高版本的我的世界的方块状态），请自行更改 [go.mod](go.mod) 中 `blockupgrader` 的版本（目前我们使用 `v1.0.15`）
 
 ### 实现原理
 需要指出的是，**Python** 的内存中几乎不会维护存档的任何部分，在大部分情况下，存档中的区块或子区块，甚至是 **Python** 创建的区块或子区块，都由 **Go** 进行管理，而 **Python** 只控制这些内存的回收。
