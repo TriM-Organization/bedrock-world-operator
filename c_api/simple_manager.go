@@ -23,7 +23,7 @@ func (s *SimpleManager[T]) AddObject(t T) int {
 	pinner.Pin(goPtr)
 
 	ptr := uintptr(unsafe.Pointer(goPtr))
-	s.mapping.Store(ptr, &pinner)
+	s.mapping.Store(ptr, pinner)
 
 	return int(ptr)
 }
