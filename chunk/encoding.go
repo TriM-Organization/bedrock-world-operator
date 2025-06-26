@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strings"
 
 	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/define"
@@ -76,6 +77,12 @@ func (blockPaletteEncoding) DecodeBlockState(m map[string]any) (uint32, error) {
 	// Decode the name and version of the block entry.
 	name, _ := m["name"].(string)
 	version, _ := m["version"].(int32)
+
+	// Fix name if they don't have the prefix of minecraft
+	name = strings.ToLower(name)
+	if !strings.HasPrefix(name, "minecraft:") {
+		name = "minecraft:" + name
+	}
 
 	// Now check for a state field.
 	stateI, ok := m["states"]

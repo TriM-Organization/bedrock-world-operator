@@ -1,43 +1,47 @@
 package main
 
 import (
-	"maps"
+	"runtime"
 	"sync"
+	"unsafe"
 )
 
 type SimpleManager[T any] struct {
-	mapping map[int]*T
-	mu      *sync.RWMutex
-	ptr     int
+	mapping sync.Map // map[uintptr]*runtime.Pinner
 }
 
 func NewSimpleManager[T any]() *SimpleManager[T] {
 	return &SimpleManager[T]{
-		mapping: make(map[int]*T),
-		mu:      new(sync.RWMutex),
-		ptr:     -1,
+		mapping: sync.Map{},
 	}
 }
 
 func (s *SimpleManager[T]) AddObject(t T) int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.ptr++
-	s.mapping[s.ptr] = &t
-	return s.ptr
+	goPtr := &t
+
+	pinner := new(runtime.Pinner)
+	pinner.Pin(goPtr)
+
+	ptr := uintptr(unsafe.Pointer(goPtr))
+	s.mapping.Store(ptr, pinner)
+
+	return int(ptr)
 }
 
-func (s *SimpleManager[T]) LoadObject(id int) *T {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return s.mapping[id]
+func (s *SimpleManager[T]) LoadObject(ptr int) *T {
+	return (*T)(unsafe.Pointer(uintptr(ptr)))
 }
 
-func (s *SimpleManager[T]) ReleaseObject(id int) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	delete(s.mapping, id)
-	newMapping := make(map[int]*T)
-	maps.Copy(newMapping, s.mapping)
-	s.mapping = newMapping
+func (s *SimpleManager[T]) ReleaseObject(ptr int) {
+	value, ok := s.mapping.LoadAndDelete(uintptr(ptr))
+	if !ok {
+		return
+	}
+
+	pinner, ok := value.(*runtime.Pinner)
+	if !ok {
+		return
+	}
+
+	pinner.Unpin()
 }
