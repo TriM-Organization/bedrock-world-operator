@@ -69,7 +69,18 @@ func (bpe blockPaletteEncoding) decode(buf *bytes.Buffer) (uint32, error) {
 func (blockPaletteEncoding) EncodeBlockState(v uint32) define.BlockState {
 	// Get the block state registered with the runtime IDs we have in the palette of the block storage
 	// as we need the name and data value to store.
-	name, props, _ := block.RuntimeIDToState(v)
+	name, props, found := block.RuntimeIDToState(v)
+	if !found {
+		panic(
+			fmt.Sprintf(
+				""+
+					"EncodeBlockState: You should use the newer version of bedrock-world-operator, "+
+					"because the given block runtime ID %d can not be found in this version, "+
+					"and it seems that this block is come from newer Minecraft and need the higher version of bedrock-world-operator",
+				v,
+			),
+		)
+	}
 	return define.BlockState{Name: name, Properties: props, Version: CurrentBlockVersion}
 }
 
