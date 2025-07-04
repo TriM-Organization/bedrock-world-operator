@@ -120,10 +120,16 @@ func (blockPaletteEncoding) DecodeBlockState(m map[string]any) (uint32, error) {
 		// because this is not a big problem. Just redirect it as a unknown block,
 		// and print error information to the user so that they can solve.
 		v = block.ComputeBlockHash("minecraft:unknown", map[string]any{})
-		fmt.Printf(
-			"DecodeBlockState: Cannot get runtime ID of block state %v{%+v} %v\n",
-			upgraded.Name, upgraded.Properties, upgraded.Version,
-		)
+		// For some reason, if the user use the wrong version of bedrock world operator
+		// which lower than 1.2.1, the mcworld can save the block that have no name.
+		// It happened so many times, so here we only output messages for those blocks that
+		// have names. It does not means the error is not exist, we just ignore here.
+		if len(upgraded.Name) > 0 {
+			fmt.Printf(
+				"DecodeBlockState: Cannot get runtime ID of block state %v{%+v} %v\n",
+				upgraded.Name, upgraded.Properties, upgraded.Version,
+			)
+		}
 	}
 	return v, nil
 }
