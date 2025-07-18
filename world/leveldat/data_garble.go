@@ -1,3 +1,5 @@
+//go:build garble
+
 package leveldat
 
 import (
@@ -13,45 +15,47 @@ import (
 // world. The data held here is usually saved in a level.dat file of the world.
 // Data may be used in LevelDat.Unmarshal to collect the data of the level.dat.
 type Data struct {
-	BaseGameVersion                string `nbt:"baseGameVersion"`
-	BiomeOverride                  string
-	ConfirmedPlatformLockedContent bool
-	CenterMapsToOrigin             bool
-	CheatsEnabled                  bool  `nbt:"cheatsEnabled"`
-	DaylightCycle                  int32 `nbt:"daylightCycle"`
-	Difficulty                     int32
-	EduOffer                       int32 `nbt:"eduOffer"`
-	FlatWorldLayers                string
-	ForceGameType                  bool
-	GameType                       int32
-	Generator                      int32
-	InventoryVersion               string
-	LANBroadcast                   bool
-	LANBroadcastIntent             bool
-	LastPlayed                     int64
-	LevelName                      string
-	LimitedWorldOriginX            int32
-	LimitedWorldOriginY            int32
-	LimitedWorldOriginZ            int32
-	LimitedWorldDepth              int32 `nbt:"limitedWorldDepth"`
-	LimitedWorldWidth              int32 `nbt:"limitedWorldWidth"`
-	MinimumCompatibleClientVersion []int32
-	MultiPlayerGame                bool `nbt:"MultiplayerGame"`
-	MultiPlayerGameIntent          bool `nbt:"MultiplayerGameIntent"`
-	NetherScale                    int32
-	NetworkVersion                 int32
-	Platform                       int32
-	PlatformBroadcastIntent        int32
-	RandomSeed                     int64
-	ShowTags                       bool `nbt:"showtags"`
-	SingleUseWorld                 bool `nbt:"isSingleUseWorld"`
-	SpawnX, SpawnY, SpawnZ         int32
-	SpawnV1Villagers               bool
-	StorageVersion                 int32
-	Time                           int64
-	XBLBroadcast                   bool
-	XBLBroadcastIntent             int32
-	XBLBroadcastMode               int32
+	BaseGameVersion                string  `nbt:"baseGameVersion"`
+	BiomeOverride                  string  `nbt:"BiomeOverride"`
+	ConfirmedPlatformLockedContent bool    `nbt:"ConfirmedPlatformLockedContent"`
+	CenterMapsToOrigin             bool    `nbt:"CenterMapsToOrigin"`
+	CheatsEnabled                  bool    `nbt:"cheatsEnabled"`
+	DaylightCycle                  int32   `nbt:"daylightCycle"`
+	Difficulty                     int32   `nbt:"Difficulty"`
+	EduOffer                       int32   `nbt:"eduOffer"`
+	FlatWorldLayers                string  `nbt:"FlatWorldLayers"`
+	ForceGameType                  bool    `nbt:"ForceGameType"`
+	GameType                       int32   `nbt:"GameType"`
+	Generator                      int32   `nbt:"Generator"`
+	InventoryVersion               string  `nbt:"InventoryVersion"`
+	LANBroadcast                   bool    `nbt:"LANBroadcast"`
+	LANBroadcastIntent             bool    `nbt:"LANBroadcastIntent"`
+	LastPlayed                     int64   `nbt:"LastPlayed"`
+	LevelName                      string  `nbt:"LevelName"`
+	LimitedWorldOriginX            int32   `nbt:"LimitedWorldOriginX"`
+	LimitedWorldOriginY            int32   `nbt:"LimitedWorldOriginY"`
+	LimitedWorldOriginZ            int32   `nbt:"LimitedWorldOriginZ"`
+	LimitedWorldDepth              int32   `nbt:"limitedWorldDepth"`
+	LimitedWorldWidth              int32   `nbt:"limitedWorldWidth"`
+	MinimumCompatibleClientVersion []int32 `nbt:"MinimumCompatibleClientVersion"`
+	MultiPlayerGame                bool    `nbt:"MultiplayerGame"`
+	MultiPlayerGameIntent          bool    `nbt:"MultiplayerGameIntent"`
+	NetherScale                    int32   `nbt:"NetherScale"`
+	NetworkVersion                 int32   `nbt:"NetworkVersion"`
+	Platform                       int32   `nbt:"Platform"`
+	PlatformBroadcastIntent        int32   `nbt:"PlatformBroadcastIntent"`
+	RandomSeed                     int64   `nbt:"RandomSeed"`
+	ShowTags                       bool    `nbt:"showtags"`
+	SingleUseWorld                 bool    `nbt:"isSingleUseWorld"`
+	SpawnX                         int32   `nbt:"SpawnX"`
+	SpawnY                         int32   `nbt:"SpawnY"`
+	SpawnZ                         int32   `nbt:"SpawnZ"`
+	SpawnV1Villagers               bool    `nbt:"SpawnV1Villagers"`
+	StorageVersion                 int32   `nbt:"StorageVersion"`
+	Time                           int64   `nbt:"Time"`
+	XBLBroadcast                   bool    `nbt:"XBLBroadcast"`
+	XBLBroadcastIntent             int32   `nbt:"XBLBroadcastIntent"`
+	XBLBroadcastMode               int32   `nbt:"XBLBroadcastMode"`
 	Abilities                      struct {
 		AttackMobs             bool    `nbt:"attackmobs"`
 		AttackPlayers          bool    `nbt:"attackplayers"`
