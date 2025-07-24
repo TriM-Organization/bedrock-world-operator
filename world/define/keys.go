@@ -59,8 +59,9 @@ const (
 )
 
 const (
-	FinalisationGenerated = iota + 1
-	FinalisationPopulated
+	FinalisationNeedsTicked = iota
+	FinalisationNeedsPopulated
+	FinalisationGenerated
 )
 
 // Index returns a byte buffer holding the written index of the chunk position passed. If the dimension passed to New

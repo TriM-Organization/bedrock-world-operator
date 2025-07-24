@@ -81,7 +81,7 @@ func (b *BedrockWorld) SaveChunkPayloadOnly(dm define.Dimension, position define
 	)
 
 	finalisation := make([]byte, 4)
-	binary.LittleEndian.PutUint32(finalisation, world_define.FinalisationPopulated)
+	binary.LittleEndian.PutUint32(finalisation, world_define.FinalisationGenerated)
 	_ = b.Put(
 		world_define.Sum(dm, position, world_define.KeyFinalisation),
 		finalisation,

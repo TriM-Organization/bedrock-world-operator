@@ -41,7 +41,7 @@ func (b *BedrockWorld) SaveSubChunk(dm define.Dimension, position define.SubChun
 	}
 
 	finalisation := make([]byte, 4)
-	binary.LittleEndian.PutUint32(finalisation, world_define.FinalisationPopulated)
+	binary.LittleEndian.PutUint32(finalisation, world_define.FinalisationGenerated)
 	_ = b.Put(
 		world_define.Sum(dm, chunkPos, world_define.KeyVersion),
 		[]byte{world_define.ChunkVersion},
