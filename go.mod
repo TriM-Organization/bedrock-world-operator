@@ -3,6 +3,7 @@ module github.com/TriM-Organization/bedrock-world-operator
 go 1.24
 
 require (
+	github.com/deatil/go-cryptobin v1.1.1005
 	github.com/df-mc/goleveldb v1.1.9
 	github.com/df-mc/worldupgrader v1.0.15
 	github.com/sandertv/gophertunnel v1.37.0
@@ -13,6 +14,7 @@ require (
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
+	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 )

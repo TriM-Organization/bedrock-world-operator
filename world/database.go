@@ -1,11 +1,15 @@
 package world
 
-import "github.com/df-mc/goleveldb/leveldb"
+import (
+	"github.com/deatil/go-cryptobin/cryptobin/crypto"
+	"github.com/df-mc/goleveldb/leveldb"
+)
 
 // Database wrapper a level database,
 // and expose some useful functions.
 type database struct {
 	ldb *leveldb.DB
+	key []byte
 }
 
 // Has returns true if the DB does contains the given key.
@@ -28,6 +32,16 @@ func (db *database) Get(key []byte) (value []byte, err error) {
 	if err == leveldb.ErrNotFound {
 		return nil, nil
 	}
+	if len(db.key) != 0 {
+		value = crypto.
+			FromBytes(value).
+			SetKey(string(db.key)).
+			Aes().
+			ECB().
+			PKCS7Padding().
+			Decrypt().
+			ToBytes()
+	}
 	return
 }
 
@@ -38,6 +52,16 @@ func (db *database) Get(key []byte) (value []byte, err error) {
 // It is safe to modify the contents of the arguments after Put returns but not
 // before.
 func (db *database) Put(key []byte, value []byte) error {
+	if len(db.key) != 0 {
+		value = crypto.
+			FromBytes(value).
+			SetKey(string(db.key)).
+			Aes().
+			ECB().
+			PKCS7Padding().
+			Encrypt().
+			ToBytes()
+	}
 	return db.ldb.Put(key, value, nil)
 }
 

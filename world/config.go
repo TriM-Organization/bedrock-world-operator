@@ -25,7 +25,13 @@ type Config struct {
 // passed. If a world is present at the path, Open will parse its data and
 // initialise the world with it. If the data cannot be parsed, an error is
 // returned.
-func (conf Config) Open(dir string) (*BedrockWorld, error) {
+//
+// key is used to encrypt the payload of the leveldb key. The encrypt way
+// is AES+ECB+PKCS7Padding. Given a key that is nil or 0 length will disable
+// encrypt.
+//
+// Note that the length of given key must be 16, otherwise return an error.
+func (conf Config) Open(dir string, key []byte) (*BedrockWorld, error) {
 	if conf.Log == nil {
 		conf.Log = slog.Default()
 	}
@@ -55,10 +61,18 @@ func (conf Config) Open(dir string) (*BedrockWorld, error) {
 			return nil, fmt.Errorf("open db: unmarshal level.dat: %w", err)
 		}
 	}
+
+	if len(key) != 0 && len(key) != 16 {
+		return db, fmt.Errorf("Open: The length of given key must be 16")
+	}
 	ldb, err := leveldb.OpenFile(filepath.Join(dir, "db"), conf.LDBOptions)
 	if err != nil {
 		return nil, fmt.Errorf("open db: leveldb: %w", err)
 	}
-	db.LevelDB = &database{ldb: ldb}
+
+	db.LevelDB = &database{
+		ldb: ldb,
+		key: key,
+	}
 	return db, nil
 }

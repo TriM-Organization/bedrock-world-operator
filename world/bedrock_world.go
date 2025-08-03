@@ -22,9 +22,15 @@ type BedrockWorld struct {
 // passed using default options. If a world is present at the path, Open will
 // parse its data and initialise the world with it. If the data cannot be
 // parsed, an error is returned.
-func Open(dir string) (*BedrockWorld, error) {
+//
+// key is used to encrypt the payload of the leveldb key. The encrypt way
+// is AES+ECB+PKCS7Padding. Given a key that is nil or 0 length will disable
+// encrypt.
+//
+// Note that the length of given key must be 16, otherwise return an error.
+func Open(dir string, key []byte) (*BedrockWorld, error) {
 	var conf Config
-	return conf.Open(dir)
+	return conf.Open(dir, key)
 }
 
 // LevelDat return the level dat of this world.

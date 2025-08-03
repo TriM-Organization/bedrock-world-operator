@@ -16,7 +16,7 @@ var openedWorld = NewSimpleManager[world.World]()
 
 //export NewBedrockWorld
 func NewBedrockWorld(dirName *C.char) (id C.longlong) {
-	w, err := world.Open(C.GoString(dirName))
+	w, err := world.Open(C.GoString(dirName), nil)
 	if err != nil {
 		return -1
 	}
