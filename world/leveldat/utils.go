@@ -7,8 +7,7 @@ import "strings"
 func LowerMapKeyName(src map[string]any) (dst map[string]any) {
 	dst = make(map[string]any)
 	for key, value := range src {
-		subMap, ok := value.(map[string]any)
-		if ok {
+		if subMap, ok := value.(map[string]any); ok {
 			dst[strings.ToLower(key)] = LowerMapKeyName(subMap)
 			continue
 		}
