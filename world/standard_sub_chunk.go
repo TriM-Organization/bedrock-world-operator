@@ -20,7 +20,12 @@ func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChun
 
 	subChunkData, _ := b.Get(keyBytes)
 	if len(subChunkData) == 0 {
-		if has, err := b.Has(keyBytes); err == nil && has {
+		has, err := b.Has(world_define.Sum(dm, chunkPos, world_define.KeyVersion))
+		if err == nil && !has {
+			// The new key was not found, so we try the old key.
+			has, err = b.Has(world_define.Sum(dm, chunkPos, world_define.KeyVersionOld))
+		}
+		if err == nil && has {
 			return chunk.NewSubChunk(block.AirRuntimeID)
 		}
 		return nil
