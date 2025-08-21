@@ -1,5 +1,3 @@
-//go:build garble
-
 package leveldat
 
 import (
