@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/chunk"
 	"github.com/TriM-Organization/bedrock-world-operator/define"
 	world_define "github.com/TriM-Organization/bedrock-world-operator/world/define"
@@ -12,14 +13,16 @@ import (
 // LoadSubChunk loads a sub chunk at the position from the leveldb database.
 func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChunkPos) *chunk.SubChunk {
 	chunkPos := define.ChunkPos{position[0], position[2]}
-
-	subChunkData, _ := b.Get(
-		world_define.Sum(
-			dm, chunkPos,
-			world_define.KeySubChunkData, byte(position[1]),
-		),
+	keyBytes := world_define.Sum(
+		dm, chunkPos,
+		world_define.KeySubChunkData, byte(position[1]),
 	)
+
+	subChunkData, _ := b.Get(keyBytes)
 	if len(subChunkData) == 0 {
+		if has, err := b.Has(keyBytes); err == nil && has {
+			return chunk.NewSubChunk(block.AirRuntimeID)
+		}
 		return nil
 	}
 

@@ -18,12 +18,11 @@ func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define
 	// This key is where the version of a chunk resides. The chunk version has changed many times, without any
 	// actual substantial changes, so we don't check this.
 
-	data, err := b.Get(world_define.Sum(dm, position, world_define.KeyVersion))
-
-	if data == nil && err == nil {
+	has, err := b.Has(world_define.Sum(dm, position, world_define.KeyVersion))
+	if err == nil && !has {
 		// The new key was not found, so we try the old key.
-		data, err = b.Get(world_define.Sum(dm, position, world_define.KeyVersionOld))
-		if data == nil && err == nil {
+		has, err = b.Has(world_define.Sum(dm, position, world_define.KeyVersionOld))
+		if err == nil && !has {
 			return nil, false, nil
 		}
 	} else if err != nil {
@@ -37,7 +36,7 @@ func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define
 				world_define.KeySubChunkData, uint8(i+(dm.Range()[0]>>4)),
 			),
 		)
-		if subchunksBytes[i] == nil && err == nil {
+		if len(subchunksBytes[i]) == 0 && err == nil {
 			// No sub chunk present at this Y level. We skip this one and move to the next, which might still
 			// be present.
 			continue
