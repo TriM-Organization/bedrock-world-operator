@@ -4,11 +4,12 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	"github.com/sandertv/gophertunnel/minecraft/nbt"
 	"io"
 	"os"
 	"strings"
-    "github.com/mitchellh/mapstructure"
+
+	"github.com/mitchellh/mapstructure"
+	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
 // LevelDat implements the encoding and decoding of level.dat files. An empty
@@ -57,32 +58,18 @@ func (ld *LevelDat) Unmarshal(dst any) error {
 		return fmt.Errorf("level.dat: decode nbt: %w", err)
 	}
 
-	levelDatNBT := make(map[string]any)
-	for k, v := range levelDatTempNBT {
-		key := strings.ToLower(k)
-		if key == "abilities" {
-			if subMap, ok := v.(map[string]any); ok {
-				lowerAbilities := make(map[string]any)
-				for k2, v2 := range subMap {
-					lowerAbilities[strings.ToLower(k2)] = v2
-				}
-				levelDatNBT[key] = lowerAbilities
-				continue
-			}
-		}
-		levelDatNBT[key] = v
+	levelDatNBT := LowerMapKeyName(levelDatTempNBT)
+	config := &mapstructure.DecoderConfig{
+		TagName:          "nbt",
+		Result:           dst,
+		WeaklyTypedInput: true,
+		MatchName:        strings.EqualFold,
 	}
 
-	config := &mapstructure.DecoderConfig{
-		TagName: "nbt",
-		Result:  dst,
-		WeaklyTypedInput: true,
-	}
 	decoder, err := mapstructure.NewDecoder(config)
 	if err != nil {
 		return fmt.Errorf("create decoder: %w", err)
 	}
-
 	if err := decoder.Decode(levelDatNBT); err != nil {
 		return fmt.Errorf("unmarshal level.dat: %w", err)
 	}
