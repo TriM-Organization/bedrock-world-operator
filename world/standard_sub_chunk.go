@@ -18,6 +18,11 @@ func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChun
 		world_define.KeySubChunkData, byte(position[1]),
 	)
 
+	r := define.Dimension(dm).Range()
+	if position[1] < int32(r[0]>>4) || position[1] > int32(r[1]>>4) {
+		return nil
+	}
+
 	subChunkData, _ := b.Get(keyBytes)
 	if len(subChunkData) == 0 {
 		has, err := b.Has(world_define.Sum(dm, chunkPos, world_define.KeyVersion))
