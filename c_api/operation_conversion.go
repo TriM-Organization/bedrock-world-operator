@@ -6,9 +6,9 @@ import (
 	"encoding/binary"
 	"strings"
 
+	"github.com/Happy2018new/worldupgrader/blockupgrader"
 	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/chunk"
-	"github.com/df-mc/worldupgrader/blockupgrader"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 

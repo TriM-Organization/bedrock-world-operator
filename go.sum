@@ -1,9 +1,9 @@
+github.com/Happy2018new/worldupgrader v1.1.0 h1:GkWh/s2amvMWXBdbEi/noB2He/WX8qZakNCpu+RMwm4=
+github.com/Happy2018new/worldupgrader v1.1.0/go.mod h1:zcYacoQZL6FG4SuI/YRbZ4ymWR5zEaN8hqzn2lWsvM4=
 github.com/deatil/go-cryptobin v1.1.1005 h1:mzYXXDUnbTrCnPIeZTvjrnp7Bkbh2G1SlYM2UIWhpHM=
 github.com/deatil/go-cryptobin v1.1.1005/go.mod h1:x+/+SzyfbxliY2y0Fwe+OoLU0DEt9kWs6OMiwghcfJ0=
 github.com/df-mc/goleveldb v1.1.9 h1:ihdosZyy5jkQKrxucTQmN90jq/2lUwQnJZjIYIC/9YU=
 github.com/df-mc/goleveldb v1.1.9/go.mod h1:+NHCup03Sci5q84APIA21z3iPZCuk6m6ABtg4nANCSk=
-github.com/df-mc/worldupgrader v1.0.15 h1:kR/nYWQbFvmR5LqPncpBXtXKGyiRBPc9NPkBKlLSAIk=
-github.com/df-mc/worldupgrader v1.0.15/go.mod h1:tsSOLTRm9mpG7VHvYpAjjZrkRHWmSbKZAm9bOLNnlDk=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/go-gl/mathgl v1.2.0 h1:v2eOj/y1B2afDxF6URV1qCYmo1KW08lAMtTbOn3KXCY=
 github.com/go-gl/mathgl v1.2.0/go.mod h1:pf9+b5J3LFP7iZ4XXaVzZrCle0Q/vNpB/vDe5+3ulRE=
