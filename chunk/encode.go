@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"sync"
 
+	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
 
@@ -37,18 +38,18 @@ type SerialisedData struct {
 // Encode encodes Chunk to an intermediate representation SerialisedData. An Encoding may be passed to encode either for
 // network or disk purposed, the most notable difference being that the network encoding generally uses varints and no
 // NBT.
-func Encode(c *Chunk, e Encoding) SerialisedData {
+func Encode(c *Chunk, e Encoding, t *block.BlockRuntimeIDTable) SerialisedData {
 	d := SerialisedData{SubChunks: make([][]byte, len(c.Sub()))}
 	for i, subChunk := range c.Sub() {
-		d.SubChunks[i] = EncodeSubChunk(subChunk, c.r, i, e)
+		d.SubChunks[i] = EncodeSubChunk(subChunk, c.r, i, e, t)
 	}
-	d.Biomes = EncodeBiomes(c, e)
+	d.Biomes = EncodeBiomes(c, e, t)
 	return d
 }
 
 // EncodeSubChunk encodes a sub-chunk from a chunk into bytes. An Encoding may be passed to encode either for network or
 // disk purposed, the most notable difference being that the network encoding generally uses varints and no NBT.
-func EncodeSubChunk(c *SubChunk, r define.Range, ind int, e Encoding) []byte {
+func EncodeSubChunk(c *SubChunk, r define.Range, ind int, e Encoding, t *block.BlockRuntimeIDTable) []byte {
 	buf := pool.Get().(*bytes.Buffer)
 	defer func() {
 		buf.Reset()
@@ -57,7 +58,7 @@ func EncodeSubChunk(c *SubChunk, r define.Range, ind int, e Encoding) []byte {
 
 	_, _ = buf.Write([]byte{SubChunkVersion, byte(len(c.storages)), uint8(ind + (r[0] >> 4))})
 	for _, storage := range c.storages {
-		encodePalettedStorage(buf, storage, nil, e, BlockPaletteEncoding)
+		encodePalettedStorage(buf, storage, nil, e, BlockPaletteEncoding, t)
 	}
 
 	sub := make([]byte, buf.Len())
@@ -68,7 +69,7 @@ func EncodeSubChunk(c *SubChunk, r define.Range, ind int, e Encoding) []byte {
 
 // EncodeBiomes encodes the biomes of a chunk into bytes. An Encoding may be passed to encode either for network or
 // disk purposed, the most notable difference being that the network encoding generally uses varints and no NBT.
-func EncodeBiomes(c *Chunk, e Encoding) []byte {
+func EncodeBiomes(c *Chunk, e Encoding, t *block.BlockRuntimeIDTable) []byte {
 	buf := pool.Get().(*bytes.Buffer)
 	defer func() {
 		buf.Reset()
@@ -77,7 +78,7 @@ func EncodeBiomes(c *Chunk, e Encoding) []byte {
 
 	var previous *PalettedStorage
 	for _, b := range c.biomes {
-		encodePalettedStorage(buf, b, previous, e, BiomePaletteEncoding)
+		encodePalettedStorage(buf, b, previous, e, BiomePaletteEncoding, t)
 		previous = b
 	}
 	biomes := make([]byte, buf.Len())
@@ -87,7 +88,7 @@ func EncodeBiomes(c *Chunk, e Encoding) []byte {
 
 // encodePalettedStorage encodes a PalettedStorage into a bytes.Buffer. The Encoding passed is used to write the Palette
 // of the PalettedStorage.
-func encodePalettedStorage(buf *bytes.Buffer, storage, previous *PalettedStorage, e Encoding, pe paletteEncoding) {
+func encodePalettedStorage(buf *bytes.Buffer, storage, previous *PalettedStorage, e Encoding, pe paletteEncoding, t *block.BlockRuntimeIDTable) {
 	if storage.Equal(previous) {
 		_, _ = buf.Write([]byte{0x7f<<1 | e.network()})
 		return
@@ -101,5 +102,5 @@ func encodePalettedStorage(buf *bytes.Buffer, storage, previous *PalettedStorage
 	}
 	_, _ = buf.Write(b)
 
-	e.encodePalette(buf, storage.Palette(), pe)
+	e.encodePalette(buf, storage.Palette(), pe, t)
 }

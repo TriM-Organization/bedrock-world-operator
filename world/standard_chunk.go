@@ -67,6 +67,7 @@ func (b *BedrockWorld) LoadChunk(dm define.Dimension, position define.ChunkPos) 
 			Biomes:    biomes,
 		},
 		dm.Range(),
+		b.blockRuntimeIDTable,
 	)
 	return c, true, err
 }
@@ -113,7 +114,7 @@ func (b *BedrockWorld) SaveChunk(dm define.Dimension, position define.ChunkPos, 
 	if c == nil {
 		return nil
 	}
-	serialisedData := chunk.Encode(c, chunk.DiskEncoding)
+	serialisedData := chunk.Encode(c, chunk.DiskEncoding, b.blockRuntimeIDTable)
 
 	err := b.SaveBiomes(dm, position, serialisedData.Biomes)
 	if err != nil {

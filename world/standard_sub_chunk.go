@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/chunk"
 	"github.com/TriM-Organization/bedrock-world-operator/define"
 	world_define "github.com/TriM-Organization/bedrock-world-operator/world/define"
@@ -31,12 +30,17 @@ func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChun
 			has, err = b.Has(world_define.Sum(dm, chunkPos, world_define.KeyVersionOld))
 		}
 		if err == nil && has {
-			return chunk.NewSubChunk(block.AirRuntimeID)
+			return chunk.NewSubChunk(b.blockRuntimeIDTable.AirRuntimeID())
 		}
 		return nil
 	}
 
-	subChunk, _, err := chunk.DecodeSubChunk(bytes.NewBuffer(subChunkData), dm.Range(), chunk.DiskEncoding)
+	subChunk, _, err := chunk.DecodeSubChunk(
+		bytes.NewBuffer(subChunkData),
+		dm.Range(),
+		chunk.DiskEncoding,
+		b.blockRuntimeIDTable,
+	)
 	if err != nil {
 		return nil
 	}
@@ -65,6 +69,6 @@ func (b *BedrockWorld) SaveSubChunk(dm define.Dimension, position define.SubChun
 	)
 
 	fixedYPos := (position[1]<<4 - int32(dm.Range()[0])) >> 4
-	subChunkData := chunk.EncodeSubChunk(c, dm.Range(), int(fixedYPos), chunk.DiskEncoding)
+	subChunkData := chunk.EncodeSubChunk(c, dm.Range(), int(fixedYPos), chunk.DiskEncoding, b.blockRuntimeIDTable)
 	return b.Put(subChunkKey, subChunkData)
 }

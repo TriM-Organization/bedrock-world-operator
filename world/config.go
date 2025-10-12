@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/world/leveldat"
 	"github.com/df-mc/goleveldb/leveldb"
 	"github.com/df-mc/goleveldb/leveldb/opt"
@@ -30,8 +31,12 @@ type Config struct {
 // is AES+ECB+PKCS7Padding. Given a key that is nil or 0 length will disable
 // encrypt.
 //
+// useNetworkIDHashes indicates when convert block runtime ID between their
+// real description, the internal implements use the network ID hashes as the
+// block runtime ID or the index of the block palette as the runtime ID.
+//
 // Note that the length of given key must be 16, otherwise return an error.
-func (conf Config) Open(dir string, key []byte) (*BedrockWorld, error) {
+func (conf Config) Open(dir string, key []byte, useNetworkIDHashes bool) (*BedrockWorld, error) {
 	if conf.Log == nil {
 		conf.Log = slog.Default()
 	}
@@ -44,10 +49,15 @@ func (conf Config) Open(dir string, key []byte) (*BedrockWorld, error) {
 	}
 	_ = os.MkdirAll(filepath.Join(dir, "db"), 0777)
 
-	db := &BedrockWorld{conf: conf, dir: dir, ldat: &leveldat.Data{}}
+	db := &BedrockWorld{
+		databaseConfig:      conf,
+		worldMainDir:        dir,
+		leveldatData:        &leveldat.Data{},
+		blockRuntimeIDTable: block.NewBlockRuntimeIDTable(useNetworkIDHashes),
+	}
 	if _, err := os.Stat(filepath.Join(dir, "level.dat")); os.IsNotExist(err) {
 		// A level.dat was not currently present for the world.
-		db.ldat.FillDefault()
+		db.leveldatData.FillDefault()
 	} else {
 		ldat, err := leveldat.ReadFile(filepath.Join(dir, "level.dat"))
 		if err != nil {
@@ -57,13 +67,13 @@ func (conf Config) Open(dir string, key []byte) (*BedrockWorld, error) {
 		if ver != leveldat.Version && ver >= 10 {
 			return nil, fmt.Errorf("open db: level.dat version %v is unsupported", ver)
 		}
-		if err = ldat.Unmarshal(db.ldat); err != nil {
+		if err = ldat.Unmarshal(db.leveldatData); err != nil {
 			return nil, fmt.Errorf("open db: unmarshal level.dat: %w", err)
 		}
 	}
 
 	if len(key) != 0 && len(key) != 16 {
-		return db, fmt.Errorf("Open: The length of given key must be 16")
+		return nil, fmt.Errorf("Open: The length of given key must be 16")
 	}
 	ldb, err := leveldb.OpenFile(filepath.Join(dir, "db"), conf.LDBOptions)
 	if err != nil {

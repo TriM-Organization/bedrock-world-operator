@@ -3,9 +3,6 @@ package leveldat
 import (
 	"math"
 	"time"
-
-	block_general "github.com/TriM-Organization/bedrock-world-operator/block/general"
-	"github.com/sandertv/gophertunnel/minecraft/protocol"
 )
 
 // Data holds a collection of data that specify a range of Settings of the
@@ -187,13 +184,7 @@ func (d *Data) FillDefault() {
 	d.GameType = 1
 	d.Generator = 2
 	d.HasBeenLoadedInCreative = true
-
-	if block_general.UseNeteaseBlockStates {
-		d.InventoryVersion = "1.21.1"
-	} else {
-		d.InventoryVersion = protocol.CurrentVersion
-	}
-
+	d.InventoryVersion = CurrentVersion
 	d.LANBroadcast = true
 	d.LANBroadcastIntent = true
 	d.LastOpenedWithVersion = minimumCompatibleClientVersion
@@ -209,13 +200,7 @@ func (d *Data) FillDefault() {
 	d.MultiPlayerGameIntent = true
 	d.NaturalRegeneration = true
 	d.NetherScale = 8
-
-	if block_general.UseNeteaseBlockStates {
-		d.NetworkVersion = 630
-	} else {
-		d.NetworkVersion = protocol.CurrentProtocol
-	}
-
+	d.NetworkVersion = CurrentProtocol
 	d.PVP = true
 	d.Platform = 2
 	d.PlatformBroadcastIntent = 3

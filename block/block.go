@@ -1,164 +1,221 @@
 package block
 
 import (
-	"bytes"
 	_ "embed"
 	"fmt"
+	"sort"
 	"strings"
 
-	block_general "github.com/TriM-Organization/bedrock-world-operator/block/general"
+	intintmap "github.com/TriM-Organization/bedrock-world-operator/block/initintmap"
 	"github.com/TriM-Organization/bedrock-world-operator/define"
-	"github.com/sandertv/gophertunnel/minecraft/protocol"
+	"github.com/segmentio/fasthash/fnv1"
 )
 
-// blockEntry holds a block with its runtime id.
-type blockEntry struct {
-	block block_general.IndexBlockState
-	rid   uint32
+// BlockRuntimeIDTable is a block runtime ID table that
+// supports converting blocks between their runtime IDs.
+type BlockRuntimeIDTable struct {
+	useNetworkIDHashes    bool
+	airBlockRuntimeID     uint32
+	blockEntries          []BlockEntry
+	blockHashToEntryIndex *intintmap.Map
+	defaultBlockStates    map[string]BlockEntry
 }
 
-var (
-	stringSet       []string                 = make([]string, 0)
-	blockStatesSet  []block_general.StateKey = make([]block_general.StateKey, 0)
-	blockVersionSet []int32                  = make([]int32, 0)
-)
+// NewBlockRuntimeIDTable returns a new BlockRuntimeIDTable.
+// useNetworkIDHashes indicates whether the runtime IDs are the network ID hashes.
+func NewBlockRuntimeIDTable(useNetworkIDHashes bool) *BlockRuntimeIDTable {
+	airBlockRuntimeID := uint32(0)
+	blockEntries := make([]BlockEntry, len(blockStates))
+	blockHashToEntryIndex := intintmap.New(len(blockStates), 0.60)
+	defaultBlockStates := make(map[string]BlockEntry)
 
-var (
-	//go:embed block_states.bin
-	blockStates []byte
+	for index, value := range blockStates {
+		hash := ComputeBlockHash(value.Name, value.Properties)
 
-	// blockProperties ..
-	blockProperties = map[string][]block_general.IndexBlockProperty{}
-	// blockStateMapping holds a map for looking up a block entry by the network runtime id it produces.
-	blockStateMapping = map[uint32]blockEntry{}
-)
+		_, found := blockHashToEntryIndex.Get(int64(hash))
+		if found {
+			panic(fmt.Sprintf("NewBlockRuntimeIDTable: Cannot register the same state twice (%+v)", value))
+		}
 
-func init() {
-	buf := bytes.NewBuffer(blockStates)
-	r := protocol.NewReader(buf, 0, false)
+		rid := uint32(index)
+		if useNetworkIDHashes {
+			rid = hash
+		}
+		if value.Name == "minecraft:air" {
+			airBlockRuntimeID = rid
+		}
+		entry := BlockEntry{
+			Block:     value,
+			RuntimeID: rid,
+		}
 
-	decodeSet(r)
-	for buf.Len() > 0 {
-		indexBlockState := block_general.IndexBlockState{}
-		indexBlockState.Marshal(r)
-		registerBlockState(indexBlockState)
+		blockEntries[index] = entry
+		blockHashToEntryIndex.Put(int64(hash), int64(index))
+		if _, ok := defaultBlockStates[value.Name]; !ok {
+			defaultBlockStates[value.Name] = entry
+		}
 	}
 
-	blockStates = nil
+	return &BlockRuntimeIDTable{
+		useNetworkIDHashes:    useNetworkIDHashes,
+		airBlockRuntimeID:     airBlockRuntimeID,
+		blockEntries:          blockEntries,
+		blockHashToEntryIndex: blockHashToEntryIndex,
+		defaultBlockStates:    defaultBlockStates,
+	}
+}
 
-	RuntimeIDToState = func(runtimeID uint32) (name string, properties map[string]any, found bool) {
-		s, found := blockStateMapping[runtimeID]
-		if found {
-			realBlock := decodeToNormalBlockState(s.block)
-			return realBlock.Name, realBlock.Properties, true
+// AirRuntimeID returns the runtime ID of the air block.
+func (b *BlockRuntimeIDTable) AirRuntimeID() (runtimeID uint32) {
+	return b.airBlockRuntimeID
+}
+
+// RuntimeIDToState converts a runtime ID to a name and its state properties.
+func (b *BlockRuntimeIDTable) RuntimeIDToState(runtimeID uint32) (name string, properties map[string]any, found bool) {
+	if b.useNetworkIDHashes {
+		if index, found := b.blockHashToEntryIndex.Get(int64(runtimeID)); found {
+			entry := b.blockEntries[index]
+			return entry.Block.Name, entry.Block.Properties, true
 		}
 		return "", nil, false
 	}
-	StateToRuntimeID = func(name string, properties map[string]any) (runtimeID uint32, found bool) {
-		if !strings.HasPrefix(name, "minecraft:") {
-			name = "minecraft:" + name
-		}
-
-		networkRuntimeID := ComputeBlockHash(name, properties)
-		if s, ok := blockStateMapping[networkRuntimeID]; ok {
-			return s.rid, true
-		}
-
-		networkRuntimeID = ComputeBlockHash(name, decodeToNormalBlockProperties(blockProperties[name]))
-		s, ok := blockStateMapping[networkRuntimeID]
-		return s.rid, ok
+	if runtimeID < uint32(len(b.blockEntries)) {
+		entry := b.blockEntries[runtimeID]
+		return entry.Block.Name, entry.Block.Properties, true
 	}
-
-	RuntimeIDToIndexState = func(runtimeID uint32) (result block_general.IndexBlockState, found bool) {
-		s, found := blockStateMapping[runtimeID]
-		if found {
-			return s.block, true
-		}
-		return block_general.IndexBlockState{}, false
-	}
-	IndexStateToRuntimeID = func(state block_general.IndexBlockState) (runtimeID uint32, found bool) {
-		realBlock := decodeToNormalBlockState(state)
-
-		networkRuntimeID := ComputeBlockHash(realBlock.Name, realBlock.Properties)
-		if s, ok := blockStateMapping[networkRuntimeID]; ok {
-			return s.rid, true
-		}
-
-		networkRuntimeID = ComputeBlockHash(realBlock.Name, decodeToNormalBlockProperties(blockProperties[realBlock.Name]))
-		s, ok := blockStateMapping[networkRuntimeID]
-		return s.rid, ok
-	}
+	return "", nil, false
 }
 
-func decodeSet(io protocol.IO) {
-	protocol.FuncSliceUint16Length(io, &stringSet, io.String)
-	protocol.FuncSliceUint16Length(io, &blockVersionSet, io.Varint32)
-	protocol.SliceUint16Length(io, &blockStatesSet)
+// StateToRuntimeID converts a name and its state properties to a runtime ID.
+func (b *BlockRuntimeIDTable) StateToRuntimeID(name string, properties map[string]any) (runtimeID uint32, found bool) {
+	if !strings.HasPrefix(name, "minecraft:") {
+		name = "minecraft:" + name
+	}
+	if index, found := b.blockHashToEntryIndex.Get(int64(ComputeBlockHash(name, properties))); found {
+		return b.blockEntries[index].RuntimeID, true
+	}
+	if entry, ok := b.defaultBlockStates[name]; ok {
+		return entry.RuntimeID, true
+	}
+	return 0, false
 }
 
-func decodeToNormalBlockProperties(p []block_general.IndexBlockProperty) map[string]any {
-	result := make(map[string]any)
+// RegisterCustomBlock registers a new custom block to the table.
+// The function returns error if the block was already registered.
+// Note that you MUST call FinaliseRegister atfer register all custom blocks.
+func (b *BlockRuntimeIDTable) RegisterCustomBlock(block define.BlockState) error {
+	hash := ComputeBlockHash(block.Name, block.Properties)
 
-	for _, value := range p {
-		buf := bytes.NewBuffer(value.Value)
-		r := protocol.NewReader(buf, 0, false)
+	_, found := b.blockHashToEntryIndex.Get(int64(hash))
+	if found {
+		return fmt.Errorf("RegisterCustomBlock: Cannot register the same block twice; block = %#v", block)
+	}
 
-		key := blockStatesSet[value.KeyIndex]
-		keyName := stringSet[key.KeyNameIndex]
+	entry := BlockEntry{
+		Block:     block,
+		RuntimeID: hash,
+	}
+	b.blockHashToEntryIndex.Put(int64(hash), int64(len(b.blockEntries)))
+	b.blockEntries = append(b.blockEntries, entry)
 
-		switch key.KeyType {
-		case block_general.StateKeyTypeString:
-			var ind uint32
-			r.Varuint32(&ind)
-			result[keyName] = stringSet[ind]
-		case block_general.StateKeyTypeInt32:
-			var val int32
-			r.Varint32(&val)
-			result[keyName] = val
-		case block_general.StateKeyTypeByte:
-			result[keyName] = value.Value[0]
+	if b.useNetworkIDHashes {
+		_, ok := b.defaultBlockStates[block.Name]
+		if !ok {
+			b.defaultBlockStates[block.Name] = entry
 		}
 	}
 
-	return result
+	return nil
 }
 
-func decodeToNormalBlockState(s block_general.IndexBlockState) define.BlockState {
-	return define.BlockState{
-		Name:       stringSet[s.BlockNameIndex],
-		Properties: decodeToNormalBlockProperties(s.BlockProperties),
-		Version:    blockVersionSet[s.VersionIndex],
+// RegisterMultipleStates registers all block
+// states of a custom block to the table.
+//
+// stateEnums is a list of state enums that
+// the block can have. Each element means a
+// state key and its possible values.
+//
+// The function returns error if any of the
+// states was already registered.
+//
+// Note that you MUST call FinaliseRegister
+// atfer register all custom blocks.
+func (b *BlockRuntimeIDTable) RegisterPermutation(blockName string, blockVersion int32, stateEnums []StateEnum) error {
+	permutations := make([]map[string]any, 0)
+	stepCounter := make([]int, len(stateEnums))
+
+	for {
+		var shouldBreak bool
+
+		permutation := make(map[string]any)
+		for index, value := range stepCounter {
+			stateEnum := stateEnums[index]
+			permutation[stateEnum.StateKeyName] = stateEnum.PossibleValues[value]
+		}
+		permutations = append(permutations, permutation)
+
+		stepCounter[0]++
+		for index, value := range stepCounter {
+			if value < len(stateEnums[index].PossibleValues) {
+				break
+			}
+
+			stepCounter[index] = 0
+			if index+1 == len(stepCounter) {
+				shouldBreak = true
+				break
+			}
+			stepCounter[index+1]++
+		}
+
+		if shouldBreak {
+			break
+		}
 	}
+
+	for _, permutation := range permutations {
+		err := b.RegisterCustomBlock(define.BlockState{
+			Name:       blockName,
+			Properties: permutation,
+			Version:    blockVersion,
+		})
+		if err != nil {
+			return fmt.Errorf("RegisterMultipleStates: %v", err)
+		}
+	}
+
+	return nil
 }
 
-// registerBlockState registers a new blockState to the states slice.
-// The function panics if the blockState was already registered.
-func registerBlockState(s block_general.IndexBlockState) {
-	var rid uint32
-
-	realBlock := decodeToNormalBlockState(s)
-	hash := ComputeBlockHash(realBlock.Name, realBlock.Properties)
-
-	if _, ok := blockStateMapping[hash]; ok {
-		panic(fmt.Sprintf("cannot register the same state twice (%+v)", s))
+// FinaliseRegister is called after blocks have finished
+// registering and the palette can be sorted and hashed.
+func (b *BlockRuntimeIDTable) FinaliseRegister() {
+	if b.useNetworkIDHashes {
+		return
 	}
+	b.defaultBlockStates = make(map[string]BlockEntry)
 
-	if _, ok := blockProperties[realBlock.Name]; !ok {
-		blockProperties[realBlock.Name] = s.BlockProperties
-	}
+	sort.SliceStable(b.blockEntries, func(i, j int) bool {
+		nameOne := b.blockEntries[i].Block.Name
+		nameTwo := b.blockEntries[j].Block.Name
+		return nameOne != nameTwo && fnv1.HashString64(nameOne) < fnv1.HashString64(nameTwo)
+	})
 
-	if block_general.UseNetworkBlockRuntimeID {
-		rid = hash
-	} else {
-		rid = uint32(len(blockStateMapping))
-	}
+	for index, value := range b.blockEntries {
+		hash := ComputeBlockHash(value.Block.Name, value.Block.Properties)
 
-	if realBlock.Name == "minecraft:air" {
-		AirRuntimeID = rid
-	}
+		entry := BlockEntry{
+			Block:     value.Block,
+			RuntimeID: uint32(index),
+		}
+		if value.Block.Name == "minecraft:air" {
+			b.airBlockRuntimeID = entry.RuntimeID
+		}
 
-	blockStateMapping[hash] = blockEntry{
-		block: s,
-		rid:   rid,
+		b.blockEntries[index] = entry
+		b.blockHashToEntryIndex.Put(int64(hash), int64(index))
+		if _, ok := b.defaultBlockStates[value.Block.Name]; !ok {
+			b.defaultBlockStates[value.Block.Name] = entry
+		}
 	}
 }
