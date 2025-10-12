@@ -29,14 +29,19 @@ type BedrockWorld struct {
 // is AES+ECB+PKCS7Padding. Given a key that is nil or 0 length will disable
 // encrypt.
 //
-// useNetworkIDHashes indicates when convert block runtime ID between their
-// real description, the internal implements use the network ID hashes as the
-// block runtime ID or the index of the block palette as the runtime ID.
+// table is the block runtime ID table that convert block between itself
+// and its runtime ID description. You can use [block.NewBlockRuntimeIDTable]
+// to create a new block runtime ID table if not have one.
 //
 // Note that the length of given key must be 16, otherwise return an error.
-func Open(dir string, key []byte, useNetworkIDHashes bool) (*BedrockWorld, error) {
+func Open(dir string, key []byte, table *block.BlockRuntimeIDTable) (*BedrockWorld, error) {
 	var conf Config
-	return conf.Open(dir, key, useNetworkIDHashes)
+	return conf.Open(dir, key, table)
+}
+
+// BlockRuntimeIDTable returns its internal block runtime ID table.
+func (db *BedrockWorld) BlockRuntimeIDTable() *block.BlockRuntimeIDTable {
+	return db.blockRuntimeIDTable
 }
 
 // LevelDat return the level dat of this world.

@@ -31,12 +31,12 @@ type Config struct {
 // is AES+ECB+PKCS7Padding. Given a key that is nil or 0 length will disable
 // encrypt.
 //
-// useNetworkIDHashes indicates when convert block runtime ID between their
-// real description, the internal implements use the network ID hashes as the
-// block runtime ID or the index of the block palette as the runtime ID.
+// table is the block runtime ID table that convert block between itself
+// and its runtime ID description. You can use [block.NewBlockRuntimeIDTable]
+// to create a new block runtime ID table if not have one.
 //
 // Note that the length of given key must be 16, otherwise return an error.
-func (conf Config) Open(dir string, key []byte, useNetworkIDHashes bool) (*BedrockWorld, error) {
+func (conf Config) Open(dir string, key []byte, table *block.BlockRuntimeIDTable) (*BedrockWorld, error) {
 	if conf.Log == nil {
 		conf.Log = slog.Default()
 	}
@@ -53,7 +53,7 @@ func (conf Config) Open(dir string, key []byte, useNetworkIDHashes bool) (*Bedro
 		databaseConfig:      conf,
 		worldMainDir:        dir,
 		leveldatData:        &leveldat.Data{},
-		blockRuntimeIDTable: block.NewBlockRuntimeIDTable(useNetworkIDHashes),
+		blockRuntimeIDTable: table,
 	}
 	if _, err := os.Stat(filepath.Join(dir, "level.dat")); os.IsNotExist(err) {
 		// A level.dat was not currently present for the world.

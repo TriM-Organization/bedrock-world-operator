@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/chunk"
 	"github.com/TriM-Organization/bedrock-world-operator/define"
 	"github.com/TriM-Organization/bedrock-world-operator/world/leveldat"
@@ -20,6 +21,7 @@ type LevelDB interface {
 // bedrock world implements, but only for standard
 // minecraft.
 type StandardBedrockWorld interface {
+	BlockRuntimeIDTable() *block.BlockRuntimeIDTable
 	LevelDat() *leveldat.Data
 	UpdateLevelDat() error
 	CloseWorld() error

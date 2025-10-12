@@ -12,7 +12,8 @@ import (
 )
 
 // BlockRuntimeIDTable is a block runtime ID table that
-// supports converting blocks between their runtime IDs.
+// supports converting blocks between blocks themselves
+// and their runtime IDs description.
 type BlockRuntimeIDTable struct {
 	useNetworkIDHashes    bool
 	airBlockRuntimeID     uint32
@@ -70,6 +71,11 @@ func (b *BlockRuntimeIDTable) AirRuntimeID() (runtimeID uint32) {
 	return b.airBlockRuntimeID
 }
 
+// UseNetworkIDHashes returns if the block runtime IDs are using network hashes or not.
+func (b *BlockRuntimeIDTable) UseNetworkIDHashes() bool {
+	return b.useNetworkIDHashes
+}
+
 // RuntimeIDToState converts a runtime ID to a name and its state properties.
 func (b *BlockRuntimeIDTable) RuntimeIDToState(runtimeID uint32) (name string, properties map[string]any, found bool) {
 	if b.useNetworkIDHashes {
@@ -88,14 +94,14 @@ func (b *BlockRuntimeIDTable) RuntimeIDToState(runtimeID uint32) (name string, p
 
 // StateToRuntimeID converts a name and its state properties to a runtime ID.
 func (b *BlockRuntimeIDTable) StateToRuntimeID(name string, properties map[string]any) (runtimeID uint32, found bool) {
-	if !strings.HasPrefix(name, "minecraft:") {
-		name = "minecraft:" + name
-	}
 	if index, found := b.blockHashToEntryIndex.Get(int64(ComputeBlockHash(name, properties))); found {
 		return b.blockEntries[index].RuntimeID, true
 	}
 	if entry, ok := b.defaultBlockStates[name]; ok {
 		return entry.RuntimeID, true
+	}
+	if !strings.HasPrefix(name, "minecraft:") {
+		return b.StateToRuntimeID("minecraft:"+name, properties)
 	}
 	return 0, false
 }
