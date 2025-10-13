@@ -6,15 +6,22 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/chunk"
+	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
 
 var savedChunk = NewSimpleManager[*chunk.Chunk]()
 
 //export NewChunk
-func NewChunk(rangeStart C.int, rangeEnd C.int) (complexReturn *C.char) {
-	c := chunk.NewChunk(block.AirRuntimeID, [2]int{int(rangeStart), int(rangeEnd)})
+func NewChunk(blockTableId C.longlong, rangeStart C.int, rangeEnd C.int) (complexReturn *C.char) {
+	t := savedBlockTable.LoadObject(int(blockTableId))
+	if t == nil {
+		return asCbytes(nil)
+	}
+	c := chunk.NewChunk(
+		(*t).AirRuntimeID(),
+		define.Range{int(rangeStart), int(rangeEnd)},
+	)
 	return packChunkRangeAndID(c.Range(), savedChunk.AddObject(c))
 }
 
@@ -198,7 +205,7 @@ func Chunk_SetSubChunk(id C.longlong, subChunkId C.longlong, index C.int) *C.cha
 
 	s := savedSubChunk.LoadObject(int(subChunkId))
 	if s == nil {
-		return C.CString("Chunk_SetSubChunk: Chunk found bot sub chunk not found")
+		return C.CString("Chunk_SetSubChunk: Chunk found but sub chunk not found")
 	}
 
 	(*c).SetSubChunk(*s, int16(index))

@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"unsafe"
 
+	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/chunk"
 	"github.com/TriM-Organization/bedrock-world-operator/define"
 )
@@ -82,28 +83,87 @@ func unpackDenseBlockMatrix(encodeBytes []byte, subLength int) (blockMatrix [][]
 	return
 }
 
-func fromSubChunkPayload(rangeStart C.int, rangeEnd C.int, payload *C.char, e chunk.Encoding) (complexReturn *C.char) {
+func unpackStateEnums(paylod *C.char) (stateEnums []block.StateEnum) {
+	goBytes := asGoBytes(paylod)
+
+	ptr := 2
+	stateCount := binary.LittleEndian.Uint16(goBytes[0:2])
+	stateEnums = make([]block.StateEnum, stateCount)
+
+	for index := range stateEnums {
+		stateEnum := block.StateEnum{}
+
+		stateKeyNameLen := binary.LittleEndian.Uint16(goBytes[ptr : ptr+2])
+		stateEnum.StateKeyName = string(goBytes[ptr+2 : ptr+2+int(stateKeyNameLen)])
+		ptr += 2 + int(stateKeyNameLen)
+
+		stateEnum.PossibleValues = make([]any, goBytes[ptr])
+		possibleValuesType := goBytes[ptr+1]
+		ptr += 2
+
+		for i := range stateEnum.PossibleValues {
+			switch possibleValuesType {
+			case 0: // TAG_Byte
+				stateEnum.PossibleValues[i] = goBytes[ptr]
+				ptr += 1
+			case 1: // TAG_Int
+				stateEnum.PossibleValues[i] = int32(binary.LittleEndian.Uint32(goBytes[ptr : ptr+4]))
+				ptr += 4
+			case 2: // TAG_String
+				stringLen := binary.LittleEndian.Uint16(goBytes[ptr : ptr+2])
+				stateEnum.PossibleValues[i] = string(goBytes[ptr+2 : ptr+2+int(stringLen)])
+				ptr += 2 + int(stringLen)
+			}
+		}
+
+		stateEnums[index] = stateEnum
+	}
+
+	return
+}
+
+func fromSubChunkPayload(
+	blockTableId C.longlong,
+	rangeStart C.int,
+	rangeEnd C.int,
+	payload *C.char,
+	e chunk.Encoding,
+) (complexReturn *C.char) {
+	t := savedBlockTable.LoadObject(int(blockTableId))
+	if t == nil {
+		// block table not found
+		return asCbytes([]byte{0})
+	}
+
 	s, ind, err := chunk.DecodeSubChunk(
 		bytes.NewBuffer(asGoBytes(payload)),
 		define.Range{int(rangeStart), int(rangeEnd)},
 		e,
+		*t,
 	)
 	if err != nil {
-		// failed
+		// decode sub chunk failed
 		return asCbytes([]byte{0})
 	}
 
 	idBytes := make([]byte, 8)
 	binary.LittleEndian.PutUint64(idBytes, uint64(savedSubChunk.AddObject(s)))
 
-	// ok
+	// successful
 	result := []byte{1, byte(ind)}
 	result = append(result, idBytes...)
 
 	return asCbytes(result)
 }
 
-func subChunkPayload(subChunkId C.longlong, rangeStart C.int, rangeEnd C.int, ind C.int, e chunk.Encoding) *C.char {
+func subChunkPayload(
+	subChunkId C.longlong,
+	blockTableId C.longlong,
+	rangeStart C.int,
+	rangeEnd C.int,
+	ind C.int,
+	e chunk.Encoding,
+) *C.char {
 	r := define.Range{int(rangeStart), int(rangeEnd)}
 
 	s := savedSubChunk.LoadObject(int(subChunkId))
@@ -111,5 +171,10 @@ func subChunkPayload(subChunkId C.longlong, rangeStart C.int, rangeEnd C.int, in
 		return asCbytes(nil)
 	}
 
-	return asCbytes(chunk.EncodeSubChunk(*s, r, int(ind), e))
+	t := savedBlockTable.LoadObject(int(blockTableId))
+	if t == nil {
+		return asCbytes(nil)
+	}
+
+	return asCbytes(chunk.EncodeSubChunk(*s, r, int(ind), e, *t))
 }

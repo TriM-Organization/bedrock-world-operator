@@ -4,15 +4,18 @@ import "C"
 import (
 	"encoding/binary"
 
-	"github.com/TriM-Organization/bedrock-world-operator/block"
 	"github.com/TriM-Organization/bedrock-world-operator/chunk"
 )
 
 var savedSubChunk = NewSimpleManager[*chunk.SubChunk]()
 
 //export NewSubChunk
-func NewSubChunk() C.longlong {
-	subChunk := chunk.NewSubChunk(block.AirRuntimeID)
+func NewSubChunk(blockTableId C.longlong) C.longlong {
+	t := savedBlockTable.LoadObject(int(blockTableId))
+	if t == nil {
+		return -1
+	}
+	subChunk := chunk.NewSubChunk((*t).AirRuntimeID())
 	return C.longlong(savedSubChunk.AddObject(subChunk))
 }
 

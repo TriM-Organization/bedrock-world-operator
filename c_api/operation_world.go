@@ -15,8 +15,12 @@ import (
 var openedWorld = NewSimpleManager[world.World]()
 
 //export NewBedrockWorld
-func NewBedrockWorld(dirName *C.char) (id C.longlong) {
-	w, err := world.Open(C.GoString(dirName), nil)
+func NewBedrockWorld(dirName *C.char, blockTableId C.longlong) (id C.longlong) {
+	t := savedBlockTable.LoadObject(int(blockTableId))
+	if t == nil {
+		return -1
+	}
+	w, err := world.Open(C.GoString(dirName), nil, *t)
 	if err != nil {
 		return -1
 	}
