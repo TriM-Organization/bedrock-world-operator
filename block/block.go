@@ -145,7 +145,7 @@ func (b *BlockRuntimeIDTable) RegisterCustomBlock(block define.BlockState) error
 // states was already registered.
 //
 // Note that you MUST call FinaliseRegister
-// atfer register all custom blocks.
+// after register all custom blocks.
 func (b *BlockRuntimeIDTable) RegisterPermutation(blockName string, blockVersion int32, stateEnums []StateEnum) error {
 	permutations := make([]map[string]any, 0)
 	stepCounter := make([]int, len(stateEnums))

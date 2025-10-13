@@ -188,16 +188,21 @@ class SubChunkWithIndex:
     sub_chunk: SubChunk = field(default_factory=lambda: SubChunk())
 
 
-def new_sub_chunk() -> SubChunk:
+def new_sub_chunk(air_runtime_id: int) -> SubChunk:
     """
-    NewSubChunk creates a new sub chunk.
+    NewSubChunk creates a new sub chunk that is full of air.
+    Note that All sub chunks should be created through this function.
 
-    All sub chunks should be created
-    through this function.
+    The air runtime id can get from block runtime ID table,
+    which the class name is BlockTable. With you calling the
+    method named AirRuntimeID, then you get one.
+
+    Args:
+        air_runtime_id (int): The block runtime ID of air block.
 
     Returns:
         SubChunk: A new sub chunk that is full of air.
     """
     s = SubChunk()
-    s._sub_chunk_id = nsc()
+    s._sub_chunk_id = nsc(air_runtime_id)
     return s

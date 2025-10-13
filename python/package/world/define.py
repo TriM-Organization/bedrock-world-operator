@@ -134,6 +134,16 @@ class BlockStates:
     States: nbtlib.tag.Compound = field(default_factory=lambda: nbtlib.tag.Compound())
 
 
+@dataclass
+class StateEnum:
+    """StateEnum holds a single block property key and its possible values."""
+
+    state_key_name: str
+    possible_values: (
+        list[nbtlib.tag.Byte] | list[nbtlib.tag.Int] | list[nbtlib.tag.String]
+    ) = field(default_factory=lambda: [])
+
+
 # ptr = ((y >> 4) - (self.start_range >> 4)) << 12
 # offset = x * 256 + (y & 15) * 16 + z
 @dataclass

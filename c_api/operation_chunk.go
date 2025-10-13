@@ -13,13 +13,9 @@ import (
 var savedChunk = NewSimpleManager[*chunk.Chunk]()
 
 //export NewChunk
-func NewChunk(blockTableId C.longlong, rangeStart C.int, rangeEnd C.int) (complexReturn *C.char) {
-	t := savedBlockTable.LoadObject(int(blockTableId))
-	if t == nil {
-		return asCbytes(nil)
-	}
+func NewChunk(airRuntimeID C.int, rangeStart C.int, rangeEnd C.int) (complexReturn *C.char) {
 	c := chunk.NewChunk(
-		(*t).AirRuntimeID(),
+		uint32(airRuntimeID),
 		define.Range{int(rangeStart), int(rangeEnd)},
 	)
 	return packChunkRangeAndID(c.Range(), savedChunk.AddObject(c))

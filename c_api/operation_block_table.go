@@ -21,8 +21,13 @@ func NewBlockTable(useNetworkIDHashes C.int) C.longlong {
 	return C.longlong(savedBlockTable.AddObject(t))
 }
 
-//export Table_AirBlockRuntimeID
-func Table_AirBlockRuntimeID(id C.longlong) C.int {
+//export ReleaseBlockTable
+func ReleaseBlockTable(id C.longlong) {
+	savedBlockTable.ReleaseObject(int(id))
+}
+
+//export Table_AirRuntimeID
+func Table_AirRuntimeID(id C.longlong) C.int {
 	t := savedBlockTable.LoadObject(int(id))
 	if t == nil {
 		return -1

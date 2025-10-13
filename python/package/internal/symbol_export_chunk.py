@@ -6,7 +6,7 @@ from .types import CSlice, CString, CInt, CLongLong
 from .types import as_c_bytes, as_python_bytes, as_python_string
 
 
-LIB.NewChunk.argtypes = [CInt, CInt]
+LIB.NewChunk.argtypes = [CInt, CInt, CInt]
 LIB.ReleaseChunk.argtypes = [CLongLong]
 LIB.Chunk_Biome.argtypes = [CLongLong, CInt, CInt, CInt]
 LIB.Chunk_Biomes.argtypes = [CLongLong]
@@ -43,8 +43,12 @@ LIB.Chunk_SubChunk.restype = CLongLong
 LIB.Chunk_SetSubChunk.restype = CString
 
 
-def new_chunk(range_start: int, range_end: int) -> tuple[int, int, int]:
-    result = as_python_bytes(LIB.NewChunk(CInt(range_start), CInt(range_end)))
+def new_chunk(
+    air_runtime_id: int, range_start: int, range_end: int
+) -> tuple[int, int, int]:
+    result = as_python_bytes(
+        LIB.NewChunk(CInt(air_runtime_id), CInt(range_start), CInt(range_end))
+    )
     return struct.unpack("<hhQ", result)
 
 

@@ -2,6 +2,7 @@ import nbtlib
 from .constant import DIMENSION_OVERWORLD
 from ..world.chunk import Chunk
 from ..world.sub_chunk import SubChunk
+from ..world.block_table import BlockTable
 from ..internal.symbol_export_world import (
     load_biomes,
     load_chunk,
@@ -687,7 +688,7 @@ class World(WorldBase):
             raise Exception(err)
 
 
-def new_world(dir: str) -> World:
+def new_world(dir: str, block_table: BlockTable) -> World:
     """
     new_world creates a new provider reading and
     writing from/to files under the path passed
@@ -697,7 +698,11 @@ def new_world(dir: str) -> World:
     parse its data and initialize the world with it.
 
     Args:
-        dir (str): The minecraft bedrock leveldb path (folder path)
+        dir (str):
+            The minecraft bedrock leveldb path (folder path)
+        block_table (BlockTable):
+            The block runtime ID table that used for all chunks
+            and sub chunks that generated from this world.
 
     Returns:
         World: If a database can't be initialized or the level dat is cannot be
@@ -706,5 +711,5 @@ def new_world(dir: str) -> World:
                Note that you could use w.is_valid() to check the world is valid or not.
     """
     w = World()
-    w._world_id = nbw(dir)
+    w._world_id = nbw(dir, block_table._table_id)
     return w

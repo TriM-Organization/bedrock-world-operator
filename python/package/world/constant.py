@@ -1,6 +1,7 @@
 import nbtlib
-from ..internal.symbol_export_conversion import state_to_runtime_id
 from ..world.define import BlockStates, Dimension, Range
+
+CURRENT_BLOCK_VERSION = 18153728
 
 EMPTY_COMPOUND = nbtlib.tag.Compound()
 EMPTY_BLOCK_STATES = EMPTY_COMPOUND
@@ -19,4 +20,4 @@ RANGE_END = DIMENSION_END.range()
 RANGE_INVALID = Range(0, -1)
 
 AIR_BLOCK_STATES = BlockStates("minecraft:air")
-AIR_BLOCK_RUNTIME_ID = state_to_runtime_id("minecraft:air", EMPTY_BLOCK_STATES)[0]
+INVALID_BLOCK_RUNTIME_ID = (1 << 32) - 1

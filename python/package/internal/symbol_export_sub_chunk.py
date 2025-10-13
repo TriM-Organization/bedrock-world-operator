@@ -4,7 +4,7 @@ from .types import CSlice, CString, CInt, CLongLong
 from .types import as_c_bytes, as_python_bytes, as_python_string
 
 
-LIB.NewSubChunk.argtypes = []
+LIB.NewSubChunk.argtypes = [CInt]
 LIB.ReleaseSubChunk.argtypes = [CLongLong]
 LIB.SubChunk_Block.argtypes = [CLongLong, CInt, CInt, CInt, CInt]
 LIB.SubChunk_Blocks.argtypes = [CLongLong, CInt]
@@ -23,8 +23,8 @@ LIB.SubChunk_SetBlock.restype = CString
 LIB.SubChunk_SetBlocks.restype = CString
 
 
-def new_sub_chunk() -> int:
-    return int(LIB.NewSubChunk())
+def new_sub_chunk(air_runtime_id: int) -> int:
+    return int(LIB.NewSubChunk(CInt(air_runtime_id)))
 
 
 def release_sub_chunk(id: int) -> None:

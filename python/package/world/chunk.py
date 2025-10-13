@@ -451,17 +451,29 @@ class Chunk(ChunkBase):
         return (index << 4) + self._chunk_range.start_range
 
 
-def new_chunk(r: Range = RANGE_OVERWORLD) -> Chunk:
-    """NewChunk initialises a new chunk who full of air and returns it, so that it may be used.
+def new_chunk(air_runtime_id: int, r: Range = RANGE_OVERWORLD) -> Chunk:
+    """
+    NewChunk initialises a new chunk who full of
+    air and returns it, so that it may be used.
+
+    The air runtime id can get from block runtime ID table,
+    which the class name is BlockTable. With you calling the
+    method named AirRuntimeID, then you get one.
+
+    Note that you HAVE to check that the returned
+    chunk is valid or not if you have not check the
+    valid states of block_table.
 
     Args:
-        r (Range, optional): The Y range of this chunk could reach. Defaults to RANGE_OVERWORLD.
+        air_runtime_id (int): The block runtime ID of air block.
+        r (Range, optional): The Y range of this chunk could reach.
+                             Defaults to RANGE_OVERWORLD.
 
     Returns:
         Chunk: A new chunk.
     """
     c = Chunk()
-    start_range, end_range, chunk_id = nc(r.start_range, r.end_range)
+    start_range, end_range, chunk_id = nc(air_runtime_id, r.start_range, r.end_range)
     c._chunk_range = Range(start_range, end_range)
     c._chunk_id = chunk_id
     return c

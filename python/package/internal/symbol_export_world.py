@@ -7,7 +7,7 @@ from .types import as_c_bytes, as_python_bytes, as_c_string, as_python_string
 from ..utils import marshalNBT, unmarshalNBT
 
 
-LIB.NewBedrockWorld.argtypes = [CString]
+LIB.NewBedrockWorld.argtypes = [CString, CLongLong]
 LIB.ReleaseBedrockWorld.argtypes = [CLongLong]
 LIB.World_CloseWorld.argtypes = [CLongLong]
 LIB.World_GetLevelDat.argtypes = [CLongLong]
@@ -64,8 +64,8 @@ LIB.LoadSubChunkBlobHash.restype = CLongLong
 LIB.SaveSubChunkBlobHash.restype = CString
 
 
-def new_bedrock_world(dir: str) -> int:
-    return int(LIB.NewBedrockWorld(as_c_string(dir)))
+def new_bedrock_world(dir: str, block_table_id: int) -> int:
+    return int(LIB.NewBedrockWorld(as_c_string(dir), CLongLong(block_table_id)))
 
 
 def release_bedrock_world(id: int) -> None:

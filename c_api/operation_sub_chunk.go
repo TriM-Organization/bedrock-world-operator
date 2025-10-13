@@ -10,12 +10,8 @@ import (
 var savedSubChunk = NewSimpleManager[*chunk.SubChunk]()
 
 //export NewSubChunk
-func NewSubChunk(blockTableId C.longlong) C.longlong {
-	t := savedBlockTable.LoadObject(int(blockTableId))
-	if t == nil {
-		return -1
-	}
-	subChunk := chunk.NewSubChunk((*t).AirRuntimeID())
+func NewSubChunk(airRuntimeID C.int) C.longlong {
+	subChunk := chunk.NewSubChunk(uint32(airRuntimeID))
 	return C.longlong(savedSubChunk.AddObject(subChunk))
 }
 

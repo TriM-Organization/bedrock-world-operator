@@ -86,9 +86,8 @@ func unpackDenseBlockMatrix(encodeBytes []byte, subLength int) (blockMatrix [][]
 func unpackStateEnums(paylod *C.char) (stateEnums []block.StateEnum) {
 	goBytes := asGoBytes(paylod)
 
-	ptr := 2
-	stateCount := binary.LittleEndian.Uint16(goBytes[0:2])
-	stateEnums = make([]block.StateEnum, stateCount)
+	ptr := 1
+	stateEnums = make([]block.StateEnum, goBytes[0])
 
 	for index := range stateEnums {
 		stateEnum := block.StateEnum{}
@@ -98,18 +97,27 @@ func unpackStateEnums(paylod *C.char) (stateEnums []block.StateEnum) {
 		ptr += 2 + int(stateKeyNameLen)
 
 		stateEnum.PossibleValues = make([]any, goBytes[ptr])
-		possibleValuesType := goBytes[ptr+1]
-		ptr += 2
+		ptr++
+		if len(stateEnum.PossibleValues) == 0 {
+			continue
+		}
 
-		for i := range stateEnum.PossibleValues {
-			switch possibleValuesType {
-			case 0: // TAG_Byte
+		possibleValuesType := goBytes[ptr]
+		ptr++
+
+		switch possibleValuesType {
+		case 0: // TAG_Byte
+			for i := range stateEnum.PossibleValues {
 				stateEnum.PossibleValues[i] = goBytes[ptr]
-				ptr += 1
-			case 1: // TAG_Int
+				ptr++
+			}
+		case 1: // TAG_Int
+			for i := range stateEnum.PossibleValues {
 				stateEnum.PossibleValues[i] = int32(binary.LittleEndian.Uint32(goBytes[ptr : ptr+4]))
 				ptr += 4
-			case 2: // TAG_String
+			}
+		case 2: // TAG_String
+			for i := range stateEnum.PossibleValues {
 				stringLen := binary.LittleEndian.Uint16(goBytes[ptr : ptr+2])
 				stateEnum.PossibleValues[i] = string(goBytes[ptr+2 : ptr+2+int(stringLen)])
 				ptr += 2 + int(stringLen)
