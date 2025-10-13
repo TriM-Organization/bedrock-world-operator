@@ -47,6 +47,15 @@ func World_CloseWorld(id C.longlong) *C.char {
 	return C.CString("")
 }
 
+//export World_BlockRuntimeIDTable
+func World_BlockRuntimeIDTable(id C.longlong) C.longlong {
+	if w := openedWorld.LoadObject(int(id)); w != nil {
+		t := (*w).BlockRuntimeIDTable()
+		return C.longlong(savedBlockTable.AddObject(t))
+	}
+	return -1
+}
+
 //export World_GetLevelDat
 func World_GetLevelDat(id C.longlong) *C.char {
 	w := openedWorld.LoadObject(int(id))

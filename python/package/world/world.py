@@ -28,6 +28,7 @@ from ..internal.symbol_export_world import (
     save_sub_chunk,
     save_sub_chunk_blob_hash,
     save_time_stamp,
+    world_block_table,
     world_close_world,
     world_get_level_dat,
     world_modify_level_dat,
@@ -139,6 +140,19 @@ class World(WorldBase):
 
     def __init__(self):
         super().__init__()
+
+    def block_table(self) -> BlockTable:
+        """block_table returns its internal block runtime ID table.
+
+        Returns:
+            BlockTable: The block runtime ID table that this world is using.
+                        Note that you have the responsibilities to check if
+                        returned block table is valid or not by calling method
+                        is_valid() of BlockTable.
+        """
+        t = BlockTable()
+        t._table_id = world_block_table(self._world_id)
+        return t
 
     def get_level_dat(self) -> LevelDat | None:
         """get_level_dat get the level dat of current game saves.

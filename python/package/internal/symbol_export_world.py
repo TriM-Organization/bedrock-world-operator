@@ -10,6 +10,7 @@ from ..utils import marshalNBT, unmarshalNBT
 LIB.NewBedrockWorld.argtypes = [CString, CLongLong]
 LIB.ReleaseBedrockWorld.argtypes = [CLongLong]
 LIB.World_CloseWorld.argtypes = [CLongLong]
+LIB.World_BlockRuntimeIDTable.argtypes = [CLongLong]
 LIB.World_GetLevelDat.argtypes = [CLongLong]
 LIB.World_ModifyLevelDat.argtypes = [CLongLong, CSlice]
 LIB.LoadBiomes.argtypes = [CLongLong, CInt, CInt, CInt]
@@ -38,6 +39,7 @@ LIB.SaveSubChunkBlobHash.argtypes = [CLongLong, CInt, CInt, CInt, CInt, CLongLon
 LIB.NewBedrockWorld.restype = CLongLong
 LIB.ReleaseBedrockWorld.restype = None
 LIB.World_CloseWorld.restype = CString
+LIB.World_BlockRuntimeIDTable.restype = CLongLong
 LIB.World_GetLevelDat.restype = CSlice
 LIB.World_ModifyLevelDat.restype = CString
 LIB.LoadBiomes.restype = CSlice
@@ -74,6 +76,10 @@ def release_bedrock_world(id: int) -> None:
 
 def world_close_world(id: int) -> str:
     return as_python_string(LIB.World_CloseWorld(CLongLong(id)))
+
+
+def world_block_table(id: int) -> int:
+    return int(LIB.World_BlockRuntimeIDTable(CLongLong(id)))
 
 
 def world_get_level_dat(id: int) -> tuple[nbtlib.tag.Compound | None, bool]:
