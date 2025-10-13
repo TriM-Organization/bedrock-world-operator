@@ -138,7 +138,7 @@ class BlockStates:
 class StateEnum:
     """StateEnum holds a single block property key and its possible values."""
 
-    state_key_name: str
+    state_key_name: str = ""
     possible_values: (
         list[nbtlib.tag.Byte] | list[nbtlib.tag.Int] | list[nbtlib.tag.String]
     ) = field(default_factory=lambda: [])

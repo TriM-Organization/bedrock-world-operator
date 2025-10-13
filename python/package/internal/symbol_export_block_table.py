@@ -115,8 +115,9 @@ def table_register_permutation(
     writer.write(len(states_enum).to_bytes(length=1, signed=False))
 
     for state_key_name, possible_values in states_enum:
-        writer.write(struct.pack("<H", len(state_key_name)))
-        writer.write(state_key_name.encode(encoding="utf-8"))
+        string_bytes = state_key_name.encode(encoding="utf-8")
+        writer.write(struct.pack("<H", len(string_bytes)))
+        writer.write(string_bytes)
 
         writer.write(len(possible_values).to_bytes(length=1, signed=False))
         if len(possible_values) == 0:
@@ -128,16 +129,17 @@ def table_register_permutation(
                 assert isinstance(value, nbtlib.tag.Byte)
                 writer.write(value.to_bytes(length=1, signed=False))
         if isinstance(possible_values[0], nbtlib.tag.Int):
-            writer.write(b"\x00")
+            writer.write(b"\x01")
             for value in possible_values:
                 assert isinstance(value, nbtlib.tag.Int)
                 writer.write(struct.pack("<i", value))
         if isinstance(possible_values[0], nbtlib.tag.String):
-            writer.write(b"\x00")
+            writer.write(b"\x02")
             for value in possible_values:
                 assert isinstance(value, nbtlib.tag.String)
-                writer.write(struct.pack("<H", len(value)))
-                writer.write(value.encode(encoding="utf-8"))
+                string_bytes = value.encode(encoding="utf-8")
+                writer.write(struct.pack("<H", len(string_bytes)))
+                writer.write(string_bytes)
 
     return as_python_string(
         LIB.Table_RegisterPermutation(
