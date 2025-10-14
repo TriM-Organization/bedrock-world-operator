@@ -17,12 +17,13 @@ func NewSimpleManager[T any]() *SimpleManager[T] {
 }
 
 func (s *SimpleManager[T]) AddObject(t T) int {
-	goPtr := &t
+	newObject := new(T)
+	*newObject = t
 
 	pinner := new(runtime.Pinner)
-	pinner.Pin(goPtr)
+	pinner.Pin(newObject)
 
-	ptr := uintptr(unsafe.Pointer(goPtr))
+	ptr := uintptr(unsafe.Pointer(newObject))
 	s.mapping.Store(ptr, pinner)
 
 	return int(ptr)
