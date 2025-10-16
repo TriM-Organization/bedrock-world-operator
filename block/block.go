@@ -186,7 +186,7 @@ func (b *BlockRuntimeIDTable) RegisterPermutation(blockName string, blockVersion
 			Version:    blockVersion,
 		})
 		if err != nil {
-			return fmt.Errorf("RegisterMultipleStates: %v", err)
+			return fmt.Errorf("RegisterPermutation: %v", err)
 		}
 	}
 
