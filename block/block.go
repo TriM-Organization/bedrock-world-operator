@@ -1,9 +1,10 @@
 package block
 
 import (
+	"cmp"
 	_ "embed"
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 
 	intintmap "github.com/TriM-Organization/bedrock-world-operator/block/initintmap"
@@ -199,12 +200,10 @@ func (b *BlockRuntimeIDTable) FinaliseRegister() {
 	if b.useNetworkIDHashes {
 		return
 	}
-	b.defaultBlockStates = make(map[string]BlockEntry)
 
-	sort.SliceStable(b.blockEntries, func(i, j int) bool {
-		nameOne := b.blockEntries[i].Block.Name
-		nameTwo := b.blockEntries[j].Block.Name
-		return nameOne != nameTwo && fnv1.HashString64(nameOne) < fnv1.HashString64(nameTwo)
+	b.defaultBlockStates = make(map[string]BlockEntry)
+	slices.SortStableFunc(b.blockEntries, func(a, b BlockEntry) int {
+		return cmp.Compare(fnv1.HashString64(a.Block.Name), fnv1.HashString64(b.Block.Name))
 	})
 
 	for index, value := range b.blockEntries {
