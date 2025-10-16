@@ -142,8 +142,8 @@ class BlockTable(BlockTableBase):
         register_custom_block register a custom block which name is block_name,
         states is block_states and version is block_version to current table.
 
-        block_version is the version of blocks (states) of the game. This version
-        is composed of 4 bytes indicating a version, interpreted as a big endian int.
+        block_version is the version of this block in the game. This version is
+        composed of 4 bytes indicating a version, interpreted as a big endian int.
         The current version represents 1.21.1.0 {1, 21, 1, 0} which is 18153728.
 
         Note that you MUST call FinaliseRegister atfer register all custom blocks.
@@ -173,11 +173,18 @@ class BlockTable(BlockTableBase):
         """
         register_permutation registers all block states of a custom block to the table.
 
-        block_version is the version of blocks (states) of the game. This version
-        is composed of 4 bytes indicating a version, interpreted as a big endian int.
+        block_version is the version of this block in the game. This version is
+        composed of 4 bytes indicating a version, interpreted as a big endian int.
         The current version represents 1.21.1.0 {1, 21, 1, 0} which is 18153728.
 
-        Note that you MUST call FinaliseRegister after register all custom blocks.
+        Note that if the network hashes is not enabled for this block table, then the
+        orders of "states_enum[i].possible_values" is very important for all i because
+        it can affect the final runtime ID of these custom blocks. If you're a client,
+        then you should call register_permutation by giving states_enum in the same
+        order as the server that you can find the information record in StartGame packet.
+
+        Another one is very important that you MUST call FinaliseRegister after register
+        all custom blocks.
 
         Args:
             block_name (str): The name of this block.
