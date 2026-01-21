@@ -20,7 +20,7 @@ func init() {
 	var fullVersion []string
 
 	if block_general.UseNeteaseBlockStates {
-		fullVersion = append(strings.Split("1.21.1", "."), "0", "0")
+		fullVersion = append(strings.Split("1.21.50", "."), "0", "0")
 	} else {
 		fullVersion = append(strings.Split(protocol.CurrentVersion, "."), "0", "0")
 	}
