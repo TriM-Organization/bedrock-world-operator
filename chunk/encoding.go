@@ -198,6 +198,5 @@ func (networkEncoding) decodePalette(buf *bytes.Buffer, blockSize paletteSize, _
 		}
 		blocks[i] = uint32(temp)
 	}
-
-	return NewPalette(blockSize, blocks), nil
+	return &Palette{values: blocks, size: blockSize}, nil
 }

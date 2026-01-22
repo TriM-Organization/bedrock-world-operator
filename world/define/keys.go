@@ -15,17 +15,20 @@ const (
 
 // Keys on a per-chunk basis. These are prefixed by only the chunk coordinates.
 const (
-	// keyVersion holds a single byte of data with the version of the chunk.
+	// KeyVersion holds a single byte of data with the version of the chunk.
 	KeyVersion = ',' // 2c
-	// keyVersionOld was replaced by keyVersion. It is still used by vanilla to check compatibility, but vanilla no
+	// KeyVersionOld was replaced by keyVersion. It is still used by vanilla to check compatibility, but vanilla no
 	// longer writes this tag.
 	KeyVersionOld = 'v' // 76
-	// keyBlockEntities holds n amount of NBT compound tags appended to each other (not a TAG_List, just appended). The
+	// KeyBlockEntities holds n amount of NBT compound tags appended to each other (not a TAG_List, just appended). The
 	// compound tags contain the position of the block entities.
 	KeyBlockEntities = '1' // 31
-	// keyEntities holds n amount of NBT compound tags appended to each other (not a TAG_List, just appended). The
+	// KeyEntitiesOld holds n amount of NBT compound tags appended to each other (not a TAG_List, just appended). The
 	// compound tags contain the position of the entities.
-	KeyEntities = '2' // 32
+	KeyEntitiesOld = '2' // 32
+	// KeyPendingScheduledTicks holds an NBT structure containing all scheduled
+	// ticks that were pending in the chunk.
+	KeyPendingScheduledTicks = '3'
 	// keyFinalisation contains a single LE int32 that indicates the state of generation of the chunk. If 0, the chunk
 	// needs to be ticked. If 1, the chunk needs to be populated and if 2 (which is the state generally found in world
 	// saves from vanilla), the chunk is fully finalised.
@@ -64,7 +67,7 @@ const (
 	FinalisationGenerated
 )
 
-// Index returns a byte buffer holding the written index of the chunk position passed. If the dimension passed to New
+// Index returns a byte buffer holding the written index of the chunk position passed. If the dimension passed
 // is not world.Overworld, the length of the index returned is 12. It is 8 otherwise.
 func Index(dm define.Dimension, position define.ChunkPos) []byte {
 	x, z, dim := uint32(position[0]), uint32(position[1]), uint32(dm)

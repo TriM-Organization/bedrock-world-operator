@@ -24,13 +24,13 @@ var pool = sync.Pool{
 	},
 }
 
-// SerialisedData holds the serialised data of a  It consists of the chunk's block data itself, a height
+// SerialisedData holds the serialised data of a chunk. It consists of the chunk's block data itself, a height
 // map, the biomes and entities and block entities.
 type SerialisedData struct {
-	// sub holds the data of the serialised sub chunks in a  Sub chunks that are empty or that otherwise
+	// sub holds the data of the serialised sub chunks in a chunk. Sub chunks that are empty or that otherwise
 	// don't exist are represented as an empty slice (or technically, nil).
 	SubChunks [][]byte
-	// Biomes is the biome data of the chunk, which is composed of a biome storage for each sub-
+	// Biomes is the biome data of the chunk, which is composed of a biome storage for each sub-chunk.
 	Biomes []byte
 }
 
@@ -38,8 +38,8 @@ type SerialisedData struct {
 // network or disk purposed, the most notable difference being that the network encoding generally uses varints and no
 // NBT.
 func Encode(c *Chunk, e Encoding) SerialisedData {
-	d := SerialisedData{SubChunks: make([][]byte, len(c.Sub()))}
-	for i, subChunk := range c.Sub() {
+	d := SerialisedData{SubChunks: make([][]byte, len(c.sub))}
+	for i, subChunk := range c.sub {
 		d.SubChunks[i] = EncodeSubChunk(subChunk, c.r, i, e)
 	}
 	d.Biomes = EncodeBiomes(c, e)
@@ -101,5 +101,5 @@ func encodePalettedStorage(buf *bytes.Buffer, storage, previous *PalettedStorage
 	}
 	_, _ = buf.Write(b)
 
-	e.encodePalette(buf, storage.Palette(), pe)
+	e.encodePalette(buf, storage.palette, pe)
 }

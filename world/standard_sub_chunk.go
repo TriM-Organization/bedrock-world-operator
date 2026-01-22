@@ -27,7 +27,8 @@ func (b *BedrockWorld) LoadSubChunk(dm define.Dimension, position define.SubChun
 	if len(subChunkData) == 0 {
 		has, err := b.Has(world_define.Sum(dm, chunkPos, world_define.KeyVersion))
 		if err == nil && !has {
-			// The new key was not found, so we try the old key.
+			// Although the version at `KeyVersion` may not be found, there is
+			// another `KeyVersionOld` where the version may be found.
 			has, err = b.Has(world_define.Sum(dm, chunkPos, world_define.KeyVersionOld))
 		}
 		if err == nil && has {

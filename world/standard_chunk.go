@@ -15,12 +15,11 @@ import (
 // Note that we here don't decode chunk data and just return the origin payload.
 func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define.ChunkPos) (subchunksBytes [][]byte, exists bool, err error) {
 	subchunksBytes = make([][]byte, dm.Height()>>4)
-	// This key is where the version of a chunk resides. The chunk version has changed many times, without any
-	// actual substantial changes, so we don't check this.
 
 	has, err := b.Has(world_define.Sum(dm, position, world_define.KeyVersion))
 	if err == nil && !has {
-		// The new key was not found, so we try the old key.
+		// Although the version at `KeyVersion` may not be found, there is
+		// another `KeyVersionOld` where the version may be found.
 		has, err = b.Has(world_define.Sum(dm, position, world_define.KeyVersionOld))
 		if err == nil && !has {
 			return nil, false, nil
@@ -37,11 +36,11 @@ func (b *BedrockWorld) LoadChunkPayloadOnly(dm define.Dimension, position define
 			),
 		)
 		if len(subchunksBytes[i]) == 0 && err == nil {
-			// No sub chunk present at this Y level. We skip this one and move to the next, which might still
-			// be present.
+			// No sub chunk present at this Y level. We skip this one and move
+			// to the next, which might still be present.
 			continue
 		} else if err != nil {
-			return nil, true, fmt.Errorf("error reading sub chunk data %v: %w", i, err)
+			return nil, true, fmt.Errorf("sub chunk %v: %w", i, err)
 		}
 	}
 

@@ -188,6 +188,23 @@ func (chunk *Chunk) SetBiomes(biomes [][]uint32) {
 	}
 }
 
+// TODO: Expose this function to C API.
+//
+// HighestBlock iterates from the highest non-empty sub chunk downwards to find the Y value of the highest
+// non-air block at an x and z. If no blocks are present in the column, the minimum height is returned.
+func (chunk *Chunk) HighestBlock(x, z uint8) int16 {
+	for index := int16(len(chunk.sub) - 1); index >= 0; index-- {
+		if sub := chunk.sub[index]; !sub.Empty() {
+			for y := 15; y >= 0; y-- {
+				if rid := sub.storages[0].At(x, uint8(y), z); rid != chunk.air {
+					return int16(y) | chunk.SubY(index)
+				}
+			}
+		}
+	}
+	return int16(chunk.r[0])
+}
+
 // Compact compacts the chunk as much as possible, getting rid of any sub chunks that are empty, and compacts
 // all storages in the sub chunks to occupy as little space as possible.
 // Compact should be called right before the chunk is saved in order to optimise the storage space.

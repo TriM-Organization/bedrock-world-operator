@@ -3,7 +3,6 @@ package world
 import (
 	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/TriM-Organization/bedrock-world-operator/define"
 	world_define "github.com/TriM-Organization/bedrock-world-operator/world/define"
@@ -27,29 +26,18 @@ func (b *BedrockWorld) LoadNBT(dm define.Dimension, position define.ChunkPos) ([
 		return make([]map[string]any, 0), nil
 	}
 
-	var a []map[string]any
+	var result []map[string]any
 	buf := bytes.NewBuffer(data)
 	dec := nbt.NewDecoderWithEncoding(buf, nbt.LittleEndian)
 
 	for buf.Len() != 0 {
 		var m map[string]any
 		if err := dec.Decode(&m); err != nil {
-			return nil, fmt.Errorf("error decoding block NBT: %w", err)
+			return nil, fmt.Errorf("decode nbt: %w", err)
 		}
-		if _id, found := m["id"]; found {
-			if id, ok := _id.(string); ok {
-				if strings.HasPrefix(id, "minecraft:") {
-					id = strings.TrimPrefix(id, "minecraft:")
-					if len(id) > 0 {
-						id = strings.ToUpper(string(id[0])) + id[1:]
-					}
-				}
-				m["id"] = id
-			}
-		}
-		a = append(a, m)
+		result = append(result, m)
 	}
-	return a, nil
+	return result, nil
 }
 
 // SaveNBTPayloadOnly saves a serialized NBT data to the chunk position passed.
@@ -67,7 +55,7 @@ func (b *BedrockWorld) SaveNBT(dm define.Dimension, position define.ChunkPos, da
 	enc := nbt.NewEncoderWithEncoding(buf, nbt.LittleEndian)
 	for _, d := range data {
 		if err := enc.Encode(d); err != nil {
-			return fmt.Errorf("error encoding block NBT: %w", err)
+			return fmt.Errorf("store block entities: encode nbt: %w", err)
 		}
 	}
 	return b.SaveNBTPayloadOnly(dm, position, buf.Bytes())
