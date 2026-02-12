@@ -60,7 +60,7 @@ func ComputeBlockHash(blockName string, blockStates map[string]any) uint32 {
 		// The header
 		b.Write([]byte{10, 0, 0})
 
-		// "name": s.Name
+		// "name": blockName
 		b.Write(MarshalInternalData("name", blockName))
 
 		// "states": blockStates
