@@ -7,7 +7,7 @@ require (
 	github.com/deatil/go-cryptobin v1.1.1005
 	github.com/df-mc/goleveldb v1.1.9
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/sandertv/gophertunnel v1.43.1
+	github.com/sandertv/gophertunnel v1.48.0
 )
 
 require (

@@ -104,7 +104,7 @@ class LevelDat:
     force_game_type: bool = False
     game_type: int = 1
     generator: int = 2
-    inventory_version: str = "1.21.50"
+    inventory_version: str = "1.21.93"
     LANB_roadcast: bool = True
     LANB_roadcast_intent: bool = True
     last_played: int = 0
@@ -116,15 +116,15 @@ class LevelDat:
     limited_world_width: int = 16
     minimum_compatible_client_version: tuple[int, int, int, int, int] = (
         1,
-        20,
-        50,
+        21,
+        93,
         0,
         0,
     )
     multi_player_game: bool = True
     multi_player_game_intent: bool = True
     nether_scale: int = 8
-    network_version: int = 630
+    network_version: int = 819
     platform: int = 2
     platform_broadcast_intent: int = 3
     random_seed: int = field(default_factory=lambda: int(Time.time()))
@@ -172,7 +172,7 @@ class LevelDat:
     is_from_world_template: bool = False
     is_world_template_option_locked: bool = False
     keep_inventory: bool = False
-    last_opened_with_version: tuple[int, int, int, int, int] = (1, 20, 50, 0, 0)
+    last_opened_with_version: tuple[int, int, int, int, int] = (1, 21, 93, 0, 0)
     lightning_level: float = 1.0
     lightning_time: int = 0
     max_command_chain_length: int = 65535
