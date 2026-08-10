@@ -189,7 +189,7 @@ func (d *Data) FillDefault() {
 	d.HasBeenLoadedInCreative = true
 
 	if block_general.UseNeteaseBlockStates {
-		d.InventoryVersion = "1.21.90"
+		d.InventoryVersion = "1.21.120"
 	} else {
 		d.InventoryVersion = protocol.CurrentVersion
 	}
@@ -211,7 +211,7 @@ func (d *Data) FillDefault() {
 	d.NetherScale = 8
 
 	if block_general.UseNeteaseBlockStates {
-		d.NetworkVersion = 819
+		d.NetworkVersion = 860
 	} else {
 		d.NetworkVersion = protocol.CurrentProtocol
 	}
